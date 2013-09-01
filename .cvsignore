@@ -1,0 +1,16 @@
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+*.pyc
+i686
+Linux
+Win32*
+Visual
+redhat*
+VC7*
+VC8*
+build
+.git*
