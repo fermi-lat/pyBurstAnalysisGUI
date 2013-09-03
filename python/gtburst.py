@@ -41,6 +41,7 @@ sys.stderr.write(".")
 from GtBurst import commandDefiner
 from GtBurst import ConsoleText
 from GtBurst import AutoHideScrollbar
+from GtBurst import updater
 from GtBurst.commands.gtllebin import thisCommand as gtllebin
 from GtBurst.commands.gtllebkg import thisCommand as gtllebkg
 from GtBurst.commands.gtllesrc import thisCommand as gtllesrc
@@ -548,21 +549,20 @@ class GUI(object):
   pass
   
   def updateGtBurst(self):
-    
     cwd                     = os.getcwd()
     os.chdir(self.installationPath)
-    print("\nUpdating gtburst...\n")
+    print("\nUpdating gtburst...")
     try:
-      out                     = subprocess.check_output('git pull',shell=True)
+      nUpdates                = updater.update()
     except:
-      raise GtBurstException(4,"Update failed! Either you are not connected to the internet, or you don't have a working installation of git")
+      raise
     else:
       os.chdir(cwd)
-      print(out)
-      if(out.find("Already up-to-date")>=0):
+      if(nUpdates==0):
         showinfo("No update","No update available at this moment!")
+        print("No update available at this moment!")
       else:
-        print("\nDone!")
+        print("\nDone! %s files updated" % (nUpdates))
         showinfo("Restarting gtburst","Update finished! About to restart gtburst for the update to take effect.",parent=self.root)
         reset()
       pass
