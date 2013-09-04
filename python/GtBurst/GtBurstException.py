@@ -27,6 +27,10 @@ codes[3] = "I/O error"
 codes[31] = "Error opening filtered event file"
 codes[4] = "Could not update"
 
+codes[4] = "Spacecraft file (FT2 file) does not cover the interval requested"
+codes[41] = "Spacecraft file (FT2 file) starts after the beginning of the requested interval"
+codes[42] = "Spacecraft file (FT2 file) stops before the end of the requested interval"
+
 class GtBurstException(RuntimeError):
   def __init__(self,code,message):
     RuntimeError.__init__(self,message)

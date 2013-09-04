@@ -2,7 +2,7 @@
 # G.Vianello (giacomov@slac.stanford.edu, giacomo.slac@gmail.com)
 
 import numpy
-import os,sys, re, glob, shutil, datetime
+import os,sys, re, glob, shutil, datetime, time
 import pyfits
 import math
 import pywcs
@@ -975,6 +975,22 @@ class LATData(LLEData):
         pass
       pass
       
+      #Check that the FT2 file covers the time interval requested
+      f                                = pyfits.open(self.ft2File)
+      ft2max                           = max(f['SC_DATA'].data.STOP)
+      ft2min                           = min(f['SC_DATA'].data.START)
+      f.close()
+      
+      if(ft2min >= float(tstart)+int(float(tstart) < 231292801.000)*self.trigTime):
+        sys.stderr.write("\n\nWARNING: Spacecraft file (FT2 file) starts after the beginning of the requested interval. Your start time is now %s (MET %s).\n\n" %(ft2min-self.trigTime,ft2min))
+        tstart                         = ft2min-self.trigTime
+        time.sleep(2)
+      if(ft2max <= float(tstop)+int(float(tstart) < 231292801.000)*self.trigTime):
+        sys.stderr.write("\n\nWARNING: Spacecraft file (FT2 file) stops before the end of the requested interval. Your stop time is now %s (MET %s).\n\n" % (ft2max-self.trigTime,ft2max))
+        tstop                          = ft2max-self.trigTime
+        time.sleep(2)
+      pass
+      
       if(not self.eventFile):
         raise RuntimeError("You cannot select by time if you don't provide a FT1 file.")
       
@@ -994,8 +1010,8 @@ class LATData(LLEData):
         self.gtmktime['apply_filter']    = 'yes'
         self.gtmktime['overwrite']       = 'no'
         self.gtmktime['header_obstimes'] = 'yes'
-        self.gtmktime['tstart']          = 0.0
-        self.gtmktime['tstop']           = 0.0
+        self.gtmktime['tstart']          = 0
+        self.gtmktime['tstop']           = 0
         self.gtmktime['clobber']         = 'yes'
         try:
           self.gtmktime.run()
@@ -1571,11 +1587,11 @@ class LATData(LLEData):
     self.gtfindsrc['srcmdl']        = tmpxml
     self.gtfindsrc['target']        = sourceName
     self.gtfindsrc['optimizer']     = 'NEWMINUIT'
-    self.gtfindsrc['ftol']          = 1E-3
+    self.gtfindsrc['ftol']          = 1E-10
     self.gtfindsrc['reopt']         = 'yes'
     self.gtfindsrc['atol']          = 1E-3
-    self.gtfindsrc['posacc']        = 1E-3
-    self.gtfindsrc['chatter']       = 2
+    self.gtfindsrc['posacc']        = 1E-2
+    self.gtfindsrc['chatter']       = 5
     self.gtfindsrc['clobber']       = 'yes'
     
     stdin, stdout                   = self.gtfindsrc.runWithOutput()
