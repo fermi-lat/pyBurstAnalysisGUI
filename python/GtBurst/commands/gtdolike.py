@@ -142,7 +142,7 @@ def run(**kwargs):
       try:
         bestra,bestdec,poserr = LATdata.optimizeSourcePosition(outfilelike,sourceName)
       except:
-        raise RuntimeError("Could not localize the source. Gtfindsrc failed!")
+        raise GtBurstException(207,"gtfindsrc execution failed. Were the source detected in the likelihood step?")
       else:
         localizationMessage += "\nNew localization from gtfindsrc:\n\n"
         localizationMessage += "(R.A., Dec)                     = (%6.3f, %6.3f)\n" %(bestra,bestdec)
@@ -150,12 +150,13 @@ def run(**kwargs):
         distance             = getAngularDistance(float(ra),float(dec),float(bestra),float(bestdec))
         localizationMessage += "Distance from initial position  = %6.3f\n\n" %(distance)
         localizationMessage += "NOTE: this new localization WILL NOT be used by default. If you judge"
-        localizationMessage += " it is a better localication than the one you started with, update the"
+        localizationMessage += " it is a better localization than the one you started with, update the"
         localizationMessage += " coordinates yourself and re-run the likelihood\n"
     pass
   pass
   
   if(figure!=None and skymap!=None and showmodelimage=='yes'):
+    
     #Now produce the binned exposure map (needed in order to display the fitted model as an image)
     modelmapfile              = LATdata.makeModelSkyMap(outfilelike) 
     
@@ -215,10 +216,10 @@ def run(**kwargs):
     
     for src in detectedSources:
       img.add_label(float(src.ra),float(src.dec),
-                    "%s (ts = %i)" %(src.name,int(math.ceil(src.TS))),
+                    "%s\n(ts = %i)" %(src.name,int(math.ceil(src.TS))),
                     relative=False,weight=weight,
-                    color='white')
-
+                    color='green', size='small')
+    pass
     
     # Modify the tick labels for precision and format
     img.tick_labels.set_xformat('ddd.dd')
