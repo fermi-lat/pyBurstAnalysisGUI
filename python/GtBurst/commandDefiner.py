@@ -1,6 +1,7 @@
 import collections
 import textwrap
 import os
+from GtBurst.version import getVersion,getPackageName
 
 MANDATORY                     = True
 OPTIONAL                      = False
@@ -58,6 +59,7 @@ class Command(object):
     self.GUIdescription       = "You should not see this"
     #The definedParameters dictionary contains parameter names as keys and Parameter classes as values
     self.definedParameters    = collections.OrderedDict()
+    print("This is %s (%s %s)\n" %(name,getPackageName(),getVersion()))
   pass
   
   def addParameter(self,parname,description,mandatory=True,defaultValue=None,**kwargs):

@@ -54,6 +54,8 @@ with suppress_stdout_stderr():
   except:
     active = False
   pass
+  sys.stderr.flush()
+  sys.stdout.flush()
 pass
 
 class BKGE(object):

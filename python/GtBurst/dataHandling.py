@@ -20,9 +20,10 @@ from GtBurst.statMethods import *
 from GtBurst.Configuration import Configuration
 from GtBurst.GtBurstException import GtBurstException
 from GtBurst.commands.gtllebin import gtllebin
+from GtBurst import version
 
 #Version tag
-moduleVersion                 = "1.0.0"
+moduleVersion                 = version.getVersion()
 
 #Definitions
 eventsExtName                 = "EVENTS"

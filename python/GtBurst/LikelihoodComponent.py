@@ -90,14 +90,14 @@ class PointSource(GenericSource):
     self.source                        = PtSrc()
     self.source.name                   = name
     self.source.spectrum.Integral.max  = 1e5
-    self.source.spectrum.Integral.min  = 1e-12
+    self.source.spectrum.Integral.min  = 0
     self.source.spectrum.Integral.scale = 1e-03
     self.source.spectrum.Integral.value = 0.01
     self.source.spectrum.Integral.units = ''
     self.source.spectrum.Integral.node.setAttribute('units','ph./cm2/s')
     
-    self.source.spectrum.Index.max      = 0.0
-    self.source.spectrum.Index.min      = -10
+    self.source.spectrum.Index.max      = 0.01
+    self.source.spectrum.Index.min      = -6.0
     self.source.spectrum.Index.value    = -2.0
     self.source.spectrum.Index.units    = ''
     self.source.spectrum.Index.node.setAttribute('units','-')
@@ -116,6 +116,7 @@ class PointSource(GenericSource):
     self.source.spatialModel.DEC.value = dec
     self.source.spatialModel.setAttributes()
     self.source.setAttributes()
+    
   pass 
 pass
 

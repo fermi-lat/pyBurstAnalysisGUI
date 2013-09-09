@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 #Author: Giacomo Vianello (giacomov@slac.stanford.edu)
 
-packageName                   = 'pyBurstAnalysisGUI'
-packageVersion                = "01-00-00"
+from GtBurst import version
+packageName                   = version.getPackageName()
+packageVersion                = version.getVersion()
 GUIname                       = "Fermi Burst Analysis GUI"
 
 import sys
@@ -42,27 +43,35 @@ from GtBurst import commandDefiner
 from GtBurst import ConsoleText
 from GtBurst import AutoHideScrollbar
 from GtBurst import updater
-from GtBurst.commands.gtllebin import thisCommand as gtllebin
-from GtBurst.commands.gtllebkg import thisCommand as gtllebkg
-from GtBurst.commands.gtllesrc import thisCommand as gtllesrc
-sys.stderr.write(".")
-from GtBurst.commands.gtllesrcbindef import thisCommand as gtllesrcbindef
-from GtBurst.commands.gtllebkgbindef import thisCommand as gtllebkgbindef
-from GtBurst.commands.gtllebkgGUI import thisCommand as gtllebkgGUI
-from GtBurst.commands.gtdocountsmap import thisCommand as gtdocountsmap
-import GtBurst.commands.gtbuildxmlmodel
-from GtBurst.commands.gtbuildxmlmodel import thisCommand as gtbuildxmlmodel
-from GtBurst.commands.gtdolike import thisCommand as gtdolike
-from GtBurst.commands.gtdotsmap import thisCommand as gtdotsmap
-sys.stderr.write(".")
-from GtBurst.commands.gtconvertxmlmodel import thisCommand as gtconvertxmlmodel
-from GtBurst.commands.gtdosimulation import thisCommand as gtdosimulation
-from GtBurst.commands.gteditxmlmodel import thisCommand as gteditxmlmodel
-from GtBurst.commands.gteditxmlmodelsim import thisCommand as gteditxmlmodelsim
-from GtBurst.commands.gtinteractiveRaDec import thisCommand as gtinteractiveRaDec
-sys.stderr.write(".")
-from GtBurst import angularDistance
+
 from GtBurst import dataHandling
+
+#Import commands ignoring the stdout (to avoid messages such as "This is gtllebin (v. ...)"
+with dataHandling.suppress_output(False,True):
+  from GtBurst.commands.gtllebin import thisCommand as gtllebin
+  from GtBurst.commands.gtllebkg import thisCommand as gtllebkg
+  from GtBurst.commands.gtllesrc import thisCommand as gtllesrc
+  sys.stderr.write(".")
+  from GtBurst.commands.gtllesrcbindef import thisCommand as gtllesrcbindef
+  from GtBurst.commands.gtllebkgbindef import thisCommand as gtllebkgbindef
+  from GtBurst.commands.gtllebkgGUI import thisCommand as gtllebkgGUI
+  from GtBurst.commands.gtdocountsmap import thisCommand as gtdocountsmap
+  import GtBurst.commands.gtbuildxmlmodel
+  from GtBurst.commands.gtbuildxmlmodel import thisCommand as gtbuildxmlmodel
+  from GtBurst.commands.gtdolike import thisCommand as gtdolike
+  from GtBurst.commands.gtdotsmap import thisCommand as gtdotsmap
+  sys.stderr.write(".")
+  from GtBurst.commands.gtconvertxmlmodel import thisCommand as gtconvertxmlmodel
+  from GtBurst.commands.gtdosimulation import thisCommand as gtdosimulation
+  from GtBurst.commands.gteditxmlmodel import thisCommand as gteditxmlmodel
+  from GtBurst.commands.gteditxmlmodelsim import thisCommand as gteditxmlmodelsim
+  from GtBurst.commands.gtinteractiveRaDec import thisCommand as gtinteractiveRaDec
+  sys.stderr.write(".")
+  sys.stdout.flush()
+  sys.stderr.flush()
+pass
+  
+from GtBurst import angularDistance
 from GtBurst.InteractiveFt1Display import InteractiveFt1Display
 sys.stderr.write(".")
 #from GtBurst import do_gbm

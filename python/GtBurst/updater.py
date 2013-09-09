@@ -3,6 +3,7 @@
 import urllib, os
 from GtBurst.GtBurstException import GtBurstException
 import GtBurst
+import md5
 
 #Set a global timeout of 10 seconds for all web connections
 import socket
@@ -35,7 +36,7 @@ def update(debug=False):
   nUpdates                  = 0
   for ff in files:
     atoms                     = ff.split()
-    pathname                  = atoms[-1]
+    pathname                  = atoms[-1].replace('*','')
     if(ff[0]=='d'):
       #This is a directory, skipping
       if(debug):
@@ -44,10 +45,11 @@ def update(debug=False):
       if(debug):
         print("Skipping %s..." %(ff))
     else:
-      size                    = atoms[1]
+      remoteMD5                    = atoms[0]
       if(debug):
-        print("File %s is %s bytes large" %(pathname,size))
-      #Get the size of the same file in the GtBurst package path
+        print("File %s has remote MD5 checksum %s" %(pathname,remoteMD5))
+      
+      #Get the MD5 of the same file in the GtBurst package path
       pathnameThisSys         = pathname.replace("/",os.path.sep)
       localPath               = os.path.join(installationPath,pathnameThisSys)
       if(not os.path.exists(localPath)):
@@ -56,16 +58,18 @@ def update(debug=False):
         nUpdates              += 1
       else:
         #File exists. Check the size
-        localSize             = os.path.getsize(localPath)
-        if(float(localSize)!=float(size)):
+        localMD5             = md5.md5(open(localPath, 'rb').read()).hexdigest()
+        if(localMD5!=remoteMD5):
           print("Updating %s..." %(localPath))
           downloadFile(pathname,localPath)
           nUpdates              += 1
         else:
           if(debug):
-            print("NOT updating %s (%s bytes)..." %(localPath,localSize))
+            print("NOT updating %s (local MD5: %s, remote MD5: %s)..." %(localPath,localMD5,remoteMD5))
           pass
         pass
+        if(debug):
+          print("\n\n")
     pass
   pass
   
