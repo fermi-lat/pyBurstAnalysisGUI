@@ -1,5 +1,15 @@
 ------------------------------------------------------------
 User: giacomov  Mon Sep  9 15:15:12 PDT 2013
+pyBurstAnalysisGUI/python/GtBurst
+
+Modified Files:
+	LikelihoodComponent.py bkge.py commandDefiner.py 
+	dataHandling.py updater.py 
+Log Message:
+Getting in synch with git
+    *
+------------------------------------------------------------
+User: giacomov  Mon Sep  9 15:15:12 PDT 2013
 pyBurstAnalysisGUI/python
 
 Modified Files:
