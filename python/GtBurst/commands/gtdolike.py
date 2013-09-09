@@ -165,11 +165,7 @@ def run(**kwargs):
     detectedSources           = []
     grbFlux                   = 1e-13
     for src in sources:
-      if(src.TS > 20):
-        weight                = 'bold'
-      else:
-        weight                = 'regular'
-      pass
+      weight                  = 'bold'
       
       if(src.type=='PointSource'):
         if(src.TS > 4):
