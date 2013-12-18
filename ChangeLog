@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: giacomov  Wed Dec 18 01:34:12 PST 2013
+pyBurstAnalysisGUI/data/tcl_extensions/fsdialog
+
+Added Files:
+	de.msg en.msg fsdialog.tcl fsdlg-gif.tcl fsdlg-png.tcl sv.msg 
+	tclIndex 
+Log Message:
+Synching with .git repository
+    *
+------------------------------------------------------------
 User: giacomov  Wed Dec 18 01:33:51 PST 2013
 pyBurstAnalysisGUI/data/templates
 
