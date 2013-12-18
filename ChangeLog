@@ -2,6 +2,14 @@
 TAG
 Tag name: pyBurstAnalysisGUI-01-01-00, operation: add
 Package: pyBurstAnalysisGUI
+User: giacomov  Wed Dec 18 01:44:42 2013
+Files:
+
+    *
+------------------------------------------------------------
+TAG
+Tag name: pyBurstAnalysisGUI-01-01-00, operation: add
+Package: pyBurstAnalysisGUI
 User: giacomov  Wed Dec 18 01:44:04 2013
 Files:
   pyBurstAnalysisGUI/.cvsignore  1.1.1.1
