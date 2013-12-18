@@ -1,5 +1,19 @@
 ------------------------------------------------------------
 User: giacomov  Wed Dec 18 01:28:53 PST 2013
+pyBurstAnalysisGUI/python/GtBurst/commands
+
+Modified Files:
+	fits2png.py fromLogToScript.py gtbuildxmlmodel.py 
+	gtconvertxmlmodel.py gtdocountsmap.py gtdolike.py gtdosed.py 
+	gtdosimulation.py gtdotsmap.py gtdownloadLATdata.py 
+	gteditxmlmodel.py gteditxmlmodelsim.py gtinteractiveRaDec.py 
+	gtllebin.py gtllebindef.py gtllebkg.py gtllebkgGUI.py 
+	gtllebkgbindef.py gtllesrc.py gtllesrcbindef.py 
+Log Message:
+Putting in synch with the .git repository
+    *
+------------------------------------------------------------
+User: giacomov  Wed Dec 18 01:28:53 PST 2013
 pyBurstAnalysisGUI/python/GtBurst
 
 Modified Files:
