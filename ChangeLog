@@ -1,4 +1,17 @@
 ------------------------------------------------------------
+User: giacomov  Wed Dec 18 01:28:53 PST 2013
+pyBurstAnalysisGUI/python/GtBurst
+
+Modified Files:
+	Configuration.py EntryPoint.py FuncFactory.py 
+	GtBurstException.py LikelihoodComponent.py RSPweight.py 
+	TriggerSelector.py angularDistance.py bkge.py 
+	commandDefiner.py dataCollector.py dataHandling.py 
+	downloadTransientData.py updater.py 
+Log Message:
+Putting in synch with the .git repository
+    *
+------------------------------------------------------------
 User: giacomov  Wed Dec 18 01:28:52 PST 2013
 pyBurstAnalysisGUI/python
 
