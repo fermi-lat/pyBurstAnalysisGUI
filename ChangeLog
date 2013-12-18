@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: giacomov  Wed Dec 18 01:34:13 PST 2013
+pyBurstAnalysisGUI/data/templates
+
+Added Files:
+	CenALobes.fits CygnusLoop.fits HESSJ1825-137.fits IC443.fits 
+	LMC.fits MSH15-52.fits SMC.fits VelaX.fits W28.fits W30.fits 
+	W44.fits W51C.fits 
+Log Message:
+Synching with .git repository
+    *
+------------------------------------------------------------
 User: giacomov  Wed Dec 18 01:34:12 PST 2013
 pyBurstAnalysisGUI/data/tcl_extensions/msgcat
 
