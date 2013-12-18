@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: giacomov  Wed Dec 18 01:28:52 PST 2013
+pyBurstAnalysisGUI/python
+
+Modified Files:
+	gtburst.py 
+Log Message:
+Putting in synch with the .git repository
+    *
+------------------------------------------------------------
 TAG
 Tag name: pyBurstAnalysisGUI-01-00-00, operation: add
 Package: pyBurstAnalysisGUI
