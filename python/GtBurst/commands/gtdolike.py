@@ -114,8 +114,14 @@ def run(**kwargs):
   dec                         = dataHandling._getParamFromXML(xmlmodel,'DEC')
   name                        = dataHandling._getParamFromXML(xmlmodel,'OBJECT')
   
-  grb                         = filter(lambda x:x.name.lower().find(name.lower())>=0,sources)[0]
-  grb_TS                      = grb.TS
+  try:
+    grb                         = filter(lambda x:x.name.lower().find(name.lower())>=0,sources)[0]
+    grb_TS                      = grb.TS
+  except:
+    #A model without GRB
+    print("\nWarning: no GRB in the model!")
+    grb_TS                      = -1
+  pass
   
   if(irf==None):
     print("\n\nWARNING: could not read IRF from XML file. Be sure you know what you are doing...")
@@ -137,8 +143,8 @@ def run(**kwargs):
     sourceName                = name
     
     #If the TS for the source is above tsmin, optimize its position
-    grb                       = filter(lambda x:x.name.lower().find(sourceName.lower())>=0,sources)[0]
-    if(math.ceil(grb.TS) >= tsmin):
+    #grb                       = filter(lambda x:x.name.lower().find(sourceName.lower())>=0,sources)[0]
+    if(math.ceil(grb_TS) >= tsmin):
       try:
         bestra,bestdec,poserr = LATdata.optimizeSourcePosition(outfilelike,sourceName)
       except:
@@ -248,6 +254,7 @@ pass
 thisCommand.run = run
 
 if __name__=='__main__':
+  thisCommand.greetings()
   #Get all key=value pairs as a dictionary
   args                           = dict(arg.split('=') for arg in sys.argv[1:])
   gtdolike(**args)

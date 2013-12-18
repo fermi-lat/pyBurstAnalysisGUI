@@ -5,8 +5,9 @@ mpl.use('Agg')
 from GtBurst import aplpy
 import matplotlib.pyplot as plt
 import sys
+import pyfits
     
-def fitsToPNG(fitsfile,pngfile,vmin=None,vmax=None):
+def fitsToPNG(fitsfile,pngfile,vmin=None,vmax=None,**kwargs):
     #Display the TS map    
     #figure                      = plt.figure()
     tsfig                       = aplpy.FITSFigure(fitsfile,convention='calabretta')
@@ -15,7 +16,11 @@ def fitsToPNG(fitsfile,pngfile,vmin=None,vmax=None):
     if(vmin!=None and vmax!=None):
       tsfig.show_colorscale(cmap='gist_heat',aspect='auto',vmin=float(vmin),vmax=float(vmax))
     else:
-      tsfig.show_colorscale(cmap='gist_heat',aspect='auto')
+      #Get maximum of image
+      f                         = pyfits.open(fitsfile)
+      maximum                   = f[0].data.max()
+      f.close()
+      tsfig.show_colorscale(cmap='gist_heat',aspect='auto',vmin=0,vmax=float(maximum))
     # Modify the tick labels for precision and format
     tsfig.tick_labels.set_xformat('ddd.dd')
     tsfig.tick_labels.set_yformat('ddd.dd')
@@ -24,12 +29,22 @@ def fitsToPNG(fitsfile,pngfile,vmin=None,vmax=None):
     tsfig.show_grid()
     tsfig.add_colorbar()
     
+    if('sources' in kwargs.keys()):
+      sources                 = kwargs['sources']
+      for src in sources:
+        tsfig.add_label(float(src[1]),float(src[2]), "%s" % src[0],
+                        relative=False,weight='bold',color='green', size='x-small',
+                        verticalalignment='top', horizontalalignment='left')
+        tsfig.show_markers([float(src[1])],[float(src[2])],edgecolor='green',marker='x')
+      pass
+    pass
+    
     #figure.canvas.draw()
     tsfig.save(pngfile)
 pass
 
-def fitsToPNGembedded(fitsfile,pngfile='__png',vmin=None,vmax=None):
-    fitsToPNG(fitsfile,pngfile,vmin,vmax)
+def fitsToPNGembedded(fitsfile,pngfile='__png',vmin=None,vmax=None,**kwargs):
+    fitsToPNG(fitsfile,pngfile,vmin,vmax,**kwargs)
     data_uri                  = open(pngfile, 'rb').read().encode('base64').replace('\n', '')
     #img_tag                   = '<img src="data:image/png;base64,{0}">'.format(data_uri)
     return data_uri

@@ -2,7 +2,8 @@
 #Author: giacomov@slac.stanford.edu
 
 import os,sys,glob,pyfits,string,errno,shutil
-import ftplib
+from GtBurst.GtBurstException import GtBurstException
+import ftplib, socket
 import time
 try:
   from Tkinter import *
@@ -71,7 +72,11 @@ class dataCollector(object):
     pass
 
     #Open FTP session
-    ftp                       = ftplib.FTP(serverAddress,"anonymous",'','',timeout=60)
+    try:
+      ftp                       = ftplib.FTP(serverAddress,"anonymous",'','',timeout=60)
+    except socket.error as socketerror:
+      raise GtBurstException(11,"Error when connecting: ", socketerror)
+    
     print("Loggin in to %s..." % serverAddress),
     try:
       ftp.login()
@@ -95,7 +100,7 @@ class dataCollector(object):
         os.rmdir(self.localRepository)
       except:
         pass
-      raise RuntimeError("The remote directory %s is not accessible. Data are probably not available for trigger %s." %(serverAddress+directory,self.trigName))      
+      raise GtBurstException(5,"The remote directory %s is not accessible. This kind of data is probably not available for trigger %s, or the server is offline." %(serverAddress+directory,self.trigName))      
     pass
     
     if(filenames==None):
@@ -170,7 +175,11 @@ class dataCollector(object):
           totalsize                 = g.size#*1024
           printer                   = downloadCallback.Callback(totalsize, f,m1)
           ftp.retrbinary('RETR '+ filename, printer)
+          localSize                 = f.tell()
           f.close()
+          if(localSize!=totalsize):
+            #This will be catched by the next "except", which will retry
+            raise
           done                = True
         except:
           print("\nConnection lost! Trying to reconnect...")
@@ -197,6 +206,7 @@ class dataCollector(object):
     if(root!=None):
       m2.set(1.0)
       root.destroy()
+    pass
   pass
   
   def getFTP(self,errorCode=None):

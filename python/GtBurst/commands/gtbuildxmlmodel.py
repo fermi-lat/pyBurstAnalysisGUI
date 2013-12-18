@@ -2,7 +2,7 @@
 
 from GtBurst import dataHandling
 from GtBurst import bkge
-import sys
+import sys, copy
 import os, pyfits, numpy
 from GtBurst import commandDefiner
 from GtBurst import LikelihoodComponent
@@ -48,14 +48,6 @@ GUIdescription               += " The latter indeed include already the residual
 thisCommand.setGUIdescription(GUIdescription)
 
 ##################################################################
-
-#Lookup table for the models
-models = {}
-models['isotr with pow spectrum'] = LikelihoodComponent.IsotropicPowerlaw()
-models['isotr template']           = LikelihoodComponent.IsotropicTemplate()
-models['template']            = LikelihoodComponent.GalaxyAndExtragalacticDiffuse()
-models['template (fixed norm.)']            = LikelihoodComponent.GalaxyAndExtragalacticDiffuse()
-models['template (fixed norm.)'].fixNormalization()
 
 def _yesOrNoToBool(value):      
   if(value.lower()=="yes"):
@@ -117,14 +109,24 @@ def run(**kwargs):
   
   tstart                        = float(f[0].header['_TMIN'])
   tstop                         = float(f[0].header['_TMAX'])
-  irf                           = f[0].header['_IRF']
-  roi                           = f[0].header['_ROI_RAD']
+  irf                           = str(f[0].header['_IRF'])
+  roi                           = float(f[0].header['_ROI_RAD'])
+  reprocVersion                 = str(f[0].header['_REPROC'])
+  
+  #Lookup table for the models
+  models = {}
+  models['isotr with pow spectrum'] = LikelihoodComponent.IsotropicPowerlaw()
+  models['isotr template']          = LikelihoodComponent.IsotropicTemplate(reprocVersion)
+  models['template']                = LikelihoodComponent.GalaxyAndExtragalacticDiffuse(reprocVersion)
+  models['template (fixed norm.)']  = LikelihoodComponent.GalaxyAndExtragalacticDiffuse(reprocVersion)
+  models['template (fixed norm.)'].fixNormalization()
+  
   deltat                        = numpy.sum(f['GTI'].data.field('STOP')-f['GTI'].data.field('START'))
   f.close()
   triggertime                   = dataHandling.getTriggerTime(filteredeventfile)
   
   if(irf.lower().find('source')>=0 and particlemodel!='isotr template'):
-    raise ValueError("You should not use '%s' as model for the particle background in SOURCE class. Use '%s' instead." 
+    raise GtBurstException(6,"Do not use '%s' as model for the particle background in SOURCE class. Use '%s' instead." 
                      %(particlemodel,'isotropic template'))
   
   modelsToUse                   = [LikelihoodComponent.PointSource(ra,dec,triggername)]
@@ -142,7 +144,7 @@ def run(**kwargs):
   xml                          = LikelihoodComponent.LikelihoodModel()
   xml.addSources(*modelsToUse)
   xml.writeXML(xmlmodel)
-  xml.add2FGLsources(ra,dec,2*float(roi),xmlmodel,deltat)
+  xml.add2FGLsources(ra,dec,float(roi)+8.0,xmlmodel,deltat)
     
   
   dataHandling._writeParamIntoXML(xmlmodel,IRF=irf,OBJECT=triggername,RA=ra,DEC=dec)
@@ -153,6 +155,7 @@ pass
 thisCommand.run = run
 
 if __name__=='__main__':
+  thisCommand.greetings()
   #Get all key=value pairs as a dictionary
   args                           = dict(arg.split('=') for arg in sys.argv[1:])
   gtbuildxmlmodel(**args)

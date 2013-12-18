@@ -111,7 +111,6 @@ def run(**kwargs):
   sources                     = ps
   sources.extend(ds)
   
-  import pdb;pdb.set_trace()
   mc                          = uw.like.roi_monte_carlo.MCModelBuilder(sources,savedir='.',emin=Emin,emax=Emax)
   mc.build(xmlsimmodel)
   
@@ -143,6 +142,7 @@ pass
 thisCommand.run = run
 
 if __name__=='__main__':
+  thisCommand.greetings()
   #Get all key=value pairs as a dictionary
   args                           = dict(arg.split('=') for arg in sys.argv[1:])
   gtconvertxmlmodel(**args)

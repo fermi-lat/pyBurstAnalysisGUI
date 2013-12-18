@@ -36,13 +36,13 @@ pass
 
 
 def getAngularDistance(ra1,dec1,ra2,dec2):
-  dlat = np.math.radians(dec2 - dec1)
-  dlon = np.math.radians(ra2 - ra1)
-  dec1 = np.math.radians(dec1)
-  dec2 = np.math.radians(dec2)
+  dlat = np.deg2rad(dec2 - dec1)
+  dlon = np.deg2rad(ra2 - ra1)
+  dec1 = np.deg2rad(dec1)
+  dec2 = np.deg2rad(dec2)
   a = np.sin(dlat/2.)*np.sin(dlat/2.) + np.cos(dec1)*np.cos(dec2)*np.sin(dlon/2.)*np.sin(dlon/2.)
   c  = 2*np.arctan2(np.sqrt(a), np.sqrt(1.-a))
-  return np.math.degrees(c)
+  return np.rad2deg(c)
 
 def _getNaIDirection(self,detectors):
   DetDir  = {}

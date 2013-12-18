@@ -82,7 +82,6 @@ def run(**kwargs):
   message                       = Message(verbose)
   
   #Load LLE data
-  message("%s" %(thisCommand.getPreambolMessage()))
   
   trigTime                      = dataHandling.getTriggerTime(cspecfile)
   
@@ -130,6 +129,7 @@ pass
 thisCommand.run = run
 
 if __name__=='__main__':
+  thisCommand.greetings()
   #Get all key=value pairs as a dictionary
   args                           = dict(arg.split('=') for arg in sys.argv[1:])
   gtllebkg(**args)

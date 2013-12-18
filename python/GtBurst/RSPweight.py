@@ -1,7 +1,7 @@
 import pyfits
 import sys
 import os, glob
-import shlex, subprocess
+import shlex, subprocess, shutil
 import numpy
 
 #The RSP2 matrix for the GBM are computed by interpolating a grid of
@@ -31,21 +31,23 @@ class EventsCounter(object):
   def initWithTTE(self,tte):
     f                         = pyfits.open(tte)
     self.inputFile            = 'TTE'
-    self.eventTimes           = numpy.array(list(f["EVENTS",1].data.field('TIME')))
+    self.data                 = f["EVENTS",1].data.copy()
+    self.eventTimes           = numpy.array(list(self.data.field('TIME')))
     f.close()
   pass
   
   def initWithCSPEC(self,cspec):
     f                         = pyfits.open(cspec)
     self.inputFile            = 'cspec'
-    cspectstarts              = f["SPECTRUM"].data.field("TIME")
-    cspectstops               = f["SPECTRUM"].data.field("ENDTIME")
+    self.data                 = f["SPECTRUM",1].data.copy()
+    cspectstarts              = self.data.field("TIME")
+    cspectstops               = self.data.field("ENDTIME")
     cspectelapse              = cspectstops-cspectstarts
     #Counts or rates?
     try:
-      cspeccounts             = f["SPECTRUM"].data.field("COUNTS")
+      cspeccounts             = self.data.field("COUNTS")
     except:
-      rates                   = f["SPECTRUM"].data.field("RATE")
+      rates                   = self.data.field("RATE")
       cspeccounts              = map(lambda x:x[0]*x[1],zip(rates,cspectelapse))
     pass  
     self.tstarts              = numpy.array(cspectstarts)
@@ -231,7 +233,7 @@ def RSPweight(**kwargs):
           if( rspStop >= tstart and rspStart <= tstop):
             #Found a matrix covering a part of the interval:
             #adding it to the list:
-            rspList.append(rsp2File[extNumber])
+            rspList.append(fixMatrixHDU(rsp2File[extNumber]))
             
             #Get the "true" start time of the time sub-interval covered by this matrix
             trueRspStart                       = max(rspStart,tstart)
@@ -348,17 +350,18 @@ def RSPweight(**kwargs):
       asciiFile.write('')
       
       #Loop on the matrices and sum them
+      names                                   = []
       for rsp_i in range(len(rspList)):
         #Decide a temporary filename
         name                                  = "__rspweight_matrix"+str(rsp_i)+".rsp"
+        names.append(name)
         
-        #Write PRIMARY and EBOUNDS extension taking them from the input file
-        rsp2File[0].writeto(name,clobber='True')
-        pyfits.append(name,rsp2File['EBOUNDS'].data,rsp2File['EBOUNDS'].header)
-        
-        #write the response
-        pyfits.append(name,rspList[rsp_i].data,rspList[rsp_i].header)
-                
+        primaryHDU                            = rsp2File[0].copy()
+        eboundsHDU                            = rsp2File['EBOUNDS'].copy()
+        responseHDU                           = rspList[rsp_i].copy()
+        HDUlist                               = pyfits.HDUList([primaryHDU,eboundsHDU,responseHDU])
+        HDUlist.writeto(name,output_verify='fix',clobber=True)
+                        
         if(instrument.find("GBM")>=0):
           # FIX the wrong GBM matrices
           data                                  = pyfits.open(name,'update')
@@ -410,52 +413,59 @@ def RSPweight(**kwargs):
       thisRspName                          = "__rspweight_interval"+str(intervalNumber)+".rsp"
       createdRspNames.append(thisRspName)
       
-      #Run addrmf and weight the relevant matrices
-      cmdline                              = "addrmf @%s rmffile=%s clobber=yes" % (asciiFilename,thisRspName)
-      print("\n %s \n" %(cmdline))
-      
-      out, err                             = _callSubprocess(cmdline)
-      
-      print out
-      print err
+      if(len(names)==1):
+        #Only one matrix. No need to weight
+        shutil.copy(names[0],thisRspName)
+      else:
+        #Run addrmf and weight the relevant matrices
+        cmdline                              = "addrmf @%s rmffile=%s clobber=yes" % (asciiFilename,thisRspName)
+        print("\n %s \n" %(cmdline))
+        
+        out, err                             = _callSubprocess(cmdline)
+        
+        print out
+        print err
+      pass
       #clean up
       os.remove(asciiFilename)
     pass
     
     #now append all the produced matrix in one RSP2 file
     #Take the PRIMARY extension from the input RSP2 file
-    primary                          = rsp2File[0]
+    primary                          = rsp2File[0].copy()
     primary.header.update("DRM_NUM",nIntervals)
     primary.header.update("TSTART",timeIntervals.tstarts[0])
     primary.header.update("TSTOP",timeIntervals.tstops[-1])
     primary.writeto(outrsp,clobber='True')
     
-    #Reopen the file just created
-    outRsp2                           = pyfits.open(outrsp,'update')
-    
     #Get the EBOUNDS extension from the first matrix
     firstRsp                    = pyfits.open(createdRspNames[0])
-    ebounds                     = firstRsp['EBOUNDS']
+    ebounds                     = firstRsp['EBOUNDS'].copy()
+    firstRsp.close()
+    
+    #Reopen the file just created
+    outRsp2                           = pyfits.open(outrsp,'update')
     outRsp2.append(ebounds)
     
-    RSPs                        = []        
     #now write an extension for each interval
     for i in range(nIntervals):
-      RSPs.append(pyfits.open(createdRspNames[i]))
-
+      thisRsp                   = pyfits.open(createdRspNames[i])
+      
       try:
-        curHeader                     = RSPs[-1]["SPECRESP MATRIX"].header
-        curData                       = RSPs[-1]["SPECRESP MATRIX"].data
-        name                          = "SPECRESP MATRIX"
+        curM                    = fixMatrixHDU(thisRsp["SPECRESP MATRIX"]).copy()
+        name                    = "SPECRESP MATRIX"
       except:
         try:
-          #Take the first header in the RSP2 file
-          curHeader                        = RSPs[-1]["MATRIX"].header
-          curData                          = RSPs[-1]["MATRIX"].data
-          name                             = "MATRIX"
+          curM                  = fixMatrixHDU(thisRsp["SPECRESP MATRIX"]).copy()
+          name                  = "MATRIX"
         except:
-          print("Something gone wrong. Invalid file produced by the weighting algorithm.")
+          raise RuntimeError("Something gone wrong. Invalid file produced by the weighting algorithm.")
       pass
+      
+      thisRsp.close()
+      
+      curHeader               = curM.header
+      curData                 = curM.data
       
       #Update TSTART and TSTOP
       curHeader.update("TSTART",timeIntervals.tstarts[intervalNumber])
@@ -472,12 +482,11 @@ def RSPweight(**kwargs):
       curHeader.add_history(history)
       print("Appending matrix number %s..." %(i+1))
       #Write this as an extension in the output file      
-      outRsp2.append(RSPs[-1][name])
+      outRsp2.append(curM)
     pass
     #Closing everything
     outRsp2.close()
-    for rsp in RSPs:
-      rsp.close()    
+       
     #Close files
     rsp2File.close()
     #Cleanup
@@ -485,6 +494,31 @@ def RSPweight(**kwargs):
     fileToDelete              = glob.glob("__rspweight*")
     for f in fileToDelete:
       os.remove(f)
+pass
+
+def fixMatrixHDU(matrixHDU):
+  #This creates a copy of the input matrix with all variable-length arrays converted to fixed length,
+  #of the smallest possible size.
+  #This is needed because pyfits makes all sort of fuckups with variable-length arrays
+
+  newcols = []
+  
+  for col in matrixHDU.columns:
+    if(col.format.find("P")==0):
+      #Variable-length
+      newMatrix               = variableToMatrix(matrixHDU.data.field(col.name))
+      length                  = len(newMatrix[0])
+      coltype                 = col.format.split("(")[0].replace("P","")
+      newFormat               = '%s%s' %(length,coltype)
+      newcols.append(pyfits.Column(col.name,newFormat,col.unit,col.null,col.bscale,col.bzero,col.disp,
+                                 col.start,col.dim,newMatrix))
+    else:
+      newcols.append(pyfits.Column(col.name,col.format,col.unit,col.null,col.bscale,col.bzero,col.disp,
+                                 col.start,col.dim,matrixHDU.data.field(col.name)))
+  pass
+
+  newtable                    = pyfits.new_table(newcols,header=matrixHDU.header)
+  return newtable
 pass
 
 def variableToMatrix(variableLengthMatrix):

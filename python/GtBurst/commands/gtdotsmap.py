@@ -113,7 +113,7 @@ def run(**kwargs):
   tsltcube                    = LATdata.livetimeCube
   tsexpomap                   = LATdata.exposureMap
   
-  ra,dec,tsmax                = findMaximumTSmap(tsmap,tsexpomap)
+  ra,dec,tsmax                = dataHandling.findMaximumTSmap(tsmap,tsexpomap)
   
   print("\nCoordinates of the maximum of the TS map in the allowed region (TS = %.1f):" %(tsmax))
   print("(R.A., Dec.)              = (%6.3f, %6.3f)\n" %(ra,dec))
@@ -141,63 +141,10 @@ def run(**kwargs):
   return 'tsmap', tsmap, 'tsmap_ra', ra, 'tsmap_dec', dec, 'tsmap_maxTS', tsmax, 'tsltcube', tsltcube, 'tsexpomap', tsexpomap
 pass
 
-def findMaximumTSmap(tsmap,tsexpomap):
-  #Find the maximum of the TS map
-  import pywcs
-  f                           = pyfits.open(tsmap)
-  image                       = f[0].data
-  wcs                         = pywcs.WCS(f[0].header)
-  f.close()
-    
-  #Position of the maximum
-  idxs                        = numpy.unravel_index(image.argmax(), image.shape)
-  #R.A., Dec of the maximum (the +1 is due to the FORTRAN Vs C convention
-  ra,dec                      = wcs.wcs_pix2sky(idxs[1]+1,idxs[0]+1,1)
-  ra,dec                      = ra[0],dec[0]
-  
-  #Now check that the value in the exposure map for this ra,dec is not too small,
-  #nor that this Ra,Dec is at the margin of an excluded zones
-  #(this avoid triggering on the Earth limb when strategy=events)
-  fexp                        = pyfits.open(tsexpomap)
-  expmap                      = fexp[0].data[0]
-  wcsexp                      = pywcs.WCS(fexp[0].header)
-  fexp.close()
-  
-  while(1==1):
-    #Note that the value of one pixel is valid from .5 to 1.5
-    #Note also that the exposure map is larger than the TS map
-    pixels                    = wcsexp.wcs_sky2pix([[ra,dec,1]],1)[0]
-    exposureHere              = expmap[pixels[1]-0.5,pixels[0]-0.5]
-    exposureUp                = expmap[pixels[1]-0.5-1,pixels[0]-0.5]
-    exposureDown              = expmap[pixels[1]-0.5+1,pixels[0]-0.5]
-    exposureRight             = expmap[pixels[1]-0.5,pixels[0]-0.5-1]
-    exposureLeft              = expmap[pixels[1]-0.5,pixels[0]-0.5+1]
-    #print("Exposure: %s" %(exposureHere))
-    if(exposureHere > 0 and 
-       exposureUp > 0 and 
-       exposureDown > 0 and 
-       exposureLeft > 0 and 
-       exposureRight > 0):
-      break
-    else:
-      #Mask out this value
-      print("Neglecting maximum at %s,%s because of low exposure there..." %(ra,dec))
-      image[idxs[0],idxs[1]]  = 0.0
-      idxs                        = numpy.unravel_index(image.argmax(), image.shape)
-      #R.A., Dec of the maximum (the +1 is due to the FORTRAN Vs C convention
-      ra,dec                      = wcs.wcs_pix2sky(idxs[1]+1,idxs[0]+1,1)
-      ra,dec                      = ra[0],dec[0]
-      continue
-    pass
-  pass
-  
-  tsmax                       = image.max()
-  return ra,dec, tsmax
-pass
-
 thisCommand.run = run
 
 if __name__=='__main__':
+  thisCommand.greetings()
   #Get all key=value pairs as a dictionary
   args                           = dict(arg.split('=') for arg in sys.argv[1:])
   gtdotsmap(**args)

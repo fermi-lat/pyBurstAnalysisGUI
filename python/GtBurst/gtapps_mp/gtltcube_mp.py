@@ -6,6 +6,7 @@ import pyfits
 import tempfile
 import os
 import subprocess
+import sys
 
 from gt_apps import filter,expCube
 
@@ -38,7 +39,7 @@ def ltcube(times):
     filter['zmax'] = 180
     filter['convtype'] = -1
     filter['chatter'] = 0
-    filter.run(print_command=False)
+    filter.run(print_command=True)
 
     osfilehandle,outfilename = tempfile.mkstemp(suffix=".fits")
     expCube['evfile'] = evfile.name
@@ -49,7 +50,7 @@ def ltcube(times):
     expCube['phibins'] = 0
     expCube['zmax'] = times[4]
     expCube['chatter'] = 0
-    expCube.run(print_command=False)
+    expCube.run(print_command=True)
     print "Completed calculation on interval {} to {}".format(times[0],times[1])
     return outfilename
 
@@ -91,16 +92,64 @@ def gtltcube_mp(bins, SCFile, EVFile, OutFile, SaveTemp, zmax):
     Note that this assumes you are using the full time period in your
     spacecraft file.'''
 
+    verbose = False
+
+    print "Opening event file to determine start and stop times..."
+    evfile = pyfits.open(EVFile, mode='readonly')
+    tstart = evfile[0].header['TSTART']
+    tstop = evfile[0].header['TSTOP']
+    gti_data = evfile[2].data
+
     print "Opening SC file to determine break points..."
-    hdulist = pyfits.open(SCFile)
+    hdulist = pyfits.open(SCFile, mode='readonly')
     scdata = hdulist[1].data
     hdulist.close()
     scstart = scdata.field('START')
     scstop = scdata.field('STOP')
-    scstartssplit = np.array_split(scstart,int(bins))
-    scstopssplit = np.array_split(scstop,bins) 
-    starts = [st[0] for st in scstartssplit]
-    stops = [st[-1] for st in scstopssplit]
+
+    time_filter = (tstart <= scstart) & (scstop <= tstop)
+
+    redo = True
+    print "Checking for good times in the event file..."
+    while redo:
+        redo = False
+        scstartssplit = np.array_split(scstart[time_filter],int(bins))
+        scstopssplit = np.array_split(scstop[time_filter],bins) 
+    
+        #Explicitly set the first and last point to the values in the evfile header
+        scstartssplit[0][0] = tstart
+        scstopssplit[-1][-1] = tstop
+
+        starts = [st[0] for st in scstartssplit]
+        stops = [st[-1] for st in scstopssplit]
+
+        for interval in zip(starts,stops):
+            if verbose: print "Looking at interval",interval[0],"to",interval[1]
+            good_times = False
+            #grrrr.  some bug in pyfits doesn't let me do this the python way...
+            for gti_i in range(len(gti_data)):
+                if(not good_times):
+                    if verbose: print "   Checking gti",gti_data[gti_i]['START'],"to",gti_data[gti_i]['STOP']
+                    gti_starts = interval[0] <= gti_data[gti_i]['START'] <= interval[1]
+                    gti_stops = interval[0] <= gti_data[gti_i]['STOP'] <= interval[1]
+                    if verbose: print "   Does this gti start inside this interval? ", gti_starts
+                    if verbose: print "   Does this gti stop inside this interval? ", gti_stops
+                    good_times = gti_starts or gti_stops
+                    if verbose: print
+        
+            if verbose: print "  Are there good times inside this interval? ", good_times
+            if not good_times:
+                redo = True
+            if verbose: print
+
+        if redo:
+            if bins <= 1:
+                print "No good time intervals found.  Bailing..."
+                sys.exit(1)
+            print "One (or more) of the slices doesn't have a GTI."
+            print "Reducing the number of threads from ",bins,"to",bins-1
+            bins -= 1
+        
     scfiles = [SCFile for st in scstartssplit]
     evfiles = [EVFile for st in scstartssplit]
     zmaxes =  [zmax for st in scstartssplit]
@@ -137,5 +186,3 @@ def cli():
 
 
 if __name__ == '__main__': cli()
-
-    

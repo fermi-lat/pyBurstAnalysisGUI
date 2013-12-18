@@ -54,6 +54,12 @@ def update(debug=False):
       localPath               = os.path.join(installationPath,pathnameThisSys)
       if(not os.path.exists(localPath)):
         print("File %s does not exist in the current installation. Creating it..." %(localPath))
+        #If the new file is in a new directory, the directory needs to be created
+        try:
+          os.makedirs(os.path.dirname(localPath))
+        except:
+          #This will fail if the directory already exists
+          pass
         downloadFile(pathname,localPath)
         nUpdates              += 1
       else:

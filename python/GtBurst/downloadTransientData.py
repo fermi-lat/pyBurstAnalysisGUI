@@ -80,20 +80,24 @@ class DownloadTransientData(dataCollector):
     pass
 
     htmlFile                    = open(temporaryFileName)
-    maxTimeLimit                = None
+    maxTimeLimit                = ''
     for line in htmlFile.readlines():
       res                       = re.findall('(.+)The event database currently holds [0-9]+ events, collected between (.+) UTC and (.+) UTC \(Mission Elapsed Time \(MET\) ([0-9]+) to ([0-9]+) seconds\)',
                                              line)
       if(len(res)!=0):
         #Found
-        maxTimeLimit            = float(res[-1][-1])
+        maxTimeLimit            = res[-1][-1]
         break
       pass
     pass
     htmlFile.close()
+        
     os.remove(temporaryFileName)
-    if(maxTimeLimit==None):
-      raise GtBurstException(12,"The LAT data server is probably down for maintenance. Check the page http://fermi.gsfc.nasa.gov/cgi-bin/ssc/LAT/LATDataQuery.cgi")
+    if(maxTimeLimit.replace(" ","")==''):
+      raise GtBurstException(12,"The LAT data server is probably down for maintenance or loading new data. Check the page http://fermi.gsfc.nasa.gov/cgi-bin/ssc/LAT/LATDataQuery.cgi or retry later.")
+    else:
+      maxTimeLimit              = float(maxTimeLimit)
+    pass
     
     if(maxTimeLimit < self.tstop):
       if(strict):
@@ -161,6 +165,8 @@ class DownloadTransientData(dataCollector):
     print("\nAnswer from the LAT data server:\n")
     
     text                        = html2text.html2text(html.encode('utf-8').strip()).split("\n")
+    if("".join(text).replace(" ","")==""):
+      raise GtBurstException(1,"Problems with the download. Empty answer from the LAT server. Please retry later.")
     text                        = filter(lambda x:x.find("[") < 0 and 
                                                   x.find("]") < 0 and 
                                                   x.find("#") < 0 and 
@@ -186,7 +192,7 @@ class DownloadTransientData(dataCollector):
       estimatedTimeLine           = filter(lambda x:x.find("The estimated time for your query to complete is")==0,parser.data)[0]
       estimatedTimeForTheQuery    = re.findall("The estimated time for your query to complete is ([0-9]+) seconds",estimatedTimeLine)[0]
     except:
-      estimatedTimeForTheQuery  = 'n.a.'
+      raise GtBurstException(1,"Problems with the download. Empty answer from the LAT server. Please retry later.")
     pass
     
     httpAddress                 = filter(lambda x:x.find("http://fermi.gsfc.nasa.gov") >=0,parser.data)[0]
@@ -221,10 +227,26 @@ class DownloadTransientData(dataCollector):
     fakeName                    = "__temp__query__result.html"
     while(time.time() <= startTime+timeout):
       if(root!=None):
-        m1.set((time.time()-startTime)/float(estimatedTimeForTheQuery))
+        if(estimatedTimeForTheQuery==0):
+          m1.set(1)
+        else:
+          m1.set((time.time()-startTime)/float(estimatedTimeForTheQuery))
       sys.stdout.flush()
       #Fetch the html with the results
-      (filename, header)        = urllib.urlretrieve(httpAddress,fakeName)
+      try:
+        (filename, header)        = urllib.urlretrieve(httpAddress,fakeName)
+      except socket.timeout:
+        urllib.urlcleanup()
+        if(root!=None):
+          root.destroy()
+        raise GtBurstException(11,"Time out when connecting to the server. Check your internet connection, or that you can access http://fermi.gsfc.nasa.gov, then retry")
+      except:
+        urllib.urlcleanup()
+        if(root!=None):
+          root.destroy()
+        raise GtBurstException(1,"Problems with the download. Check your connection or that you can access http://fermi.gsfc.nasa.gov, then retry.")
+      pass
+      
       f                         = open(fakeName)
       html                      = " ".join(f.readlines())
       status                    = re.findall("The state of your query is ([0-9]+)",html)[0]
@@ -255,7 +277,19 @@ class DownloadTransientData(dataCollector):
     
     if(links!=None):
       filenames                 = map(lambda x:x.split('/')[-1],links)    
-      self.downloadDirectoryWithFTP(remotePath,filenames=filenames)
+      try:
+        self.downloadDirectoryWithFTP(remotePath,filenames=filenames)
+      except Exception as e:
+        #Try with "wget", if the system has it
+        for ff in filenames:
+          try:
+            self.makeLocalDir()
+            dataHandling.runShellCommand("wget %s%s -P %s" %("http://fermi.gsfc.nasa.gov/FTP/fermi/data/lat/queries/",ff,self.localRepository),True)
+          except:
+            raise e
+          pass
+        pass
+      pass
     else:
       raise GtBurstException(1,"Could not download LAT Standard data")
     pass

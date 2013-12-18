@@ -1,6 +1,8 @@
 #Author:
 # G.Vianello (giacomov@slac.stanford.edu, giacomo.slac@gmail.com)
 
+import UnbinnedAnalysis
+
 import numpy
 import os,sys, re, glob, shutil, datetime, time
 import pyfits
@@ -21,6 +23,17 @@ from GtBurst.Configuration import Configuration
 from GtBurst.GtBurstException import GtBurstException
 from GtBurst.commands.gtllebin import gtllebin
 from GtBurst import version
+from GtBurst import angularDistance
+
+#Use a backend which does not require a running X server,
+#so commands will be able to run in batch mode
+#(Note that this call is uneffective when dataHandling is imported
+#from the GUI, since the GUI has its own .use() call)
+import matplotlib
+matplotlib.use('Agg',False)
+
+import matplotlib.pyplot as plt
+matplotlib.rcParams['font.size'] = 8
 
 #Version tag
 moduleVersion                 = version.getVersion()
@@ -39,21 +52,35 @@ BACK_SYS_ERROR                = 0.03
 optimizer                     = "DRMNFB"
 
 #Current IRFS lookup table
-irfs                          = {}
-irfs['transient']             = 'P7TRANSIENT_V6'
-irfs['TRANSIENT']             = 'P7TRANSIENT_V6'
-irfs['P7TRANSIENT_V6']             = 'P7TRANSIENT_V6'
-irfs['source']                = 'P7SOURCE_V6'
-irfs['SOURCE']                = 'P7SOURCE_V6'
-irfs['P7SOURCE_V6']           = 'P7SOURCE_V6'
+irfs                                 = {}
+irfs['120','transient']             = 'P7TRANSIENT_V6'
+irfs['120','TRANSIENT']             = 'P7TRANSIENT_V6'
+irfs['120','P7TRANSIENT_V6']        = 'P7TRANSIENT_V6'
+irfs['120','source']                = 'P7SOURCE_V6'
+irfs['120','SOURCE']                = 'P7SOURCE_V6'
+irfs['120','P7SOURCE_V6']           = 'P7SOURCE_V6'
 
-def translateIrfName(name):
-  if(name not in irfs):
-    raise ValueError("Unknown IRF %s" %(name))
+irfs['130','transient']             = 'P7TRANSIENT_V6'
+irfs['130','TRANSIENT']             = 'P7TRANSIENT_V6'
+irfs['130','P7TRANSIENT_V6']        = 'P7TRANSIENT_V6'
+irfs['130','source']                = 'P7SOURCE_V6'
+irfs['130','SOURCE']                = 'P7SOURCE_V6'
+irfs['130','P7SOURCE_V6']           = 'P7SOURCE_V6'
+
+irfs['202','transient']             = 'P7REP_TRANSIENT_V15'
+irfs['202','TRANSIENT']             = 'P7REP_TRANSIENT_V15'
+irfs['202','P7REP_TRANSIENT_V15']   = 'P7REP_TRANSIENT_V15'
+irfs['202','source']                = 'P7REP_SOURCE_V15'
+irfs['202','SOURCE']                = 'P7REP_SOURCE_V15'
+irfs['202','P7REP_SOURCE_V15']      = 'P7REP_SOURCE_V15'
+
+def translateIrfName(reproc,name):
+  if((reproc,name) not in irfs.keys()):
+    raise ValueError("Unknown IRF %s for reprocessing %s" %(name,reproc))
   else:
-    if(irfs[name].find("TRANSIENT")>=0):
+    if(irfs[reproc,name].find("TRANSIENT")>=0):
       return 'transient'
-    if(irfs[name].find("SOURCE")>=0):
+    if(irfs[reproc,name].find("SOURCE")>=0):
       return 'source'
 pass
 
@@ -111,7 +138,7 @@ def exceptionPrinter(msg,exceptionText):
     sys.stderr.write("-------------- EXCEPTION ---------------------------\n")      
 
 
-def getPointing(triggertime,ft2):
+def getPointing(triggertime,ft2,bothAxes=False):
   f                       = pyfits.open(ft2)
   data                    = f['SC_DATA'].data
   #Find first element after trigger time in FT2 file
@@ -123,14 +150,115 @@ def getPointing(triggertime,ft2):
   
   #Now interpolate linearly between the position of the z-axis before and after the trigger time,
   #which is needed if we are using 30 s FT2 file (otherwise the position could be off by degrees)
-  print [data.RA_SCZ[idx_before],data.RA_SCZ[idx_after]]
-  print [data.DEC_SCZ[idx_before],data.DEC_SCZ[idx_after]]
   ra_scz                  = numpy.interp(0,[data.START[idx_before]-triggertime,data.START[idx_after]-triggertime],[data.RA_SCZ[idx_before],data.RA_SCZ[idx_after]])
   dec_scz                 = numpy.interp(0,[data.START[idx_before]-triggertime,data.START[idx_after]-triggertime],[data.DEC_SCZ[idx_before],data.DEC_SCZ[idx_after]])
   
-  return ra_scz, dec_scz
+  if(bothAxes):
+    ra_scx                = numpy.interp(0,[data.START[idx_before]-triggertime,data.START[idx_after]-triggertime],[data.RA_SCX[idx_before],data.RA_SCX[idx_after]])
+    dec_scx               = numpy.interp(0,[data.START[idx_before]-triggertime,data.START[idx_after]-triggertime],[data.DEC_SCX[idx_before],data.DEC_SCX[idx_after]])
+    return ra_scz, dec_scz, ra_scx, dec_scx
+  else:
+    return ra_scz, dec_scz
 pass
 
+def makeNavigationPlots(ft2file,ra_obj,dec_obj,triggerTime):
+    ft2                       = pyfits.open(ft2file)
+    ra_scz                    = ft2['SC_DATA'].data.field("RA_SCZ")
+    dec_scz                   = ft2['SC_DATA'].data.field("DEC_SCZ")
+    ra_zenith                 = ft2['SC_DATA'].data.field("RA_ZENITH")
+    dec_zenith                = ft2['SC_DATA'].data.field("DEC_ZENITH")
+    time                      = ft2['SC_DATA'].data.field("START")
+    time                      = numpy.array(map(lambda x:x-triggerTime,time))
+    ft2.close()
+        
+    zenith                    = map(lambda x:angularDistance.getAngularDistance(x[0],x[1],ra_obj,dec_obj),zip(ra_zenith,dec_zenith))
+    zenith                    = numpy.array(zenith)
+    theta                     = map(lambda x:angularDistance.getAngularDistance(x[0],x[1],ra_obj,dec_obj),zip(ra_scz,dec_scz))
+    theta                     = numpy.array(theta)    
+
+    
+    #mask out data gaps do they will appear as gaps in the plots
+    mask                      = (time-numpy.roll(time,1) > 40.0)
+    for idx in mask.nonzero()[0]:
+      time                    = numpy.insert(time,idx,time[idx-1]+1)
+      zenith                  = numpy.insert(zenith,idx,numpy.nan)
+      theta                   = numpy.insert(theta,idx,numpy.nan)
+      time                    = numpy.insert(time,idx+1,time[idx+1]-1)
+      zenith                  = numpy.insert(zenith,idx+1,numpy.nan)
+      theta                   = numpy.insert(theta,idx+1,numpy.nan)
+    pass
+    
+    figure                    = plt.figure(figsize=[4,4],dpi=150)
+    figure.set_facecolor("#FFFFFF")
+    figure.suptitle("Navigation plots")
+    #Zenith plot
+    subpl1                    = figure.add_subplot(211)    
+    subpl1.set_xlabel("Time since trigger (s)")
+    subpl1.set_ylabel("Source Zenith angle (deg)")
+    subpl1.set_ylim([min(zenith-12)-0.1*min(zenith-12),max([max(zenith+20),130])])
+    subpl1.plot(time,zenith,'--',color='blue')
+    msk                       = numpy.isnan(zenith)
+    stdidx                    = 0
+
+    try:
+      for idx in msk.nonzero()[0][::2]:
+          subpl1.fill_between(time[stdidx:idx],zenith[stdidx:idx]-15,zenith[stdidx:idx]+15,
+                              color='gray',alpha=0.5,label='15 deg ROI')
+          subpl1.fill_between(time[stdidx:idx],zenith[stdidx:idx]-12,zenith[stdidx:idx]+12,
+                              color='lightblue',alpha=0.5, label='12 deg ROI')
+          subpl1.fill_between(time[stdidx:idx],zenith[stdidx:idx]-10,zenith[stdidx:idx]+10,
+                              color='green',alpha=0.5, label='10 deg ROI')
+          stdidx                = idx+2
+      pass
+      subpl1.fill_between(time[stdidx+1:],zenith[stdidx+1:]-15,zenith[stdidx+1:]+15,
+                              color='gray',alpha=0.5,label='15 deg ROI')
+      subpl1.fill_between(time[stdidx+1:],zenith[stdidx+1:]-12,zenith[stdidx+1:]+12,
+                              color='lightblue',alpha=0.5, label='12 deg ROI')
+      subpl1.fill_between(time[stdidx+1:],zenith[stdidx+1:]-10,zenith[stdidx+1:]+10,
+                              color='green',alpha=0.5, label='10 deg ROI')
+    except:
+      subpl1.fill_between(time,zenith-15,zenith+15,
+                              color='gray',alpha=0.5,label='15 deg ROI')
+      subpl1.fill_between(time,zenith-12,zenith+12,
+                              color='lightblue',alpha=0.5, label='12 deg ROI')      
+      subpl1.fill_between(time,zenith-10,zenith+10,
+                              color='green',alpha=0.5, label='10 deg ROI')
+    tt3 = subpl1.axhline(100,color='red',linestyle='--')
+    p1 = plt.Rectangle((0, 0), 1, 1, color="green",alpha=0.5)
+    p2 = plt.Rectangle((0, 0), 1, 1, color="lightblue",alpha=0.5)
+    p3 = plt.Rectangle((0, 0), 1, 1, color="gray",alpha=0.5)
+    zl = subpl1.axhline(1000,color='blue',linestyle='--')
+    subpl1.legend([zl,tt3,p1,p2,p3],
+                  ["Source",'Zenith = 100 deg',"10 deg ROI","12 deg ROI","15 deg ROI"],
+                  prop={'size':5},ncol=2)
+    
+    #Theta plot
+    subpl2                    = figure.add_subplot(212,sharex=subpl1)   
+    subpl2.set_xlabel("Time since trigger (s)")
+    subpl2.set_ylabel("Source off-axis angle (deg)")
+    subpl2.set_ylim([min(theta)-0.1*min(theta),max([max(theta),95])])
+    subpl2.plot(time,theta,'--')
+    subpl2.axhline(65,color='r',linestyle='--')
+    return figure
+pass
+
+def testIfExecutableExists(program):
+    import os
+    def is_exe(fpath):
+        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+
+    fpath, fname = os.path.split(program)
+    if fpath:
+        if is_exe(program):
+            return program
+    else:
+        for path in os.environ["PATH"].split(os.pathsep):
+            path = path.strip('"')
+            exe_file = os.path.join(path, program)
+            if is_exe(exe_file):
+                return exe_file
+
+    return None
 
 def runShellCommand(string,echo=False):
   if(echo):
@@ -339,10 +467,10 @@ def _makeDatasetsOutOfLATdata(ft1,ft2,grbName,tstart,tstop,
     emaxs_column              = pyfits.Column(name='E_MAX', format='E', array=emaxs)
     cols                      = pyfits.ColDefs([emins_column, emaxs_column])
     tbhdu                     = pyfits.new_table(cols)
-    tbhdu.update_ext_name('EBOUNDS')
+    tbhdu.header.update('EXTNAME','EBOUNDS')
     hdu                       = pyfits.PrimaryHDU(None)
     fakematrixhdu             = pyfits.new_table(pyfits.ColDefs([pyfits.Column(name="FAKE",format='E')]))
-    fakematrixhdu.update_ext_name("SPECRESP MATRIX")
+    fakematrixhdu.header.update('EXTNAME',"SPECRESP MATRIX")
     eboundsFilename           = os.path.join(localRepository,"gll_cspec_tr_bn%s_v00.rsp" %(grbName))
     thdulist                  = pyfits.HDUList([hdu, tbhdu, fakematrixhdu])
     print("Writing %s..." %(eboundsFilename))
@@ -424,7 +552,7 @@ def _getParamFromXML(xmlmodel,parname):
   f                           = open(xmlmodel,'r')
   parval                      = None
   for line in f.readlines():
-    if(line.find("%s=" %parname)>=0):
+    if(line.find("%s=" %parname)>=0 and line.find("<!--")==0):
       parval                     = re.findall('<!-- %s=(.+) -->' %(parname),line)[0]
   pass
   f.close()
@@ -504,11 +632,11 @@ class LLEData(object):
       instrument              = f[0].header['INSTRUME']
       if(instrument.upper().find('GBM')>=0):
         self.isGBM            = True
-        f.close()
       else:
         f.close()
         raise IOError("File %s does not exist!" %(ft2File))
       pass
+      f.close()
     pass
         
     if(self.isGBM):
@@ -535,7 +663,7 @@ class LLEData(object):
     #Get informations from the header of the file,
     #and fill attributes of the class
     
-    self.trigTime             = getTriggerTime(self.eventFile)
+    self.trigTime             = getTriggerTime(self.rspFile)
     
     f                         = pyfits.open(self.eventFile)
     try:
@@ -767,7 +895,7 @@ class multiprocessScienceTools(dict):
     #If there is more than one processor, use the multi-processor
     #version, otherwise the standard one
     configuration                      = Configuration()
-    self.ncpus                         = min(int(float(configuration.get('maxNumberOfCPUs'))),multiprocessing.cpu_count()-1) #Save 1 processor for system usage
+    self.ncpus                         = min(int(float(configuration.get('maxNumberOfCPUs'))),multiprocessing.cpu_count()) #Save 1 processor for system usage
     if(self.ncpus > 1):
       self.run                         = self.multiproc_run
     else:
@@ -797,10 +925,9 @@ class my_gtltcube(multiprocessScienceTools):
   pass
   
   def multiproc_run(self):
-    #At the moment gtltcube_mp assumes that the whole FT2 file has to be used,
-    #which is never true for us, so override it for the moment (until we get a fix)
     return self.singleproc_run()
-    cmdline                            = "gtltcube_mp.py %s %s %s %s" % (self.ncpus,
+    exepath                            = os.path.join(os.path.dirname(__file__),'gtapps_mp','gtltcube_mp.py')
+    cmdline                            = "%s %s %s %s %s" % (exepath,self.ncpus,
                                                                          self['scfile'],
                                                                          self['evfile'],
                                                                          self['outfile'])
@@ -831,7 +958,8 @@ class my_gtdiffrsp(multiprocessScienceTools):
     #At the moment gtdiffrsp_mp is not very reliable (it fails sometimes),
     #so let's force the use of the single processor version
     return self.singleproc_run()
-    cmdline                            = "gtdiffrsp_mp.py %s %s %s %s %s __gtdiffrsp_result.fits" % (self.ncpus,
+    exepath                            = os.path.join(os.path.dirname(__file__),'gtapps_mp','gtdiffrsp_mp.py')
+    cmdline                            = "%s %s %s %s %s %s __gtdiffrsp_result.fits" % (exepath,self.ncpus,
                                                                          self['evfile'],
                                                                          self['scfile'],
                                                                          self['srcmdl'],
@@ -879,8 +1007,8 @@ class my_gttsmap(multiprocessScienceTools):
     pars['ftol']              = self['ftol']
     pars['toltype']           = 1
     pars['jobs']              = self.ncpus
-    
-    cmdline                            = "gttsmap_mp.py %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s" % tuple([pars[k] for k in 'nxpix nypix jobs evfile scfile expmap expcube srcmdl irfs optimizer ftol toltype binsz coordsys xref yref proj outfile'.split()])
+    exepath                            = os.path.join(os.path.dirname(__file__),'gtapps_mp','gttsmap_mp.py')
+    cmdline                            = exepath+" %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s" % tuple([pars[k] for k in 'nxpix nypix jobs evfile scfile expmap expcube srcmdl irfs optimizer ftol toltype binsz coordsys xref yref proj outfile'.split()])
     print cmdline
     process                            = subprocess.Popen(cmdline.split(), 
                                                           shell=False, stdout=subprocess.PIPE, 
@@ -932,8 +1060,8 @@ class my_gtexpmap(multiprocessScienceTools):
       xbins                            = 4
       ybins                            = 2
     pass
-    
-    cmdline                            = "gtexpmap_mp.py %s %s %s %s %s %s %s %s %s %s %s" % (self['nlong'], self['nlat'], 
+    exepath                            = os.path.join(os.path.dirname(__file__),'gtapps_mp','gtexpmap_mp.py')
+    cmdline                            = "%s %s %s %s %s %s %s %s %s %s %s %s" % (exepath,self['nlong'], self['nlat'], 
                                                    xbins, ybins, self['scfile'], self['evfile'], self['expcube'], 
                                                    self['irfs'], self['srcrad'], self['nenergies'], self['outfile'])
     print cmdline
@@ -976,21 +1104,36 @@ class LATData(LLEData):
         pass
       pass
       
+      #Get tstart and tstop always in MET
+      tstart                           = float(tstart)+int(float(tstart) < 231292801.000)*self.trigTime
+      tstop                            = float(tstop)+int(float(tstop) < 231292801.000)*self.trigTime
+      ra                               = float(ra)
+      dec                              = float(dec)
+      emin                             = float(emin)
+      emax                             = float(emax)
+      
+      
       #Check that the FT2 file covers the time interval requested
       f                                = pyfits.open(self.ft2File)
       ft2max                           = max(f['SC_DATA'].data.STOP)
       ft2min                           = min(f['SC_DATA'].data.START)
       f.close()
+      ft2max                           = float(ft2max)+int(float(ft2max) < 231292801.000)*self.trigTime
+      ft2min                           = float(ft2min)+int(float(ft2min) < 231292801.000)*self.trigTime
+
       
-      if(ft2min >= float(tstart)+int(float(tstart) < 231292801.000)*self.trigTime):
+      if(ft2min >= float(tstart)):
         sys.stderr.write("\n\nWARNING: Spacecraft file (FT2 file) starts after the beginning of the requested interval. Your start time is now %s (MET %s).\n\n" %(ft2min-self.trigTime,ft2min))
-        tstart                         = ft2min-self.trigTime
+        tstart                         = ft2min
         time.sleep(2)
-      if(ft2max <= float(tstop)+int(float(tstart) < 231292801.000)*self.trigTime):
+      if(ft2max <= float(tstop)):
         sys.stderr.write("\n\nWARNING: Spacecraft file (FT2 file) stops before the end of the requested interval. Your stop time is now %s (MET %s).\n\n" % (ft2max-self.trigTime,ft2max))
-        tstop                          = ft2max-self.trigTime
+        tstop                          = ft2max
         time.sleep(2)
       pass
+      
+      if(tstop <= tstart):
+        raise GtBurstException(14,"tstop=%s <= tstart=%s: wrong input or no data coverage for this interval" %(tstop,tstart))
       
       if(not self.eventFile):
         raise RuntimeError("You cannot select by time if you don't provide a FT1 file.")
@@ -998,13 +1141,19 @@ class LATData(LLEData):
       if(gtmktime):
         self.gtmktime['scfile']          = self.ft2File
         if(self.strategy=="time"):
-          self.gtmktime['filter']        = "DATA_QUAL==1 && LAT_CONFIG==1 && IN_SAA!=T && LIVETIME>0 && (ANGSEP(RA_ZENITH,DEC_ZENITH,%s,%s)<=(%s-%s)) && (ANGSEP(RA_SCZ,DEC_SCZ,%s,%s)<=(%s-%s))" %(ra,dec,zenithCut,rad,ra,dec,thetaCut,rad)
+          filt                           = "DATA_QUAL==1 && LAT_CONFIG==1 && IN_SAA!=T && LIVETIME>0 && (ANGSEP(RA_ZENITH,DEC_ZENITH,%s,%s)<=(%s-%s))" %(ra,dec,zenithCut,rad)
           self.gtmktime['roicut']        = "no"
         elif(self.strategy=="events"):
-          self.gtmktime['filter']        = "DATA_QUAL==1 && LAT_CONFIG==1 && IN_SAA!=T && LIVETIME>0"
+          filt                           = "DATA_QUAL==1 && LAT_CONFIG==1 && IN_SAA!=T && LIVETIME>0"
           self.gtmktime['roicut']        = "no"
         else:
           raise RuntimeError("Strategy must be either 'time' or 'events'")
+        
+        if(thetaCut!=180.0):
+          filt                          += " && (ANGSEP(RA_SCZ,DEC_SCZ,%s,%s)<=%s)" %(ra,dec,thetaCut)
+        pass
+        
+        self.gtmktime['filter']          = filt
         self.gtmktime['evfile']          = self.originalEventFile
         outfilemk                        = "%s_mkt.fit" %(self.rootName)
         self.gtmktime['outfile']         = outfilemk
@@ -1020,7 +1169,13 @@ class LATData(LLEData):
           raise GtBurstException(22,"gtmktime failed. Likely your filter resulted in zero exposure.")
       else:
         outfilemk                      = self.originalEventFile
-        
+      
+      #Get the reprocessing version
+      f                                = pyfits.open(self.originalEventFile)
+      reprocessingVersion              = str(f[0].header['PROC_VER']).replace(" ","")
+      f.close()
+      print("\nUsing %s data\n" %(reprocessingVersion))
+      
       self.gtselect['infile']          = outfilemk
       if(roicut):
         self.gtselect['ra']            = ra
@@ -1030,20 +1185,20 @@ class LATData(LLEData):
         self.gtselect['ra']            = 'INDEF'
         self.gtselect['dec']           = 'INDEF'
         self.gtselect['rad']           = 'INDEF'
-      tmin                             = float(tstart)+int(float(tstart) < 231292801.000)*self.trigTime
-      tmax                             = float(tstop)+int(float(tstart) < 231292801.000)*self.trigTime
+      tmin                             = float(tstart)
+      tmax                             = float(tstop)
       self.gtselect['tmin']            = tmin
       self.gtselect['tmax']            = tmax
       self.gtselect['emin']            = emin
       self.gtselect['emax']            = emax
       self.gtselect['zmax']            = zenithCut
-      irf                              = translateIrfName(irf)
+      irf                              = translateIrfName(reprocessingVersion,irf)
       if(irf=='transient'):
         evclass                        = 0
-        irf                            = irfs[irf]
+        irf                            = irfs[reprocessingVersion,irf]
       elif(irf=='source'):
         evclass                        = 2
-        irf                            = irfs[irf]
+        irf                            = irfs[reprocessingVersion,irf]
       else:
         raise ValueError("Class %s not known. Possible values are 'transient' and 'source'." %(irf))
       self.gtselect['evclass']         = evclass
@@ -1070,13 +1225,14 @@ class LATData(LLEData):
       f[0].header.update('_ROI_RA',"%8.4f" % float(ra))
       f[0].header.update('_ROI_DEC',"%8.4f" % float(dec))
       f[0].header.update('_ROI_RAD',"%8.4f" % float(rad))
-      f[0].header.update('_TMIN',"%50.10f" % float(tmin+1E-4))
-      f[0].header.update('_TMAX',"%50.10f" % float(tmax-1E-4))
+      f[0].header.update('_TMIN',"%50.10f" % float(tmin))
+      f[0].header.update('_TMAX',"%50.10f" % float(tmax))
       f[0].header.update('_EMIN',"%s" % float(emin))
       f[0].header.update('_EMAX',"%s" % float(emax))
       f[0].header.update('_ZMAX',"%12.5f" % float(zenithCut))
       f[0].header.update('_STRATEG',self.strategy)
       f[0].header.update('_IRF',"%s" % irf)
+      f[0].header.update('_REPROC','%s' % reprocessingVersion)
       
       nEvents                          = len(f['EVENTS'].data.TIME)
       print("\nSelected %s events." %(nEvents))
@@ -1101,6 +1257,7 @@ class LATData(LLEData):
       self.zmax                     = float(h['_ZMAX'])
       self.strategy                 = str(h['_STRATEG'])
       self.irf                      = str(h['_IRF'])
+      self.reprocessingVersion      = str(h['_REPROC'])
       f.close()
   pass
   
@@ -1171,14 +1328,24 @@ class LATData(LLEData):
   
   def makeLivetimeCube(self):
      self.getCuts()
-         
+     
+     #Cut the FT2 (otherwise gtltcube is SUPER slow)
+     shutil.copy(self.ft2File,"__ft2temp.fits")
+     f                                = pyfits.open("__ft2temp.fits","update")
+     idx                              = (f['SC_DATA'].data.START > self.tmin-300) & (f['SC_DATA'].data.STOP < self.tmax+300)
+     f['SC_DATA'].data                = f['SC_DATA'].data[idx]
+     f['SC_DATA'].header.update("TSTART",self.tmin-300)
+     f['SC_DATA'].header.update("TSTOP",self.tmax+300)
+     f.close()
+
+     
      self.gtltcube['evfile']        = self.eventFile
-     self.gtltcube['scfile']        = self.ft2File
+     self.gtltcube['scfile']        = "__ft2temp.fits"
      outfilecube                    = "%s_ltcube.fit" %(self.rootName)
      self.gtltcube['outfile']       = outfilecube
      self.gtltcube['dcostheta']     = 0.025
      self.gtltcube['binsz']         = 1
-     self.gtltcube['phibins']       = 4
+     self.gtltcube['phibins']       = 6
      self.gtltcube['clobber']       = 'yes'
      if(self.strategy=="events"):
        print("\n\nApplying the Zenith cut in the livetime cube. Hope you know what you are doing...")
@@ -1191,6 +1358,7 @@ class LATData(LLEData):
      except:
        raise GtBurstException(26,"gtltcube failed in an unexpected way")     
      self.livetimeCube              = outfilecube
+     os.remove("__ft2temp.fits")
   pass
   
   def makeExposureMap(self,binsz=1.0):
@@ -1483,11 +1651,11 @@ class LATData(LLEData):
      outfilelike2                   = "%s_likeRes.dat" %(self.rootName)
      
      print("Loading python Likelihood interface...")
-     import UnbinnedAnalysis
+     
      self.obs                       = UnbinnedAnalysis.UnbinnedObs(self.eventFile,self.ft2File,
                                                   expMap=self.exposureMap,
                                                   expCube=self.livetimeCube,irfs=self.irf)
-     self.like1                     = UnbinnedAnalysis.UnbinnedAnalysis(self.obs,xmlmodel,optimizer='NEWMINUIT')
+     self.like1                     = UnbinnedAnalysis.UnbinnedAnalysis(self.obs,xmlmodel,optimizer='MINUIT')
      
      #Add a Gaussian prior for the isotropicTemplate component (it should be either the 
      #isotropic template for Source class or the BKGE)
@@ -1508,10 +1676,11 @@ class LATData(LLEData):
        sysErr                       = float(d['sysErr'].replace("'","").replace('"',""))
        statErr                      = float(d['statErr'].replace("'","").replace('"',""))
        total_error                  = numpy.sqrt(numpy.power(sysErr,2)+ numpy.power(statErr,2))
-       print("\nApplying a Gaussian prior with sigma %s on the normalization of the Isotropic Template" %(total_error))
-       for idx in range(len(self.like1.model.srcNames)): 
-	        if self.like1.model.srcNames[idx]=='IsotropicTemplate' :
-		    self.like1[idx].addGaussianPrior(1,total_error)
+       if(total_error!=0):
+         print("\nApplying a Gaussian prior with sigma %s on the normalization of the Isotropic Template" %(total_error))
+         idx                        = self.like1.par_index("IsotropicTemplate","Normalization")
+	 self.like1[idx].addGaussianPrior(1.0,total_error)
+         print self.like1[idx].getPriorParams()
        pass
      pass
      
@@ -1558,6 +1727,9 @@ class LATData(LLEData):
      
      if(grb_name!=None):
        self.like1.plotSource(grb_name,'red')
+     for s in self.like1.sourceNames():
+       if(s.lower().find("earthlimb")>=0):
+         self.like1.plotSource(s,'blue')
      self.like1.residualPlot.canvas.Print('%s_residuals.png' % (self.rootName))
      self.like1.spectralPlot.canvas.Print('%s_spectral.png' % (self.rootName))
      
@@ -1587,7 +1759,7 @@ class LATData(LLEData):
     self.gtfindsrc['expmap']        = self.exposureMap
     self.gtfindsrc['srcmdl']        = tmpxml
     self.gtfindsrc['target']        = sourceName
-    self.gtfindsrc['optimizer']     = 'NEWMINUIT'
+    self.gtfindsrc['optimizer']     = 'MINUIT'
     self.gtfindsrc['ftol']          = 1E-10
     self.gtfindsrc['reopt']         = 'yes'
     self.gtfindsrc['atol']          = 1E-3
@@ -1938,6 +2110,7 @@ class CspecBackground(object):
       lcFigure.subplots_adjust(hspace=0)
     else:
       lcFigure.clear()
+      lcFigure.canvas.draw()
     
     xlabel                      = "Time since trigger"
     ylabel                      = "Counts"
@@ -1957,6 +2130,7 @@ class CspecBackground(object):
     LC                          = N*[0]
     for j in range(N): 
       LC[j]                     = counts[j].sum()
+    f.close()
     
     subfigures.append(lcFigure.add_subplot(2,1,1,xlabel=xlabel,ylabel=ylabel))           
     subfigures[-1].step(t,map(lambda x:x[0]/x[1],zip(LC,exposure)),where='post')
@@ -1991,7 +2165,6 @@ class CspecBackground(object):
     print("Done")
     self.lcFigure             = lcFigure
     self.lcFigure.canvas.start_event_loop(0)
-    f.close()
   pass      
   
   def onPick(self,event):
@@ -2007,6 +2180,8 @@ class CspecBackground(object):
       self.accepted           = True
     self.lcFigure.canvas.mpl_disconnect(self.cid)  
     self.lcFigure.canvas.stop_event_loop()
+    self.lcFigure.clear()
+    self.lcFigure.canvas.draw()
   pass
   
   def getTotalBackgroundCounts(self,t1,t2):
@@ -2135,13 +2310,13 @@ class CspecBackground(object):
       logLikelihoods.append(logLike)         
     pass
     #Found the best one
-    deltaLoglike              = numpy.array(map(lambda x:x[0]-x[1],zip(logLikelihoods[:-1],logLikelihoods[1:])))
+    deltaLoglike              = numpy.array(map(lambda x:2*(x[0]-x[1]),zip(logLikelihoods[:-1],logLikelihoods[1:])))
     print("\ndelta log-likelihoods:")
     for i in range(maxGrade):
       print("%s -> %s: delta Log-likelihood = %s" %(i,i+1,deltaLoglike[i]))
     pass
     print("") 
-    deltaThreshold            = 5.0
+    deltaThreshold            = 9.0
     mask                      = (deltaLoglike >= deltaThreshold)
     if(len(mask.nonzero()[0])==0):
       #best grade is zero!
@@ -2872,4 +3047,57 @@ def fixHeaders(llefile,cspecfile,sourceExt=eventsExtName,destExt="SPECTRUM"):
   pass
   llef.close()
   cspecf.close()
+pass
+
+def findMaximumTSmap(tsmap,tsexpomap):
+  #Find the maximum of the TS map
+  f                           = pyfits.open(tsmap)
+  image                       = f[0].data
+  wcs                         = pywcs.WCS(f[0].header)
+  f.close()
+    
+  #Position of the maximum
+  idxs                        = numpy.unravel_index(image.argmax(), image.shape)
+  #R.A., Dec of the maximum (the +1 is due to the FORTRAN Vs C convention
+  ra,dec                      = wcs.wcs_pix2sky(idxs[1]+1,idxs[0]+1,1)
+  ra,dec                      = ra[0],dec[0]
+  
+  #Now check that the value in the exposure map for this ra,dec is not too small,
+  #nor that this Ra,Dec is at the margin of an excluded zones
+  #(this avoid triggering on the Earth limb when strategy=events)
+  fexp                        = pyfits.open(tsexpomap)
+  expmap                      = fexp[0].data[0]
+  wcsexp                      = pywcs.WCS(fexp[0].header)
+  fexp.close()
+  
+  while(1==1):
+    #Note that the value of one pixel is valid from .5 to 1.5
+    #Note also that the exposure map is larger than the TS map
+    pixels                    = wcsexp.wcs_sky2pix([[ra,dec,1]],1)[0]
+    exposureHere              = expmap[pixels[1]-0.5,pixels[0]-0.5]
+    exposureUp                = expmap[pixels[1]-0.5-1,pixels[0]-0.5]
+    exposureDown              = expmap[pixels[1]-0.5+1,pixels[0]-0.5]
+    exposureRight             = expmap[pixels[1]-0.5,pixels[0]-0.5-1]
+    exposureLeft              = expmap[pixels[1]-0.5,pixels[0]-0.5+1]
+    #print("Exposure: %s" %(exposureHere))
+    if(exposureHere > 0 and 
+       exposureUp > 0 and 
+       exposureDown > 0 and 
+       exposureLeft > 0 and 
+       exposureRight > 0):
+      break
+    else:
+      #Mask out this value
+      print("Neglecting maximum at %s,%s because of low exposure there..." %(ra,dec))
+      image[idxs[0],idxs[1]]  = 0.0
+      idxs                        = numpy.unravel_index(image.argmax(), image.shape)
+      #R.A., Dec of the maximum (the +1 is due to the FORTRAN Vs C convention
+      ra,dec                      = wcs.wcs_pix2sky(idxs[1]+1,idxs[0]+1,1)
+      ra,dec                      = ra[0],dec[0]
+      continue
+    pass
+  pass
+  
+  tsmax                       = image.max()
+  return ra,dec, tsmax
 pass
