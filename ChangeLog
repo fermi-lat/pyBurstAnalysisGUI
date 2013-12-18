@@ -1,4 +1,137 @@
 ------------------------------------------------------------
+TAG
+Tag name: pyBurstAnalysisGUI-01-01-00, operation: add
+Package: pyBurstAnalysisGUI
+User: giacomov  Wed Dec 18 01:40:28 2013
+Files:
+  pyBurstAnalysisGUI/data/gll_psc_v07.xml  1.1.1.1
+  pyBurstAnalysisGUI/data/lightbulb.gif  1.1.1.1
+  pyBurstAnalysisGUI/data/fermiLogo.gif  1.1.1.1
+  pyBurstAnalysisGUI/data/glast_logo.png  1.1.1.1
+  pyBurstAnalysisGUI/data/warning.gif  1.1.1.1
+  pyBurstAnalysisGUI/data/tcl_extensions/fsdialog/fsdlg-png.tcl  1.1
+  pyBurstAnalysisGUI/data/tcl_extensions/fsdialog/fsdialog.tcl  1.1
+  pyBurstAnalysisGUI/data/tcl_extensions/fsdialog/de.msg  1.1
+  pyBurstAnalysisGUI/data/tcl_extensions/fsdialog/sv.msg  1.1
+  pyBurstAnalysisGUI/data/tcl_extensions/fsdialog/fsdlg-gif.tcl  1.1
+  pyBurstAnalysisGUI/data/tcl_extensions/fsdialog/tclIndex  1.1
+  pyBurstAnalysisGUI/data/tcl_extensions/fsdialog/en.msg  1.1
+  pyBurstAnalysisGUI/data/tcl_extensions/msgcat/msgcat.tcl  1.1
+  pyBurstAnalysisGUI/data/tcl_extensions/msgcat/pkgIndex.tcl  1.1
+  pyBurstAnalysisGUI/data/templates/VelaX.fits  1.1
+  pyBurstAnalysisGUI/data/templates/HESSJ1825-137.fits  1.1
+  pyBurstAnalysisGUI/data/templates/CygnusLoop.fits  1.1
+  pyBurstAnalysisGUI/data/templates/W44.fits  1.1
+  pyBurstAnalysisGUI/data/templates/IC443.fits  1.1
+  pyBurstAnalysisGUI/data/templates/W51C.fits  1.1
+  pyBurstAnalysisGUI/data/templates/W30.fits  1.1
+  pyBurstAnalysisGUI/data/templates/LMC.fits  1.1
+  pyBurstAnalysisGUI/data/templates/MSH15-52.fits  1.1
+  pyBurstAnalysisGUI/data/templates/W28.fits  1.1
+  pyBurstAnalysisGUI/data/templates/CenALobes.fits  1.1
+  pyBurstAnalysisGUI/data/templates/SMC.fits  1.1
+  pyBurstAnalysisGUI/doc/release.notes  1.2
+  pyBurstAnalysisGUI/doc/README  1.1.1.1
+  pyBurstAnalysisGUI/pyBurstAnalysisGUI/spaceHolder  1.1.1.1
+  pyBurstAnalysisGUI/python/gtburst.py  1.4
+  pyBurstAnalysisGUI/python/GtBurst/fancyFileDialogs.py  1.1
+  pyBurstAnalysisGUI/python/GtBurst/interactivePlots.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/dataHandling.py  1.4
+  pyBurstAnalysisGUI/python/GtBurst/angularDistance.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/InteractiveFt1Display.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/html2text.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/commandDefiner.py  1.3
+  pyBurstAnalysisGUI/python/GtBurst/ConsoleText.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/sunpos.py  1.1
+  pyBurstAnalysisGUI/python/GtBurst/downloadCallback.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/RSPweight.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/Configuration.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/SubWindow.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/TransientSource.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/Treeview.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/statMethods.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/do_gbm.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/AutoHideScrollbar.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/getLLEfiles.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/fontDefinitions.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/dataCollector.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/CommandPipeline.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/version.py  1.1
+  pyBurstAnalysisGUI/python/GtBurst/updater.py  1.3
+  pyBurstAnalysisGUI/python/GtBurst/bkge.py  1.3
+  pyBurstAnalysisGUI/python/GtBurst/HyperlinkManager.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/xmlModelGUI.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/__init__.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/GtBurstException.py  1.3
+  pyBurstAnalysisGUI/python/GtBurst/TriggerSelector.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/getGBMfiles.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/LikelihoodComponent.py  1.3
+  pyBurstAnalysisGUI/python/GtBurst/Dataset.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/lleProgressBar.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/downloadTransientData.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/Task.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/FuncFactory.py  1.4
+  pyBurstAnalysisGUI/python/GtBurst/EntryPoint.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/convolve_util.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/slicer.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/scalar_util.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/labels.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/regions.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/wcs_util.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/image_util.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/__init__.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/decorator.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/grid.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/axis_labels.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/angle_util.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/header.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/overlays.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/math_util.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/colorbar.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/deprecated.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/rgb.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/ticks.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/decorators.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/contour_util.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/frame.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/layers.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/regionclasses.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/logger.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/aplpy.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/aplpy/normalize.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/commands/gtdownloadLATdata.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/commands/gtdolike.py  1.4
+  pyBurstAnalysisGUI/python/GtBurst/commands/gtinteractiveRaDec.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/commands/gtllebkgbindef.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/commands/fromLogToScript.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/commands/__init__.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/commands/gtburstInstTest.py  1.1
+  pyBurstAnalysisGUI/python/GtBurst/commands/gtllebindef.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/commands/gtllebkg.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/commands/gtllebkgGUI.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/commands/gtdocountsmap.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/commands/gtllesrc.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/commands/fits2png.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/commands/gtconvertxmlmodel.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/commands/gtdosimulation.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/commands/gtdotsmap.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/commands/gteditxmlmodelsim.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/commands/gtbuildxmlmodel.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/commands/gtdosed.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/commands/gteditxmlmodel.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/commands/gtllesrcbindef.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/commands/gtllebin.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/gtapps_mp/gtexpmap_mp.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/gtapps_mp/__init__.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/gtapps_mp/gtdiffrsp_mp.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/gtapps_mp/gttsmap_mp.py  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/gtapps_mp/gtltcube_mp.py  1.2
+  pyBurstAnalysisGUI/python/GtBurst/gtapps_mp/README  1.1.1.1
+  pyBurstAnalysisGUI/python/GtBurst/tasks/__init__.py  1.1.1.1
+  pyBurstAnalysisGUI/src/gtburst.cxx  1.1.1.1
+
+    *
+------------------------------------------------------------
 User: giacomov  Wed Dec 18 01:34:59 PST 2013
 pyBurstAnalysisGUI/python/GtBurst
 
