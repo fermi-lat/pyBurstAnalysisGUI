@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: giacomov  Wed Dec 18 01:57:39 PST 2013
+pyBurstAnalysisGUI
+
+Modified Files:
+	SConscript 
+Log Message:
+tag
+    *
+------------------------------------------------------------
 TAG
 Tag name: pyBurstAnalysisGUI-01-03-00, operation: add
 Package: pyBurstAnalysisGUI
