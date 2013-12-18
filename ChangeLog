@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: giacomov  Wed Dec 18 11:57:12 PST 2013
+pyBurstAnalysisGUI
+
+Modified Files:
+	SConscript 
+Log Message:
+Corrected an error on the specifications of data files
+    *
+------------------------------------------------------------
 User: giacomov  Wed Dec 18 01:57:39 PST 2013
 pyBurstAnalysisGUI
 
