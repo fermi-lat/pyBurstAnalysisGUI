@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: giacomov  Wed Dec 18 01:28:53 PST 2013
+pyBurstAnalysisGUI/python/GtBurst/gtapps_mp
+
+Modified Files:
+	gtexpmap_mp.py gtltcube_mp.py 
+Log Message:
+Putting in synch with the .git repository
+    *
+------------------------------------------------------------
+User: giacomov  Wed Dec 18 01:28:53 PST 2013
 pyBurstAnalysisGUI/python/GtBurst/commands
 
 Modified Files:
