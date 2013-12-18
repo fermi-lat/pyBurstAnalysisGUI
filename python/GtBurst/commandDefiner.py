@@ -59,7 +59,10 @@ class Command(object):
     self.GUIdescription       = "You should not see this"
     #The definedParameters dictionary contains parameter names as keys and Parameter classes as values
     self.definedParameters    = collections.OrderedDict()
-    print("This is %s (%s %s)\n" %(name,getPackageName(),getVersion()))
+  pass
+  
+  def greetings(self):
+    print("This is %s (%s %s)\nAuthor: %s\n" %(self.name,getPackageName(),getVersion(),self.author))
   pass
   
   def addParameter(self,parname,description,mandatory=True,defaultValue=None,**kwargs):
@@ -96,10 +99,7 @@ class Command(object):
       pass
     pass
   pass
-  
-  def getPreambolMessage(self):
-    return "This is %s v.%s (author: %s)" %(self.name,self.version,self.author)
-  
+    
   def setGUIdescription(self,description):
     self.GUIdescription       = description
   pass  
@@ -109,8 +109,8 @@ class Command(object):
   
   def getHelp(self):
     #Print a help message
-    message                   = self.getPreambolMessage()
-    message                  += "\n\n %s" %(self.description)
+    message                   = ''
+    message                  += "%s" %(self.description)
     message                  += "\n"
     message                  += "\nParameters:\n"
     for parname, parameter in self.definedParameters.iteritems():

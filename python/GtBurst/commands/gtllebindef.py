@@ -88,7 +88,6 @@ def run(**kwargs):
   message                     = Message(verbose)
   
   #Load LLE data
-  message("%s" %(thisCommand.getPreambolMessage()))
 
   trigTime                    = dataHandling.getTriggerTime(cspecfile)
   
@@ -102,14 +101,20 @@ def run(**kwargs):
       #interactiveFigure.printHelp()
       interactiveFigure.activate()
       interactiveFigure.wait()
+      #Here the user has selected its intervals
+      figure.clear()
+      figure.canvas.draw()
       timeIntervals               = interactiveFigure.backgroundBounds
     elif(intervalType=="source"):
       interactiveFigure           = interactivePlots.getInteractiveFigureFromCSPEC(cspecfile,selectSource=True,
                                                                                    selectBackground=False,
                                                                                    figure=figure)
-      interactiveFigure.printHelp()
+      #interactiveFigure.printHelp()
       interactiveFigure.activate()
       interactiveFigure.wait()
+      #Here the user has selected its intervals
+      figure.clear()
+      figure.canvas.draw()
       timeIntervals               = interactiveFigure.sourceBounds
     pass
         
@@ -184,6 +189,7 @@ pass
 thisCommand.run = run
 
 if __name__=='__main__':
+  thisCommand.greetings()
   #Get all key=value pairs as a dictionary
   args                           = dict(arg.split('=') for arg in sys.argv[1:])
   gtllebindef(**args)

@@ -155,7 +155,13 @@ def run(**kwargs):
   pass
   f                           = open("__temporary_XML.xml",'w+')
   tree.write(f)
+  f.write('''<!-- OBJECT=%s -->
+<!-- DEC=%s -->
+<!-- RA=%s -->
+<!-- IRF=%s -->\n''' %(sourceName,ra,dec,irf))
   f.close()  
+  
+  
   
   #Now for each energy band, make a likelihood and compute the flux
   f                           = pyfits.open(eventfile)
@@ -274,6 +280,7 @@ def computeMeanEnergy(phIndex,e1,e2):
 thisCommand.run = run
 
 if __name__=='__main__':
+  thisCommand.greetings()
   #Get all key=value pairs as a dictionary
   args                           = dict(arg.split('=') for arg in sys.argv[1:])
   gtdosed(**args)

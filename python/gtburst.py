@@ -34,8 +34,9 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from matplotlib.figure import Figure
 from matplotlib import image
 from tkSimpleDialog import askfloat
-from tkFileDialog import askopenfilename
-from tkFileDialog import askdirectory
+from GtBurst import fancyFileDialogs
+#from tkFileDialog import askopenfilename
+#from tkFileDialog import askdirectory
 from tkMessageBox import showerror, showinfo, askyesno
 sys.stderr.write(".")
 
@@ -46,30 +47,23 @@ from GtBurst import updater
 
 from GtBurst import dataHandling
 
-#Import commands ignoring the stdout (to avoid messages such as "This is gtllebin (v. ...)"
-with dataHandling.suppress_output(False,True):
-  from GtBurst.commands.gtllebin import thisCommand as gtllebin
-  from GtBurst.commands.gtllebkg import thisCommand as gtllebkg
-  from GtBurst.commands.gtllesrc import thisCommand as gtllesrc
-  sys.stderr.write(".")
-  from GtBurst.commands.gtllesrcbindef import thisCommand as gtllesrcbindef
-  from GtBurst.commands.gtllebkgbindef import thisCommand as gtllebkgbindef
-  from GtBurst.commands.gtllebkgGUI import thisCommand as gtllebkgGUI
-  from GtBurst.commands.gtdocountsmap import thisCommand as gtdocountsmap
-  import GtBurst.commands.gtbuildxmlmodel
-  from GtBurst.commands.gtbuildxmlmodel import thisCommand as gtbuildxmlmodel
-  from GtBurst.commands.gtdolike import thisCommand as gtdolike
-  from GtBurst.commands.gtdotsmap import thisCommand as gtdotsmap
-  sys.stderr.write(".")
-  from GtBurst.commands.gtconvertxmlmodel import thisCommand as gtconvertxmlmodel
-  from GtBurst.commands.gtdosimulation import thisCommand as gtdosimulation
-  from GtBurst.commands.gteditxmlmodel import thisCommand as gteditxmlmodel
-  from GtBurst.commands.gteditxmlmodelsim import thisCommand as gteditxmlmodelsim
-  from GtBurst.commands.gtinteractiveRaDec import thisCommand as gtinteractiveRaDec
-  sys.stderr.write(".")
-  sys.stdout.flush()
-  sys.stderr.flush()
-pass
+from GtBurst.commands.gtllebin import thisCommand as gtllebin
+from GtBurst.commands.gtllebkg import thisCommand as gtllebkg
+from GtBurst.commands.gtllesrc import thisCommand as gtllesrc
+from GtBurst.commands.gtllesrcbindef import thisCommand as gtllesrcbindef
+from GtBurst.commands.gtllebkgbindef import thisCommand as gtllebkgbindef
+from GtBurst.commands.gtllebkgGUI import thisCommand as gtllebkgGUI
+from GtBurst.commands.gtdocountsmap import thisCommand as gtdocountsmap
+import GtBurst.commands.gtbuildxmlmodel
+from GtBurst.commands.gtbuildxmlmodel import thisCommand as gtbuildxmlmodel
+from GtBurst.commands.gtdolike import thisCommand as gtdolike
+from GtBurst.commands.gtdotsmap import thisCommand as gtdotsmap
+from GtBurst.commands.gtconvertxmlmodel import thisCommand as gtconvertxmlmodel
+from GtBurst.commands.gtdosimulation import thisCommand as gtdosimulation
+from GtBurst.commands.gteditxmlmodel import thisCommand as gteditxmlmodel
+from GtBurst.commands.gteditxmlmodelsim import thisCommand as gteditxmlmodelsim
+from GtBurst.commands.gtinteractiveRaDec import thisCommand as gtinteractiveRaDec
+
   
 from GtBurst import angularDistance
 from GtBurst.InteractiveFt1Display import InteractiveFt1Display
@@ -133,7 +127,7 @@ class MetaForExceptions(type):
                                           "The full traceback has been saved to the log and printed in the console.")
           showerror("Unhandled exception",msg)
           
-          dataHandling.exceptionPrinter(msg,traceback.format_exc(None))   
+          dataHandling.exceptionPrinter(msg,traceback.format_exc(None))
         pass
       return handle_exception
     pass
@@ -153,6 +147,7 @@ class GUI(object):
     self.object               = TransientSource()
     self.console              = None
     self.eventLock            = False
+    self.addrmfWarning        = True
     self.main()
   pass
   
@@ -241,7 +236,27 @@ class GUI(object):
       except:
         pass
       try:
-        dataset['rspfile']    = _getLatestVersion(os.path.join(directory,"%s_cspec_%s.rsp2" %(prefix,rootName)))
+        #If there is no "addrmf" executables in the path, do not use the rsp2 as response, but the rsp
+        if(dataHandling.testIfExecutableExists("addrmf")==None):
+          if(self.addrmfWarning):
+            showinfo("Addrmf missing",("The tool addrmf is not available!\n\naddrmf is part of the Heasarc FTOOLS "
+                                     " (CALTOOLS subpackage), "
+                                     "and is needed to handle .rsp2 files, which contain the response of GBM "
+                                     "detectors as a function of time. \n\nYou can proceed without it: this tool"
+                                     " will use .rsp files instead, which contain an averaged response. Therefore,"
+                                     " depending on the burst and on the duration of the time interval for the"
+                                     " spectral analysis, the results of the spectral analysis might be slightly off.\n\n"
+                                     "If you want to perform spectral analysis with GBM data, installing"
+                                     " the FTOOLS is strongly advised. You can find them here: "
+                                     "http://heasarc.nasa.gov/lheasoft/\n\nThis message will be displayed once per session."), 
+                                     parent=parent)
+            self.addrmfWarning  = False
+          pass
+          #Raise an exception so the following except will run
+          raise
+        else:
+          #Addrmf is installed. Use the rsp2
+          dataset['rspfile']    = _getLatestVersion(os.path.join(directory,"%s_cspec_%s.rsp2" %(prefix,rootName)))
       except:
         try:
           dataset['rspfile']  = _getLatestVersion(os.path.join(directory,"%s_cspec_%s.rsp" %(prefix,rootName)))
@@ -432,7 +447,7 @@ class GUI(object):
     #Write the keyword UREFTIME in all the input data files, which I will use as 
     #reference time, to avoid overwriting the TRIGTIME keyword
     for dataset in self.datasets:
-      for key in ['rspfile','cspecfile']:
+      for key in ['rspfile','cspecfile','eventfile']:
         f                     = pyfits.open(dataset[key],"update")
         f[0].header.update("UREFTIME",triggerTime)
         f.close()
@@ -476,85 +491,8 @@ class GUI(object):
     dec_obj                   = float(self.objectInfoEntries['dec'].variable.get())
     triggerTime               = float(self.datasets[0].triggerTime)
     
-    ft2                       = pyfits.open(ft2file)
-    ra_scz                    = ft2['SC_DATA'].data.field("RA_SCZ")
-    dec_scz                   = ft2['SC_DATA'].data.field("DEC_SCZ")
-    ra_zenith                 = ft2['SC_DATA'].data.field("RA_ZENITH")
-    dec_zenith                = ft2['SC_DATA'].data.field("DEC_ZENITH")
-    time                      = ft2['SC_DATA'].data.field("START")
-    time                      = numpy.array(map(lambda x:x-triggerTime,time))
-    ft2.close()
-        
-    zenith                    = map(lambda x:angularDistance.getAngularDistance(x[0],x[1],ra_obj,dec_obj),zip(ra_zenith,dec_zenith))
-    zenith                    = numpy.array(zenith)
-    theta                     = map(lambda x:angularDistance.getAngularDistance(x[0],x[1],ra_obj,dec_obj),zip(ra_scz,dec_scz))
-    theta                     = numpy.array(theta)    
-
-    
-    #mask out data gaps do they will appear as gaps in the plots
-    mask                      = (time-numpy.roll(time,1) > 40.0)
-    for idx in mask.nonzero()[0]:
-      time                    = numpy.insert(time,idx,time[idx-1]+1)
-      zenith                  = numpy.insert(zenith,idx,numpy.nan)
-      theta                   = numpy.insert(theta,idx,numpy.nan)
-      time                    = numpy.insert(time,idx+1,time[idx+1]-1)
-      zenith                  = numpy.insert(zenith,idx+1,numpy.nan)
-      theta                   = numpy.insert(theta,idx+1,numpy.nan)
-    pass
-    
-    figure                    = plt.figure(figsize=[4,4],dpi=150)
-    figure.set_facecolor("#FFFFFF")
-    figure.suptitle("Navigation plots")
-    #Zenith plot
-    subpl1                    = figure.add_subplot(211)    
-    subpl1.set_xlabel("Time since trigger (s)")
-    subpl1.set_ylabel("Source Zenith angle (degrees)")
-    subpl1.set_ylim([min(zenith-12)-0.1*min(zenith-12),max([max(zenith+20),130])])
-    subpl1.plot(time,zenith,'--',color='blue')
-    msk                       = numpy.isnan(zenith)
-    stdidx                    = 0
-
-    try:
-      for idx in msk.nonzero()[0][::2]:
-          subpl1.fill_between(time[stdidx:idx],zenith[stdidx:idx]-15,zenith[stdidx:idx]+15,
-                              color='gray',alpha=0.5,label='15 deg ROI')
-          subpl1.fill_between(time[stdidx:idx],zenith[stdidx:idx]-12,zenith[stdidx:idx]+12,
-                              color='lightblue',alpha=0.5, label='12 deg ROI')
-          subpl1.fill_between(time[stdidx:idx],zenith[stdidx:idx]-10,zenith[stdidx:idx]+10,
-                              color='green',alpha=0.5, label='10 deg ROI')
-          stdidx                = idx+2
-      pass
-      subpl1.fill_between(time[stdidx+1:],zenith[stdidx+1:]-15,zenith[stdidx+1:]+15,
-                              color='gray',alpha=0.5,label='15 deg ROI')
-      subpl1.fill_between(time[stdidx+1:],zenith[stdidx+1:]-12,zenith[stdidx+1:]+12,
-                              color='lightblue',alpha=0.5, label='12 deg ROI')
-      subpl1.fill_between(time[stdidx+1:],zenith[stdidx+1:]-10,zenith[stdidx+1:]+10,
-                              color='green',alpha=0.5, label='10 deg ROI')
-    except:
-      subpl1.fill_between(time,zenith-15,zenith+15,
-                              color='gray',alpha=0.5,label='15 deg ROI')
-      subpl1.fill_between(time,zenith-12,zenith+12,
-                              color='lightblue',alpha=0.5, label='12 deg ROI')      
-      subpl1.fill_between(time,zenith-10,zenith+10,
-                              color='green',alpha=0.5, label='10 deg ROI')
-    tt3 = subpl1.axhline(100,color='red',linestyle='--')
-    p1 = plt.Rectangle((0, 0), 1, 1, color="green",alpha=0.5)
-    p2 = plt.Rectangle((0, 0), 1, 1, color="lightblue",alpha=0.5)
-    p3 = plt.Rectangle((0, 0), 1, 1, color="gray",alpha=0.5)
-    zl = subpl1.axhline(1000,color='blue',linestyle='--')
-    subpl1.legend([zl,tt3,p1,p2,p3],
-                  ["Source",'Zenith = 100 deg',"10 deg ROI","12 deg ROI","15 deg ROI"],
-                  prop={'size':5},ncol=2)
-    
-    #Theta plot
-    subpl2                    = figure.add_subplot(212,sharex=subpl1)   
-    subpl2.set_xlabel("Time since trigger (s)")
-    subpl2.set_ylabel("Source off-axis angle (degrees)")
-    subpl2.set_ylim([min(theta)-0.1*min(theta),max([max(theta),95])])
-    subpl2.plot(time,theta,'--')
-    subpl2.axhline(65,color='r',linestyle='--')
-    
-    figure.canvas.draw()
+    figure                    = dataHandling.makeNavigationPlots(ft2file,ra_obj,dec_obj,triggerTime)
+    figure.canvas.draw()   
   pass
   
   def updateGtBurst(self):
@@ -572,7 +510,7 @@ class GUI(object):
         print("No update available at this moment!")
       else:
         print("\nDone! %s files updated" % (nUpdates))
-        showinfo("Restarting gtburst","Update finished! About to restart gtburst for the update to take effect.",parent=self.root)
+        showinfo("Restarting gtburst","Update finished! About to restart gtburst for the update to take effect.")
         reset()
       pass
     pass
@@ -588,6 +526,14 @@ class GUI(object):
   
   def main(self):
     self.root                 = Tk()
+    
+    #Update $auto_path Tcl variable, so tcl will find my custom tcl scripts
+    tclPath                   = os.path.join(self.dataPath,'tcl_extensions')
+    path                      = os.path.join(tclPath,'msgcat')
+    self.root.tk.eval("set auto_path [linsert $auto_path 0 %s]" %(path))
+    path                      = os.path.join(tclPath,'fsdialog')
+    self.root.tk.eval("set auto_path [linsert $auto_path 0 %s]" %(path))
+    
     self.root.iconify()
     #self.root.geometry("1024x768+0+0")
     self.root.title("Fermi bursts analysis GUI")
@@ -1076,16 +1022,14 @@ class GUI(object):
     self.makeLightCurves()
     #Get the number of intervals
     try:
-      firstPha                  = pyfits.open(self.datasets[0]['srcspectra'])
-      bkgTest                   = self.datasets[0]['bkgspectra']
-      rspTest                   = self.datasets[0]['rspfile']
+      with pyfits.open(self.datasets[0]['srcspectra']) as firstPha:
+        bkgTest                   = self.datasets[0]['bkgspectra']
+        rspTest                   = self.datasets[0]['rspfile']
+        nIntervals                = len(firstPha['SPECTRUM',1].data)
     except:
       showerror("Error","Something went wrong when producing spectra.")
       return
-    else:
-      nIntervals                = len(firstPha['SPECTRUM',1].data)
-      firstPha.close()
-      
+    else:      
       for intID in range(1,nIntervals+1):
         #This method is called after the CommandPipeline has terminated
         f                         = open("loadData_%s_int%02i.xcm" %(self.datasets[0].triggerName,intID),"w+")
@@ -1110,36 +1054,45 @@ class GUI(object):
         if(not datasetsFilter(dataset)):
             continue
         pass
-        f                     = pyfits.open(dataset['srcspectra'],'update')
+        f                     = pyfits.open(dataset['srcspectra'])
+        header                = f['SPECTRUM',1].header.copy()
         nIntervals            = len(f['SPECTRUM',1].data)
+        f.close()
+        
         #Get the maximum length of a line
-        maxDim         = max(len(dataset['bkgspectra']),len(dataset['rspfile']))+20
-        frmt           = "%sA" % (maxDim)
+        maxDim                = max(len(dataset['bkgspectra']),len(dataset['rspfile']))+20
+        frmt                  = "%sA" % (maxDim)
         #Add two columns to the PHA II file: BACKFILE and RESPFILE
-        backfileCol    = pyfits.Column(name='BACKFILE',format=frmt,
+        backfileCol           = pyfits.Column(name='BACKFILE',format=frmt,
                                        array=numpy.array(map(lambda x:"%s{%i}" %(dataset['bkgspectra'],x+1),range(nIntervals))))
         if 'weightedrsp' in dataset.keys():
-          respfileCol    = pyfits.Column(name='RESPFILE',format=frmt,
+          respfileCol         = pyfits.Column(name='RESPFILE',format=frmt,
                                        array=numpy.array(map(lambda x:"%s{%i}" %(dataset['weightedrsp'],x+1),range(nIntervals))))
         else:
-          respfileCol    = pyfits.Column(name='RESPFILE',format=frmt,
+          respfileCol         = pyfits.Column(name='RESPFILE',format=frmt,
                                        array=numpy.array(map(lambda x:"%s{%i}" %(dataset['rspfile'],x+1),range(nIntervals))))
-        #Remove the BACKFILE and RESPFILE cols if already existent
-        coldef         = f['SPECTRUM',1].get_coldefs()
-        collist        = []
-        for col in coldef:
-          if(col.name=="BACKFILE" or col.name=="RESPFILE"):
-            continue
-          else:
-             collist.append(col)
-          pass
         pass
-        collist.extend([backfileCol,respfileCol])
-        columns        = pyfits.ColDefs(collist)
-        newtable       = pyfits.new_table(columns)
-        f['SPECTRUM',1] = pyfits.new_table(newtable.columns, header=f['SPECTRUM',1].header)
-        f.flush()
+        
+        #Make a fake table
+        newtable       = pyfits.new_table(pyfits.ColDefs([backfileCol,respfileCol]))
+        
+        #Reopen the file and append the columns
+        f              = pyfits.open(dataset['srcspectra'])
+        
+        coldef         = f['SPECTRUM',1].columns + newtable.columns
+        header.update("POISSERR",True)
+        finalTable     = pyfits.new_table(coldef,header=header)
+        #Copy also GTI and EBOUNDS
+        primary        = f[0].copy()
+        ebounds        = f['EBOUNDS'].copy()
+        gti            = f['GTI'].copy()
         f.close()
+        
+        #Create the new file
+        hdulist        = pyfits.HDUList([primary,finalTable,ebounds,gti])
+        hdulist.writeto("%s__" %(dataset['srcspectra']))
+        os.remove(dataset['srcspectra'])
+        os.rename("%s__" %(dataset['srcspectra']),dataset['srcspectra'])
       pass  
     pass
     
@@ -1317,6 +1270,7 @@ class GUI(object):
         checks[-1].grid(row=i,column=0,sticky=W)
       pass
       checks[1].config(state=DISABLED)
+      checks[2].config(state=DISABLED)
       #Download button
       
       def go():
@@ -1343,13 +1297,18 @@ class GUI(object):
     for downloader in downloaders:
       try:
         downloader.getFTP()
+      except GtBurstException as gte:
+          sys.stdout.flush()
+          showerror("Error","%s" % (gte.longMessage))
+          continue
       except:
-        showerror("Error downloading data from FTP","Could not download data for trigger %s. Reason:\n\n '%s' \n\n." %(triggerName,sys.exc_info()[1]),parent=self.root)
-        self.console.stop()
+        if(downloadedSomething):
+          self.loadDataSetsFromAdirectory(os.path.join(self.configuration.get('dataRepository'),"bn%s" %(triggerName)))      
+        pass
+        self.fillUserInteractionFrame()
         raise
-        continue
-      pass
-      downloadedSomething     = True
+      finally:
+        downloadedSomething     = True
     pass
     
     if(downloadedSomething):
@@ -1409,11 +1368,11 @@ class GUI(object):
     #Load a dataset
     #Select a file from a browser and change correspondingly the given entry
     if(directory==None):
-      directory                = askdirectory(title="Please select a directory containing data files",
-                                                parent=self.root,initialdir=self.configuration.get('dataRepository'),
-                                                mustexist=True)
+      directory                = fancyFileDialogs.chooseDirectory(self.root,
+                                                title="Please select a directory containing data files",
+                                                initialdir=self.configuration.get('dataRepository'))
     pass
-    
+        
     if(directory==None or directory=='' or directory==()):
       #Cancel button, do nothing
       return
@@ -1499,16 +1458,7 @@ class GUI(object):
       angleString             = 'n.a.'
       #Compute the angle between this detector and the object
       if(dataset.detector.find('LAT')>=0 and RA_OBJ!='not available'):
-        #open the FT2 file
-        f                   = pyfits.open(dataset['ft2file'])
-        i                   = 0
-        while (f['SC_DATA'].data.field('STOP')[i]-dataset.triggerTime)<0: i=i+1
-        #Get spacecraft pointing
-        RA_SCX              = f['SC_DATA'].data.field('RA_SCX')[i]
-        DEC_SCX             = f['SC_DATA'].data.field('DEC_SCX')[i]
-        RA_SCZ              = f['SC_DATA'].data.field('RA_SCZ')[i]
-        DEC_SCZ             = f['SC_DATA'].data.field('DEC_SCZ')[i]
-        f.close()
+        RA_SCZ, DEC_SCZ, RA_SCX, DEC_SCX = dataHandling.getPointing(dataset.triggerTime,dataset['ft2file'],True)
         angle               = angularDistance.getDetectorAngle(RA_SCX,DEC_SCX,RA_SCZ,DEC_SCZ,RA_OBJ,DEC_OBJ,dataset.detector)
         angleString         = '%3.0f' %(angle)
         dataset.angleToGRB  = angle
@@ -1599,9 +1549,9 @@ class GUI(object):
           showinfo("No response for %s" %(dataset.detector),
                    "No RSP file available for detector %s! Please select one (be careful, no check will be performed)" % dataset.detector,
                    parent=parent)
-          userResponse       = askopenfilename(title="Please select RSP file for detector %s" %(dataset.detector),
+          userResponse       = fancyFileDialogs.chooseFile(title="Please select RSP file for detector %s" %(dataset.detector),
                                                initialdir=self.configuration.get('dataRepository'),
-                                               filetypes=[("Detector responses","*.rsp?"),("All files","*")])
+                                               filetypes=[("Detector responses","*.rsp*"),("All files","*")])
           if(userResponse==None or userResponse==''):
             showerror("No rsp provided","You did not provide a RSP file, ignoring detector %s" %(dataset.detector),parent=parent)
             continue
@@ -1656,7 +1606,7 @@ class GUI(object):
     for dataset in datasets:
       for key in ['rspfile','cspecfile']:
         f                     = pyfits.open(dataset[key],"update")
-        f[0].header.update("UREFTIME",triggerTime)
+        f[0].header.update("UREFTIME",float(triggerTime))
         f.close()
       pass
     pass  

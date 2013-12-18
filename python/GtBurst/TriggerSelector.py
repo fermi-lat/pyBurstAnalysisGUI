@@ -6,6 +6,7 @@ from Treeview import Treeview
 import urllib2
 from GtBurst.fontDefinitions import *
 from GtBurst.EntryPoint import EntryPoint
+from GtBurst.SubWindow import SubWindow
 import datetime, math
 
 # Convert RA HH:MM:SS.SSS into Degrees :
@@ -100,18 +101,18 @@ def sortby(tree, col, descending):
         command=lambda col=col: sortby(tree, col, int(not descending)))
 
 class TriggerSelector(object):
-    def __init__(self,parent=None):
+    def __init__(self,parent=None,**kwargs):
         self.parent           = parent
-        self.downloadList()
+        self.downloadList(**kwargs)
         if(self.data==None):
           #Could not download the trigger list!
           return
         if(parent!=None):
           #Graphic mode
-          self.root             = Toplevel(parent)
-          self.root.transient(parent)
-          self.root.grab_set()
-          
+          self.w                = SubWindow(self.parent,
+                                          transient=True,title="Select trigger",
+                                          initialHint="Select a trigger")
+          self.root             = self.w.window
           self.columns          = ['Name','Trigger time (MET)','Type','RA (deg)','Dec (deg)','Error radius (deg)','Localizing instrument']
           self.columnsWidths    = [120,150,90,90,90,150,170]
           self.tree             = None
@@ -121,49 +122,56 @@ class TriggerSelector(object):
         pass
     pass
     
-    def downloadList(self):
-        #Connect to the heasarc and download the list as text with the form:
-        #['|trigger_name|trigger_time           |trigger_type|',
-        #'+------------+-----------------------+------------+',
-        #'|bn080714086 |2008-07-14 02:04:12.053|GRB         |',
-        #'|bn080714425 |2008-07-14 10:12:01.838|GRB         |',
-        #'|bn080714745 |2008-07-14 17:52:54.023|GRB         |',
-        url = "http://heasarc.gsfc.nasa.gov/cgi-bin/W3Browse/w3query.pl?tablehead=name%3dBATCHRETRIEVALCATALOG%5f2%2e0+fermigtrig&Action=Query&Coordinates=%27Equatorial%3a+R%2eA%2e+Dec%27&Equinox=2000&Radius=60&NR=&GIFsize=0&Fields=&varon=trigger%5fname&varon=trigger%5ftime&varon=trigger%5ftype&varon=ra&varon=dec&varon=error_radius&varon=localization_source&sortvar=trigger%5fname&ResultMax=1000000&displaymode=BatchDisplay'"
-        if(self.parent!=None):
-          window                = Toplevel(self.parent)
-          window.transient(self.parent)        
-          frame                 = Frame(window)
-          frame.pack(fill=BOTH,expand=True,side=TOP)
-          label                 = Label(frame,font=LABELFONT,width=60,
-                                        text="Downloading trigger list from HEASARC website...\n\n")
-          label.pack(expand=True,fill=BOTH,side=LEFT)
-          window.update_idletasks()
-          self.parent.update_idletasks()
-        pass
-        
-        try:
-          response              = urllib2.urlopen(url,None,timeout=60)
-        except:
-          self.triggerName        = None
-          self.triggerTime        = None
-          self.ra                 = None
-          self.dec                = None
-          self.data               = None
-          
+    def downloadList(self,**kwargs):
+        if('catalog' in kwargs.keys()):
+          f                     = open(kwargs['catalog'])
+          text                  = f.read()
+          f.close()
+        else:
+          #Connect to the heasarc and download the list as text with the form:
+          #['|trigger_name|trigger_time           |trigger_type|',
+          #'+------------+-----------------------+------------+',
+          #'|bn080714086 |2008-07-14 02:04:12.053|GRB         |',
+          #'|bn080714425 |2008-07-14 10:12:01.838|GRB         |',
+          #'|bn080714745 |2008-07-14 17:52:54.023|GRB         |',
+          url = "http://heasarc.gsfc.nasa.gov/cgi-bin/W3Browse/w3query.pl?tablehead=name%3dBATCHRETRIEVALCATALOG%5f2%2e0+fermigtrig&Action=Query&Coordinates=%27Equatorial%3a+R%2eA%2e+Dec%27&Equinox=2000&Radius=60&NR=&GIFsize=0&Fields=&varon=trigger%5fname&varon=trigger%5ftime&varon=trigger%5ftype&varon=ra&varon=dec&varon=error_radius&varon=localization_source&sortvar=trigger%5fname&ResultMax=1000000&displaymode=BatchDisplay'"
           if(self.parent!=None):
-            window.destroy()
-            showerror("No connection","You do not seem to be connected to the internet, or problem with the HEASARC server. Cannot download list of triggers, you have to specify your trigger manually",
-                       parent=self.parent)
-          else:
-            raise RuntimeError("You do not seem to be connected to the internet, or problem with the HEASARC server. Cannot download list of triggers")
+            window                = Toplevel(self.parent)
+            window.transient(self.parent)        
+            frame                 = Frame(window)
+            frame.pack(fill=BOTH,expand=True,side=TOP)
+            label                 = Label(frame,font=LABELFONT,width=60,
+                                          text="Downloading trigger list from HEASARC website...\n\n")
+            label.pack(expand=True,fill=BOTH,side=LEFT)
+            window.update_idletasks()
+            self.parent.update_idletasks()
+          pass
           
-          return
+          try:
+            response              = urllib2.urlopen(url,None,timeout=60)
+          except:
+            self.triggerName        = None
+            self.triggerTime        = None
+            self.ra                 = None
+            self.dec                = None
+            self.data               = None
+            
+            if(self.parent!=None):
+              window.destroy()
+              showerror("No connection","You do not seem to be connected to the internet, or problem with the HEASARC server. Cannot download list of triggers, you have to specify your trigger manually",
+                         parent=self.parent)
+            else:
+              raise RuntimeError("You do not seem to be connected to the internet, or problem with the HEASARC server. Cannot download list of triggers")
+            
+            return
+          pass
+          
+          text                  = response.read()
+          f                     = open("trigcat.txt",'w+')
+          f.write(text)
+          f.close()
         pass
         
-        text                  = response.read()
-        f                     = open("trigcat.txt",'w+')
-        f.write(text)
-        f.close()
         self.data             = map(lambda x:x.strip().split("|")[1:-1],text.split("\n")[3:-2])
         #Convert RA, Dec from hh mm ss to decimal, and the trigger time from ISO UTC to MET
         for i in range(len(self.data)):

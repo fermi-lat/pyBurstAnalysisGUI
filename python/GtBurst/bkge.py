@@ -1,65 +1,19 @@
-#author Vlasios Vasileiou 2009--
-
-import sys,os,glob,math
 import pyfits
+import os
 
-
-import contextlib
-import sys
+try:
+  import BKGE_interface
+except:
+  active                      = False
+else:
+  active                      = True
+finally:
+  pass
 
 systematicError = 0.15 # 15%
 
-class suppress_stdout_stderr(object):
-    '''
-    A context manager for doing a "deep suppression" of stdout and stderr in 
-    Python, i.e. will suppress all print, even if the print originates in a 
-    compiled C/Fortran sub-function.
-       This will not suppress raised exceptions, since exceptions are printed
-    to stderr just before a script exits, and after the context manager has
-    exited (at least, I think that is why it lets exceptions through).      
-
-    '''
-    def __init__(self):
-        # Open a pair of null files
-        self.null_fds =  [os.open(os.devnull,os.O_RDWR) for x in range(2)]
-        # Save the actual stdout (1) and stderr (2) file descriptors.
-        self.save_fds = (os.dup(1), os.dup(2))
-
-    def __enter__(self):
-        # Assign the null pointers to stdout and stderr.
-        os.dup2(self.null_fds[0],1)
-        os.dup2(self.null_fds[1],2)
-
-    def __exit__(self, *_):
-        # Re-assign the real stdout/stderr back to (1) and (2)
-        os.dup2(self.save_fds[0],1)
-        os.dup2(self.save_fds[1],2)
-        # Close the null files
-        os.close(self.null_fds[0])
-        os.close(self.null_fds[1])
-#Verify if there exist the BKGE library
-with suppress_stdout_stderr():
-  try:
-    import pyIrfLoader
-    import ROOT
-    ROOT.gStyle.SetOptStat(0)
-    ROOT.gSystem.Load('librootIrfLoader')
-    ROOT.gSystem.Load('libBackgroundEstimator')
-    ROOT.gSystem.Load('libDurationEstimator')
-    from ROOT import TOOLS, BackgroundEstimator
-    from ROOT import BKGE_NS
-    TOOLS.Set("GRB_NAME","") #this is to create the datadir directory of the bkg estimator (kluge)
-    TOOLS.Set("BASEDIR",os.environ['BASEDIR'])
-    active = True
-  except:
-    active = False
-  pass
-  sys.stderr.flush()
-  sys.stdout.flush()
-pass
-
 class BKGE(object):
-  def __init__(self,filteredFt1,ft2,triggerName,triggertime,outdir,inputDirectory,locError=0.0):
+  def __init__(self,filteredFt1,ft2,triggerName,triggertime,outdir):
     global active
     if(active):
       self.ft1                = filteredFt1
@@ -81,74 +35,27 @@ class BKGE(object):
       
       self.grbname            = triggerName
       self.outdir             = outdir
-      self.locError           = locError
-      
-      TOOLS.Set("GRB_NAME",self.grbname)
-      TOOLS.Set("GRB_RA",float(self.ra))
-      TOOLS.Set("GRB_DEC",float(self.dec))
-      TOOLS.Set("DATA_CLASS",self.irf) #do not move this down in initialize part
-      TOOLS.Set("OUTPUT_DIR",self.outdir)
-      TOOLS.Set("ROI_LOCALIZATION_ERROR",self.locError)
-      
-      TOOLS.Set("CALCULATE_ROI",1)
-      TOOLS.Set("SEPARATE_FB",0)
-      TOOLS.Set("BKG_ESTIMATE_ERROR",systematicError)
-      TOOLS.Set("ROI_CONTAINMENT",0.95)
-      TOOLS.Set("INPUT_DIR",inputDirectory)
-      TOOLS.Set("ROI_MAX_RADIUS",12)
     else:
       raise RuntimeError("BKGE is not available in your system, you cannot use it!")
   pass
   
   def makeLikelihoodTemplate(self,start,stop,chatter=1):
-    #Transform in MET
-    start                     = float(start)+int(float(start) < 231292801.000)*self.triggertime
-    stop                      = float(stop)+int(float(stop) < 231292801.000)*self.triggertime
-    
-    duration                  = stop-start
-    self.CalculateBackground(start,stop,chatter)
-    CR_EGAL_BKG               = ROOT.Double(0)
-    GALGAMMAS_BKG             = ROOT.Double(0)
-    
-    outdir                    = self.outdir+'/Bkg_Estimates/%.2f_%.2f/' %(start-self.triggertime,stop-self.triggertime)
-    
-    BKGE_NS.MakeGtLikeTemplate(self.roi, outdir, self.irf, 
-                               self.zmax, GALGAMMAS_BKG,  CR_EGAL_BKG,chatter)
-    bkgetemplate              = os.path.abspath(os.path.join(outdir,'%s_gtlike_%s_CR_EGAL.txt' %(self.irf,self.grbname)))
-    statisticalError          = 1.0/math.sqrt(CR_EGAL_BKG)
-    return bkgetemplate, statisticalError, systematicError
-  pass
-  
-  def CalculateBackground(self,start,stop,emin=50,emax=300000,ebins=20,chatter=1):
-    #Transform in MET
-    start                     = float(start)+int(float(start) < 231292801.000)*self.triggertime
-    stop                      = float(stop)+int(float(stop) < 231292801.000)*self.triggertime
-
-    duration                  = stop - start
-    myname                    = sys._getframe().f_code.co_name
-        
-    if chatter>2: 
-      TOOLS.PrintConfig()
-    if chatter>1: 
-      print "%s: Calculating Background..." %(myname)
-    
+    #Transform in relative time (the BKGE wants that!)
+    start                     = float(start)-int(float(start) > 231292801.000)*self.triggertime
+    stop                      = float(stop)-int(float(stop) > 231292801.000)*self.triggertime
+    outdir                    = self.outdir+'/Bkg_Estimates/%.2f_%.2f/' %(start,stop)
     try:
-      print("\nCalculating background between %.2f and %.2f from the trigger time %s...\n" %(start-self.triggertime,stop-self.triggertime,self.triggertime))
-      BKGE_NS.CalculateBackground("%.2f_%.2f" %(start-self.triggertime,stop-self.triggertime), 
-                                start, 
-                                duration-1e-3,
-                                str(self.ft1),
-                                str(self.ft2),
-                                str(self.irf),
-                                emin,
-                                emax,
-                                ebins,
-                                self.zmax,
-                                chatter,
-                                True)    
+      BKGE_interface.MakeGtLikeTemplate(start, stop, self.triggertime, 
+                                      self.ra, self.dec, 
+                                      self.ft1, self.ft2, OUTPUT_DIR=self.outdir, 
+                                      chatter=10, ROI_Radius=self.roi, 
+                                      GRB_NAME=self.grbname)
     except:
-      print("BKGE failed!")
-      raise
-    pass
+      print("ERROR executing the BKGE")
+    
+    bkgetemplate              = os.path.abspath(os.path.join(outdir,'%s_gtlike_%s_CR_EGAL.txt' %(self.irf,self.grbname)))
+    statisticalError          = 0
+    
+    return bkgetemplate, statisticalError, systematicError
   pass
 pass

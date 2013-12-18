@@ -28,7 +28,7 @@ thisCommand.addParameter("emin","Minimum energy (MeV) (event with a lower energy
 thisCommand.addParameter("emax","Maximum energy (MeV) (event with a higher energy will be filtered out)",commandDefiner.MANDATORY,100000)
 thisCommand.addParameter("skybinsize","Bin size for the sky image (deg)",commandDefiner.OPTIONAL,0.2)
 thisCommand.addParameter("skymap","Name for the output file for the sky map",commandDefiner.MANDATORY,partype=commandDefiner.OUTPUTFILE,extension="fit")
-thisCommand.addParameter("thetamax","Maximum theta angle for the border of the ROI",commandDefiner.OPTIONAL,180.0,partype=commandDefiner.HIDDEN)
+thisCommand.addParameter("thetamax","Maximum theta angle for the source",commandDefiner.OPTIONAL,180.0)
 thisCommand.addParameter("clobber","Overwrite output file? (possible values: 'yes' or 'no')",commandDefiner.OPTIONAL,"yes")
 thisCommand.addParameter("strategy","Strategy for Zenith cut. (possible values: 'time' or 'events')",commandDefiner.OPTIONAL,"time",possibleValues=["time","events"])
 thisCommand.addParameter("verbose","Verbose output (possible values: 'yes' or 'no')",commandDefiner.OPTIONAL,"yes")
@@ -154,6 +154,7 @@ pass
 thisCommand.run = run
 
 if __name__=='__main__':
+  thisCommand.greetings()
   #Get all key=value pairs as a dictionary
   args                           = dict(arg.split('=') for arg in sys.argv[1:])
   gtdocountsmap(**args)

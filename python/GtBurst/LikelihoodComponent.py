@@ -9,13 +9,69 @@ import math
 from GtBurst.angularDistance import getAngularDistance
 from GtBurst import bkge
 import numpy
+import os
 
-def DiffuseSrcTemplateFunc(environVariablePath):
+def findGalacticTemplate(reproc):
+  templates                   = {'120': 'gal_2yearp7v6_trim_v0.fits,ring_2year_P76_v0.fits',
+                                 '130': 'gal_2yearp7v6_trim_v0.fits,ring_2year_P76_v0.fits',
+                                 '202': 'gll_iem_v05.fits'}
+  templ                       = findTemplate(templates[reproc])
+  if(templ==None):
+    raise RuntimeError("You don't have a Galactic template for Reprocessing %s. Cannot continue." %(reproc))
+  else:
+    print("\nFound Galactic template for reproc. %s: %s" %(reproc,templ))
+    return templ
+pass
+
+def findIsotropicTemplate(reproc):
+  templates                   = {'120': 'iso_p7v6source.txt,isotrop_2year_P76_source_v0.txt',
+                                 '130': 'iso_p7v6source.txt,isotrop_2year_P76_source_v0.txt',
+                                 '202': 'iso_source_v05.txt',
+                                 'BKGE': os.environ.get('THISBKGE')} #This is a trick, leave it as it is
+  templ                       = findTemplate(templates[reproc])
+  if(templ==None):
+    raise RuntimeError("You don't have a Isotropic template for Reprocessing %s. Cannot continue." %(reproc))
+  else:
+    print("\nFound Istotropic template for reproc. %s: %s" %(reproc,templ))
+    return templ
+pass
+
+def findTemplate(options):
+  templates                   = options.split(",")
+  foundTemplate               = None
+  envvar                      = os.environ.get("FERMI_DIR")
+  publicTools                 = True
+  if(envvar==None):
+    #This is for versions of ST internal to the collaboration
+    envvar                    = os.environ.get("GLAST_EXT")
+    publicTools               = False
+    if(envvar==None):
+      raise RuntimeError("Fermi Science tools are not properly configured. No FERMI_DIR nor GLAST_EXT variables are set. Cannot continue.")
+    pass
+  pass
+  if(publicTools):
+    path                        = os.path.abspath(os.path.expanduser(os.path.join(envvar,'refdata','fermi','galdiffuse')))
+  else:
+    path                        = os.path.abspath(os.path.expanduser(os.path.join(envvar,'diffuseModels','v2r0')))
+  pass
+  
+  for tmp in templates:
+    thisTrial                 = os.path.join(path,tmp)
+    if(os.path.exists(thisTrial)):
+      return thisTrial
+    pass
+  pass
+  
+  #If we are here no template has been found
+  return None
+pass
+
+def DiffuseSrcTemplateFunc(reproc):
     diffuse = '''
    <spatialModel file="%s" type="MapCubeFunction">
      <parameter free="0" max="1000.0" min="0.001" name="Normalization" scale= "1.0" value="1.0"/>
    </spatialModel>
-    ''' %(os.environ.get(environVariablePath))
+    ''' %(findGalacticTemplate(reproc))
     
     spectrum = '''
    <spectrum type="ConstantValue">
@@ -39,7 +95,7 @@ def DiffuseSrcTemplateFunc(environVariablePath):
     return src
 pass
 
-def IsotropicTemplateFunc(environVariablePath):
+def IsotropicTemplateFunc(reproc):
     diffuse = '''
    <spatialModel type="ConstantValue">
       <parameter free="0" max="10.0" min="0.0" name="Value" scale="1.0" value="1.0"/>
@@ -50,7 +106,7 @@ def IsotropicTemplateFunc(environVariablePath):
    <spectrum file="%s" type="FileFunction">
       <parameter free="1" max="1000" min="1e-05" name="Normalization" scale="1" value="1" />
    </spectrum>
-    ''' % (os.environ.get(environVariablePath))
+    ''' % (findIsotropicTemplate(reproc))
     
     completeExpression        = '<source name="isotropic template" type="DiffuseSource">%s\n%s\n</source>' %(diffuse,spectrum)
     (src, )                   = minidom.parseString(completeExpression).getElementsByTagName('source')
@@ -143,8 +199,8 @@ class IsotropicPowerlaw(GenericSource):
 pass
 
 class TemplateFile(GenericSource):
-  def __init__(self,name,environVariablePath,constructorFunction,sysError=0.15,statError=0):
-    self.source               = constructorFunction(environVariablePath)
+  def __init__(self,name,reproc,constructorFunction,sysError=0.15,statError=0):
+    self.source               = constructorFunction(reproc)
     self.source.name          = name
     self.source.sysErr        = '%s' % sysError
     self.source.node.setAttribute('sysErr','%s' % sysError)
@@ -167,31 +223,26 @@ class TemplateFile(GenericSource):
 pass
 
 class GalaxyAndExtragalacticDiffuse(TemplateFile):
-  def __init__(self):
-    if(os.environ.get('GALACTIC_DIFFUSE_TEMPLATE')==None):
-      raise RuntimeError("You have to set the environment variable GALACTIC_DIFFUSE_TEMPLATE to point to the diffuse model.")
-    TemplateFile.__init__(self,"GalacticTemplate",'GALACTIC_DIFFUSE_TEMPLATE',DiffuseSrcTemplateFunc)
+  def __init__(self,reproc='202'):
+    TemplateFile.__init__(self,"GalacticTemplate",reproc,DiffuseSrcTemplateFunc)
   pass
 pass
 
 class IsotropicTemplate(TemplateFile):
-  def __init__(self):
-    if(os.environ.get('ISOTROPIC_TEMPLATE')==None):
-      raise RuntimeError("You have to set the environment variable ISOTROPIC_TEMPLATE to point to the diffuse model.")
-    TemplateFile.__init__(self,"IsotropicTemplate",'ISOTROPIC_TEMPLATE',IsotropicTemplateFunc,0.1)
+  def __init__(self,reproc):
+    TemplateFile.__init__(self,"IsotropicTemplate",reproc,IsotropicTemplateFunc,0.1)
   pass
 pass
 
 class BKGETemplate(TemplateFile):
   def __init__(self,filteredEventFile,ft2,tstart,tstop,triggerName,triggertime):
     #Make the BKGE estimate
-    thisBkge                  = bkge.BKGE(filteredEventFile,ft2,triggerName,triggertime,os.getcwd(),os.environ['BKGE_INPUT_DIR'])
+    thisBkge                  = bkge.BKGE(filteredEventFile,ft2,triggerName,triggertime,os.getcwd())
     template,statErr,sysErr   = thisBkge.makeLikelihoodTemplate(tstart,tstop)
     os.environ['THISBKGE']    = template
-    TemplateFile.__init__(self,"IsotropicTemplate",'THISBKGE',IsotropicTemplateFunc,sysErr,statErr)
+    TemplateFile.__init__(self,"IsotropicTemplate",'BKGE',IsotropicTemplateFunc,sysErr,statErr)
   pass
 pass
-
 
 class catalog_2FGL(object):
   def __init__(self,xmlfile):
@@ -206,33 +257,65 @@ class catalog_2FGL(object):
     for source in root.findall('source'):      
       spatialModel            = source.findall('spatialModel')[0]
       
-      #Skip extended sources or sources which cannot contribute any photon given the exposure
+      #Remove point sources which cannot contribute any photon given the exposure
       aeff                    = 0.6e4 #cm2
       npred                   = float(source.get('Flux100'))*exposure*aeff
-      if(source.get('type')!='PointSource' or npred < 1):
+      if(source.get('type')=='PointSource' and npred < 1):
         root.remove(source)
         continue
-      
-      #Get coordinates of this point source
-      coords                  = {}
-      for p in spatialModel.iter('parameter'):
-        coords[p.get('name').lower()] = float(p.get('value'))
       pass
-      thisRa                  = coords['ra']
-      thisDec                 = coords['dec']
       
-      thisDist                = getAngularDistance(ra,dec,thisRa,thisDec)
-      if(float(thisDist) >= float(rad)):
-        #Remove this source
-        root.remove(source)
-      else:
-        print("Keeping %s (%4.2f deg away)..." %(source.get('name'),float(thisDist)))
-        #Fix all parameters
-        specModel             = source.findall('spectrum')[0]
-        for p in specModel.findall('parameter'):
-          p.set('free','0')
+      if(source.get('type')=='PointSource'):
+        #Get coordinates of this point source
+        coords                  = {}
+        for p in spatialModel.iter('parameter'):
+          coords[p.get('name').lower()] = float(p.get('value'))
         pass
-        srcs                 += 1
+        thisRa                  = coords['ra']
+        thisDec                 = coords['dec']
+        
+        thisDist                = getAngularDistance(ra,dec,thisRa,thisDec)
+
+        if(float(thisDist) >= float(rad)):
+          #Remove this source
+          root.remove(source)
+        else:
+          print("Keeping point source %s (%4.2f deg away)..." %(source.get('name'),float(thisDist)))
+          #Fix all parameters
+          specModel             = source.findall('spectrum')[0]
+          for p in specModel.findall('parameter'):
+            p.set('free','0')
+          pass
+          srcs                 += 1
+      elif(source.get('type')=='DiffuseSource'):
+        #Get coordinates of the center of this diffuse source
+        thisRa                  = float(source.get('RA'))
+        thisDec                 = float(source.get('DEC'))
+        
+        thisDist                = getAngularDistance(ra,dec,thisRa,thisDec)
+
+        #Remove source if its center is more than twice its size out of the ROI
+        if(float(thisDist) >= float(rad)+2*float(source.get('Extension'))):
+          root.remove(source)
+        else:
+          #Fix all parameters
+          specModel             = source.findall('spectrum')[0]
+          for p in specModel.findall('parameter'):
+            p.set('free','0')
+          pass
+          #Now correct the name of the FITS template so that the likelihood
+          #will find it
+          spatialModel          = source.findall('spatialModel')[0]
+          filename              = spatialModel.get('file')
+          path                  = __file__
+          templatesPath         = os.path.join(os.path.sep.join(path.split(os.path.sep)[0:-3]),'data','templates')
+          newFilename           = os.path.abspath(os.path.join(templatesPath,filename))
+          spatialModel.set('file','%s' % newFilename)
+          srcs                 += 1          
+          print("Keeping diffuse source %s (%4.2f deg away) using template %s..." %(source.get('name'),float(thisDist),newFilename))
+      else:
+        print("WTF")
+        raise
     pass
     print("Kept %s point sources from the 2FGL catalog" %(srcs))
     self.tree.write(output)
@@ -319,7 +402,7 @@ class LikelihoodResultsPrinter(object):
     for source in root.findall('source'):
       sourceName                = source.get('name')
       sourceType                = source.get('type')
-      TS                        = max(0,self.likelihoodObj.Ts(sourceName,reoptimize=False,MaxIterations=1000))
+      TS                        = max(0,self.likelihoodObj.Ts(sourceName,reoptimize=True,MaxIterations=10000))
       
       #energy flux
       MeVtoErg                  = 1.60217646E-6
@@ -347,15 +430,15 @@ class LikelihoodResultsPrinter(object):
           import UpperLimits
           if(phIndexForUL!=-2):
             index                 = phIndexForUL
+            conv                  = (1.+index)/(2.0+index)*(pow(self.emax,index+2)-pow(self.emin,index+2))/(pow(self.emax,index+1)-pow(self.emin,index+1))
           else:
-            index                 = -2.05
+            index                 = -2.0
+            conv                  = (self.emin)*(self.emax)/(self.emax-self.emin)*numpy.log(self.emax/self.emin)
           self.likelihoodObj[sourceName].src.spectrum().parameter('Index').setValue(index)
           self.likelihoodObj[sourceName].src.spectrum().parameter('Index').setFree(0)
           ulc                   = UpperLimits.UpperLimits(self.likelihoodObj)
-          emin                  = self.emin
-          emax                  = self.emax
           ul,integr             = ulc[sourceName].bayesianUL(emin=self.emin, emax=self.emax,cl=0.95)          
-          ule                   = ul*(1.+index)/(2.0+index)*(pow(emax,index+2)-pow(emin,index+2))/(pow(emax,index+1)-pow(emin,index+1))
+          ule                   = ul*conv
           flux                  = "< %8.3g" %(ule*MeVtoErg)
           fluxError             = 'n.a.'
           phflux                = "< %8.3g" %(ul)

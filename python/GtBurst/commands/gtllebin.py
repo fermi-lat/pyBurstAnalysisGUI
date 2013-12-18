@@ -87,7 +87,6 @@ def run(**kwargs):
   message                     = Message(verbose)
   
   #Load LLE data
-  message("%s" %(thisCommand.getPreambolMessage()))
   message(" *  Get energy binning from the response matrix...")
     
   lleData                     = dataHandling.LLEData(eventfile,rspfile,ft2file)
@@ -152,6 +151,7 @@ pass
 thisCommand.run = run
 
 if __name__=='__main__':
+  thisCommand.greetings()
   #Get all key=value pairs as a dictionary
   args                           = dict(arg.split('=') for arg in sys.argv[1:])
   gtllebin(**args)

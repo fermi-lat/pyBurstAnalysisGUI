@@ -6,7 +6,6 @@ configDirEnvVariable          = 'GTBURSTCONFDIR'
 
 class Configuration(object):
     def __init__(self):
-      
       #The configuration file will be in the home directory of the user
       #This can be overridden by setting the environment variable GTBURSTCONFDIR
       configurationFileName             = "gtburstGUI.conf"

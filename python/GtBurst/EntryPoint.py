@@ -2,8 +2,10 @@ import os
 from Tkinter import *
 from GtBurst.fontDefinitions import *
 from tkMessageBox import showerror, showinfo 
-from tkFileDialog import askdirectory
-from tkFileDialog import askopenfilename
+#from tkFileDialog import askdirectory
+#from tkFileDialog import askopenfilename
+import fancyFileDialogs
+
 
 def selectFile(parent,entry, extension="*",**kwargs):
     
@@ -17,11 +19,11 @@ def selectFile(parent,entry, extension="*",**kwargs):
     prevValue         = entry.get()
     #Select a file from a browser and change correspondingly the given entry
     if(directory):
-      filename        = askdirectory(title="Please select a file", parent=parent,initialdir=workdir)
+      filename        = fancyFileDialogs.chooseDirectory(parent,title="Please select a file", initialdir=workdir)
     else:  
-      filename        = askopenfilename(title="Please select a file", 
+      filename        = fancyFileDialogs.chooseFile(parent,title="Please select a file", 
                                         filetypes=[("Default type","*.%s" %(extension)),("allfiles","*")],
-                                        parent=parent,initialdir=workdir)
+                                        initialdir=workdir)
     pass
     
     if(filename!=None and filename!=()):

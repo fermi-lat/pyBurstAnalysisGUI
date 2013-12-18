@@ -31,6 +31,9 @@ codes[4] = "Spacecraft file (FT2 file) does not cover the interval requested"
 codes[41] = "Spacecraft file (FT2 file) starts after the beginning of the requested interval"
 codes[42] = "Spacecraft file (FT2 file) stops before the end of the requested interval"
 
+codes[5] = "LLE or GBM data are not available"
+
+codes[6] = "Wrong Isotropic component"
 class GtBurstException(RuntimeError):
   def __init__(self,code,message):
     RuntimeError.__init__(self,message)
