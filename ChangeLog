@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: giacomov  Thu Dec 19 16:29:34 PST 2013
+pyBurstAnalysisGUI/python/GtBurst
+
+Modified Files:
+	LikelihoodComponent.py 
+Log Message:
+Added the possibility to use the trimmed version of the P7REP Galactic template
+    *
+------------------------------------------------------------
 User: giacomov  Thu Dec 19 16:19:44 PST 2013
 pyBurstAnalysisGUI/python/GtBurst
 
