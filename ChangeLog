@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: giacomov  Thu Dec 19 17:11:30 PST 2013
+pyBurstAnalysisGUI/python
+
+Modified Files:
+	gtburst.py 
+Log Message:
+Removed the simulation task, which is currently not working
+    *
+------------------------------------------------------------
 User: giacomov  Thu Dec 19 17:05:31 PST 2013
 pyBurstAnalysisGUI/python/GtBurst/commands
 
