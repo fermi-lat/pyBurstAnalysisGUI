@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: giacomov  Fri Dec 20 11:42:43 PST 2013
+pyBurstAnalysisGUI/python
+
+Modified Files:
+	gtburst.py 
+Log Message:
+Solved a corner case, in which the column BACKFILE and RESPFILE already exists in the output PHA file
+    *
+------------------------------------------------------------
 User: giacomov  Thu Dec 19 17:11:30 PST 2013
 pyBurstAnalysisGUI/python
 
