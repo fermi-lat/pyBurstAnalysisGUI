@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: giacomov  Thu Dec 19 17:05:31 PST 2013
+pyBurstAnalysisGUI/python/GtBurst
+
+Modified Files:
+	FuncFactory.py 
+Log Message:
+Added the 90% error radius
+    *
+------------------------------------------------------------
 User: giacomov  Thu Dec 19 16:29:50 PST 2013
 pyBurstAnalysisGUI/python/GtBurst
 
