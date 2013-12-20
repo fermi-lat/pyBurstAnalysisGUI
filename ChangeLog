@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: giacomov  Thu Dec 19 16:01:15 PST 2013
+pyBurstAnalysisGUI/python
+
+Modified Files:
+	gtburst.py 
+Log Message:
+Corrected the way to find the data path
+    *
+------------------------------------------------------------
 User: giacomov  Wed Dec 18 13:05:35 PST 2013
 pyBurstAnalysisGUI/doc
 
