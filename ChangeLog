@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: giacomov  Thu Dec 19 16:19:44 PST 2013
+pyBurstAnalysisGUI/python/GtBurst
+
+Modified Files:
+	FuncFactory.py dataHandling.py 
+Log Message:
+Removed a deprecated way to reach comments of FITS keywords with pyfits
+    *
+------------------------------------------------------------
 User: giacomov  Thu Dec 19 16:06:41 PST 2013
 pyBurstAnalysisGUI/python/GtBurst
 
