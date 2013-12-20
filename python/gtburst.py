@@ -1080,9 +1080,18 @@ class GUI(object):
         #Reopen the file and append the columns
         f              = pyfits.open(dataset['srcspectra'])
         
-        coldef         = f['SPECTRUM',1].columns + newtable.columns
-        header.update("POISSERR",True)
-        finalTable     = pyfits.new_table(coldef,header=header)
+        if('RESPFILE' in f['SPECTRUM',1].data.names):
+          finalTable   = pyfits.BinTableHDU(f['SPECTRUM',1].data,f['SPECTRUM',1].header)
+          for i in range(len(finalTable.data)):
+            finalTable.data.RESPFILE[i] = respfileCol[i]
+            finalTable.data.BACKFILE[i] = backfileCol[i]
+          pass
+        else:
+          coldef         = f['SPECTRUM',1].columns + newtable.columns
+          finalTable     = pyfits.new_table(coldef,header=header)
+        pass
+        finalTable.header.update("POISSERR",True)
+        
         #Copy also GTI and EBOUNDS
         primary        = f[0].copy()
         ebounds        = f['EBOUNDS'].copy()
