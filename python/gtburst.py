@@ -565,9 +565,9 @@ class GUI(object):
     self.tasksmenu.add_command(label="Interactively recenter ROI",
                           command=self.recenterROI,
                           state=DISABLED)
-    self.tasksmenu.add_command(label="Simulate GRB observation",
-                          command=self.simulateObservation,
-                          state=DISABLED)
+    #self.tasksmenu.add_command(label="Simulate GRB observation",
+    #                      command=self.simulateObservation,
+    #                      state=DISABLED)
     self.tasksmenu.add_command(label="Make spectra for XSPEC",
                           command=self.commandInterface,
                           state=DISABLED) 
