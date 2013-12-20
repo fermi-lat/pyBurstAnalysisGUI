@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: giacomov  Fri Dec 20 12:12:33 PST 2013
+pyBurstAnalysisGUI/python/GtBurst
+
+Modified Files:
+	dataHandling.py 
+Log Message:
+Added EBOUNDS and GTI extension to the output of binByEnergyAndTime when the input event file is actually a CSPEC file
+    *
+------------------------------------------------------------
 User: giacomov  Fri Dec 20 11:51:44 PST 2013
 pyBurstAnalysisGUI/python
 
