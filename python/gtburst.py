@@ -1064,16 +1064,16 @@ class GUI(object):
         maxDim                = max(len(dataset['bkgspectra']),len(dataset['rspfile']))+20
         frmt                  = "%sA" % (maxDim)
         #Add two columns to the PHA II file: BACKFILE and RESPFILE
+        backfileArr           = numpy.array(map(lambda x:"%s{%i}" %(dataset['bkgspectra'],x+1),range(nIntervals)))
         backfileCol           = pyfits.Column(name='BACKFILE',format=frmt,
-                                       array=numpy.array(map(lambda x:"%s{%i}" %(dataset['bkgspectra'],x+1),range(nIntervals))))
+                                       array=backfileArr)
         if 'weightedrsp' in dataset.keys():
-          respfileCol         = pyfits.Column(name='RESPFILE',format=frmt,
-                                       array=numpy.array(map(lambda x:"%s{%i}" %(dataset['weightedrsp'],x+1),range(nIntervals))))
+          respfileArr         = numpy.array(map(lambda x:"%s{%i}" %(dataset['weightedrsp'],x+1),range(nIntervals)))
         else:
-          respfileCol         = pyfits.Column(name='RESPFILE',format=frmt,
-                                       array=numpy.array(map(lambda x:"%s{%i}" %(dataset['rspfile'],x+1),range(nIntervals))))
+          respfileArr         = numpy.array(map(lambda x:"%s{%i}" %(dataset['rspfile'],x+1),range(nIntervals)))
         pass
-        
+        respfileCol           = pyfits.Column(name='RESPFILE',format=frmt,
+                                              array=respfileArr)        
         #Make a fake table
         newtable       = pyfits.new_table(pyfits.ColDefs([backfileCol,respfileCol]))
         
@@ -1083,8 +1083,8 @@ class GUI(object):
         if('RESPFILE' in f['SPECTRUM',1].data.names):
           finalTable   = pyfits.BinTableHDU(f['SPECTRUM',1].data,f['SPECTRUM',1].header)
           for i in range(len(finalTable.data)):
-            finalTable.data.RESPFILE[i] = respfileCol[i]
-            finalTable.data.BACKFILE[i] = backfileCol[i]
+            finalTable.data.RESPFILE[i] = respfileArr[i]
+            finalTable.data.BACKFILE[i] = backfileArr[i]
           pass
         else:
           coldef         = f['SPECTRUM',1].columns + newtable.columns
