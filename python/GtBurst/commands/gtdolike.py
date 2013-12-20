@@ -153,6 +153,7 @@ def run(**kwargs):
         localizationMessage += "\nNew localization from gtfindsrc:\n\n"
         localizationMessage += "(R.A., Dec)                     = (%6.3f, %6.3f)\n" %(bestra,bestdec)
         localizationMessage += "68 %s containment radius        = %6.3f\n" %('%',poserr)
+        localizationMessage += "90 %s containment radius        = %6.3f\n" %('%',1.41*poserr)
         distance             = getAngularDistance(float(ra),float(dec),float(bestra),float(bestdec))
         localizationMessage += "Distance from initial position  = %6.3f\n\n" %(distance)
         localizationMessage += "NOTE: this new localization WILL NOT be used by default. If you judge"

@@ -5,9 +5,6 @@ model Functions.
 
 @author J. Chiang <jchiang@slac.stanford.edu>
 """
-#
-# $Header: /nfs/slac/g/glast/ground/cvs/ScienceTools-scons/likeGui/python/FuncFactory.py,v 1.15 2008/07/29 20:33:14 jchiang Exp $
-#
 
 import copy
 from xml.dom import minidom
