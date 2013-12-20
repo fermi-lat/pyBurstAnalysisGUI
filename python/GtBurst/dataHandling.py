@@ -886,7 +886,20 @@ class LLEData(object):
         newPHA2.addSpectrum(thisSpectrum)
       pass
       newPHA2.write(outfile,format="PHA2",clobber=True)
+      
+      #Now add EBOUNDS and GTI to the new file
+      ebounds                 = cspec["EBOUNDS"].copy()
+      gti                     = cspec["GTI"].copy()
+      f                       = pyfits.open(outfile)
+      primary                 = f[0].copy()
+      spectrum                = f['SPECTRUM'].copy()
+      f.close()
       cspec.close()
+      
+      hdulist                 = pyfits.HDUList([primary,spectrum,ebounds,gti])
+      hdulist.writeto("temp.pha__")
+      os.remove(outfile)
+      os.rename("temp.pha__",outfile)     
     pass
 pass
 
