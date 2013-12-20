@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: giacomov  Thu Dec 19 16:01:16 PST 2013
+pyBurstAnalysisGUI/python/GtBurst/commands
+
+Modified Files:
+	gtdolike.py 
+Log Message:
+Corrected the way to find the data path
+    *
+------------------------------------------------------------
+User: giacomov  Thu Dec 19 16:01:16 PST 2013
 pyBurstAnalysisGUI/python/GtBurst
 
 Modified Files:
