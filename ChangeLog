@@ -1,4 +1,15 @@
 ------------------------------------------------------------
+User: giacomov  Thu Dec 19 16:01:16 PST 2013
+pyBurstAnalysisGUI/python/GtBurst
+
+Modified Files:
+	FuncFactory.py LikelihoodComponent.py version.py 
+Added Files:
+	getDataPath.py 
+Log Message:
+Corrected the way to find the data path
+    *
+------------------------------------------------------------
 User: giacomov  Thu Dec 19 16:01:15 PST 2013
 pyBurstAnalysisGUI/python
 
