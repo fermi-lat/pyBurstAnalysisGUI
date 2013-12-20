@@ -3017,8 +3017,8 @@ def fixHeaders(llefile,cspecfile,sourceExt=eventsExtName,destExt="SPECTRUM"):
   
   #Copy from the TTE file some keywords
   llef                        = pyfits.open(llefile)
-  llePrimary                  = llef[0].header.ascardlist()
-  lleSpectrum                 = llef[sourceExt].header.ascardlist()
+  llePrimary                  = llef[0].header
+  lleSpectrum                 = llef[sourceExt].header
   
   cspecf                      = pyfits.open(cspecfile,"update")
   cspecPrimary                = cspecf[0].header
@@ -3026,8 +3026,8 @@ def fixHeaders(llefile,cspecfile,sourceExt=eventsExtName,destExt="SPECTRUM"):
   
   for key in keywordsToCopyPrimary:
     try:
-      value                     = llePrimary[key].value
-      comments                  = llePrimary[key].comment
+      value                     = llePrimary[key]
+      comments                  = llePrimary.comments[key]
     except:
       continue
     pass
@@ -3037,8 +3037,8 @@ def fixHeaders(llefile,cspecfile,sourceExt=eventsExtName,destExt="SPECTRUM"):
   
   for key in keywordsToCopySpectrum:
     try:
-      value                     = lleSpectrum[key].value
-      comments                  = lleSpectrum[key].comment
+      value                     = lleSpectrum[key]
+      comments                  = lleSpectrum.comments[key]
     except:
       continue
     pass
