@@ -83,6 +83,7 @@ from GtBurst import getGBMfiles
 from GtBurst import downloadTransientData
 from GtBurst.dataHandling import _getLatestVersion
 from GtBurst.GtBurstException import GtBurstException
+from GtBurst.getDataPath import getDataPath
 
 sys.stderr.write(". done \n")
 if(GtBurst.commands.gtbuildxmlmodel.bkge.active):
@@ -142,7 +143,7 @@ class GUI(object):
     import GtBurst
     path                      = GtBurst.__file__
     self.installationPath     = os.path.join(os.path.sep.join(path.split(os.path.sep)[0:-3]))
-    self.dataPath             = os.path.join(self.installationPath,'data')
+    self.dataPath             = getDataPath()
     self.datasets             = []
     self.object               = TransientSource()
     self.console              = None

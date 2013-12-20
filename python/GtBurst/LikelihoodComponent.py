@@ -10,6 +10,7 @@ from GtBurst.angularDistance import getAngularDistance
 from GtBurst import bkge
 import numpy
 import os
+from GtBurst.getDataPath import getDataPath
 
 def findGalacticTemplate(reproc):
   templates                   = {'120': 'gal_2yearp7v6_trim_v0.fits,ring_2year_P76_v0.fits',
@@ -307,8 +308,7 @@ class catalog_2FGL(object):
           #will find it
           spatialModel          = source.findall('spatialModel')[0]
           filename              = spatialModel.get('file')
-          path                  = __file__
-          templatesPath         = os.path.join(os.path.sep.join(path.split(os.path.sep)[0:-3]),'data','templates')
+          templatesPath         = os.path.join(os.path.join(getDataPath(),'templates'))
           newFilename           = os.path.abspath(os.path.join(templatesPath,filename))
           spatialModel.set('file','%s' % newFilename)
           srcs                 += 1          
@@ -348,9 +348,7 @@ class LikelihoodModel(object):
   def add2FGLsources(self,ra,dec,radius,filename,exposure):
     #Add all point sources in the 2FGL catalog with an angular distance less than 'radius'
     #from the given Ra,DEC\
-    import GtBurst
-    path                      = GtBurst.__file__
-    dataPath                  = os.path.join(os.path.sep.join(path.split(os.path.sep)[0:-3]),'data')
+    dataPath                  = getDataPath()
     fgl                       = catalog_2FGL(os.path.join(dataPath,'gll_psc_v07.xml'))
     tmpname                   = '__2fgl_sources.xml'
     fgl.getXmlForSourcesInTheROI(float(ra),float(dec),radius,tmpname,exposure)
