@@ -15,7 +15,7 @@ from GtBurst.getDataPath import getDataPath
 def findGalacticTemplate(reproc):
   templates                   = {'120': 'gal_2yearp7v6_trim_v0.fits,ring_2year_P76_v0.fits',
                                  '130': 'gal_2yearp7v6_trim_v0.fits,ring_2year_P76_v0.fits',
-                                 '202': 'gll_iem_v05.fits'}
+                                 '202': 'gll_iem_v05.fits,template_4years_P7_v15_repro_v2_trim.fits'}
   templ                       = findTemplate(templates[reproc])
   if(templ==None):
     raise RuntimeError("You don't have a Galactic template for Reprocessing %s. Cannot continue." %(reproc))
