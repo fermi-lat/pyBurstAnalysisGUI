@@ -6,6 +6,7 @@
   $Id $
   * EOH *
 
+ pyBurstAnalysisGUI-01-04-04 02-Jan-2014 giacomov Fixing a problem in finding the data path in the public version of the ST
  pyBurstAnalysisGUI-01-04-03 20-Dec-2013 giacomov Fixing some issues to make the interface work in the ST packaging system
  pyBurstAnalysisGUI-01-04-02 18-Dec-2013 giacomov stagging and putting in synch with git repository
  pyBurstAnalysisGUI-01-00-00 09-Sep-2013 jchiang initial scons version tag
