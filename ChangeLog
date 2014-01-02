@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: giacomov  Thu Jan  2 14:12:31 PST 2014
+pyBurstAnalysisGUI/python/GtBurst
+
+Modified Files:
+	getDataPath.py 
+Log Message:
+Now the data path is /home/giacomov/Glast/ScienceTools-09-32-05/refdata/fermi in the case of Fermi public science tools
+    *
+------------------------------------------------------------
 User: giacomov  Fri Dec 20 16:06:37 PST 2013
 pyBurstAnalysisGUI/doc
 
