@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: giacomov  Fri Jan  3 11:38:49 PST 2014
+pyBurstAnalysisGUI/python/GtBurst
+
+Modified Files:
+	downloadTransientData.py getDataPath.py 
+Log Message:
+Correcting a problem in finding the data path in public ST
+    *
+------------------------------------------------------------
 User: giacomov  Thu Jan  2 14:51:51 PST 2014
 pyBurstAnalysisGUI/doc
 
