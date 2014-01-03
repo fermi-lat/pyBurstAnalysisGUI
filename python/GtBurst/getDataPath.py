@@ -13,6 +13,7 @@ def getDataPath():
     dataPath           = os.path.join(installationPath,'data','pyBurstAnalysisGUI')
     if(not os.path.exists(os.path.join(dataPath,'glast_logo.png'))):
       #In the public version of Fermi ST, data are in refdata/fermi/pyBurstAnalysisGUI
+      installationPath = os.path.join(os.path.sep.join(path.split(os.path.sep)[0:-4]))
       dataPath         = os.path.join(installationPath,'refdata','fermi','pyBurstAnalysisGUI')
     pass
   pass

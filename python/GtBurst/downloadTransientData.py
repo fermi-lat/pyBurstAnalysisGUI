@@ -166,7 +166,7 @@ class DownloadTransientData(dataCollector):
     
     text                        = html2text.html2text(html.encode('utf-8').strip()).split("\n")
     if("".join(text).replace(" ","")==""):
-      raise GtBurstException(1,"Problems with the download. Empty answer from the LAT server. Please retry later.")
+      raise GtBurstException(1,"Problems with the download. Empty answer from the LAT server. Normally this means that the server is ingesting new data, please retry in half an hour or so.")
     text                        = filter(lambda x:x.find("[") < 0 and 
                                                   x.find("]") < 0 and 
                                                   x.find("#") < 0 and 
