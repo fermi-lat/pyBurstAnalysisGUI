@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: giacomov  Tue Feb 11 06:11:01 PST 2014
+pyBurstAnalysisGUI/python/GtBurst
+
+Modified Files:
+	dataHandling.py 
+Log Message:
+Added the binned analysis to gtburst
+    *
+------------------------------------------------------------
 User: giacomov  Tue Feb 11 06:11:00 PST 2014
 pyBurstAnalysisGUI
 
