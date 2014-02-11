@@ -11,7 +11,7 @@ import re
 ################ Command definition #############################
 executableName                = "gtdolike"
 version                       = "1.0.0"
-shortDescription              = "Perform an unbinned likelihood analysis"
+shortDescription              = "Perform a likelihood analysis"
 author                        = "G.Vianello, giacomov@slac.stanford.edu"
 thisCommand                   = commandDefiner.Command(executableName,shortDescription,version,author)
 
@@ -27,13 +27,13 @@ thisCommand.addParameter("tsmin","Minimum TS to consider a source detected",comm
 thisCommand.addParameter("optimizeposition","Optimize position?",commandDefiner.OPTIONAL,"yes",possiblevalues=['yes','no'])
 thisCommand.addParameter("showmodelimage","Show an image representing the best fit likelihood model?",commandDefiner.OPTIONAL,"yes",possiblevalues=['yes','no'])
 thisCommand.addParameter("spectralfiles","Produce spectral files for XSPEC?",commandDefiner.OPTIONAL,"no",possiblevalues=['yes','no'])
-
+thisCommand.addParameter("liketype","Likelihood type",commandDefiner.OPTIONAL,"unbinned",possiblevalues=['unbinned','binned'])
 #thisCommand.addParameter("irf","Data class (TRANSIENT or SOURCE)",commandDefiner.MANDATORY,'TRANSIENT',possiblevalues=['TRANSIENT','SOURCE'])
 thisCommand.addParameter("clobber","Overwrite output file? (possible values: 'yes' or 'no')",commandDefiner.OPTIONAL,"yes")
 thisCommand.addParameter("verbose","Verbose output (possible values: 'yes' or 'no')",commandDefiner.OPTIONAL,"yes")
 thisCommand.addParameter("figure","Matplotlib figure for the interactive mode",commandDefiner.OPTIONAL,None,partype=commandDefiner.PYTHONONLY)
 
-GUIdescription                = "Here you will perform an unbinned likelihood analysis on the data you selected in the first step,"
+GUIdescription                = "Here you will perform a likelihood analysis on the data you selected in the first step,"
 GUIdescription               += " using the model you selected in the 2nd step."
 GUIdescription               += "TIP The likelihood analysis should take between 5 and 10 minutes to complete."
 thisCommand.setGUIdescription(GUIdescription)
@@ -85,6 +85,7 @@ def run(**kwargs):
     spectralfiles               = thisCommand.getParValue('spectralfiles')
     tsmin                       = float(thisCommand.getParValue('tsmin'))
     skymap                      = thisCommand.getParValue('skymap')
+    liketype                    = thisCommand.getParValue('liketype')
     clobber                     = _yesOrNoToBool(thisCommand.getParValue('clobber'))
     verbose                     = _yesOrNoToBool(thisCommand.getParValue('verbose'))
     
@@ -102,7 +103,14 @@ def run(**kwargs):
   
   LATdata                     = dataHandling.LATData(eventfile,rspfile,ft2file)
   try:
-    outfilelike, sources        = LATdata.doUnbinnedLikelihoodAnalysis(xmlmodel,tsmin,expomap=expomap,ltcube=ltcube)
+    if(liketype=='unbinned'):
+      outfilelike, sources        = LATdata.doUnbinnedLikelihoodAnalysis(xmlmodel,tsmin,expomap=expomap,ltcube=ltcube)
+    else:
+      #Generation of spectral files and optimization of the position is
+      #not supported yet for binned analysis
+      spectralfiles               = 'no'
+      optimize                    = 'no'
+      outfilelike, sources        = LATdata.doBinnedLikelihoodAnalysis(xmlmodel,tsmin,expomap=expomap,ltcube=ltcube)
   except GtBurstException as gt:
     raise gt
   except:

@@ -2,6 +2,7 @@
 # G.Vianello (giacomov@slac.stanford.edu, giacomo.slac@gmail.com)
 
 import UnbinnedAnalysis
+import BinnedAnalysis
 
 import numpy
 import os,sys, re, glob, shutil, datetime, time
@@ -552,7 +553,7 @@ def _getParamFromXML(xmlmodel,parname):
   f                           = open(xmlmodel,'r')
   parval                      = None
   for line in f.readlines():
-    if(line.find("%s=" %parname)>=0 and line.find("<!--")==0):
+    if(line.find("%s=" %parname)>=0 and line.find("<!--")>=0):
       parval                     = re.findall('<!-- %s=(.+) -->' %(parname),line)[0]
   pass
   f.close()
@@ -1106,6 +1107,7 @@ class LATData(LLEData):
     self.gttsmap                       = my_gttsmap()
     self.gtrspgen                      = GtApp('gtrspgen')
     self.gtbkg                         = GtApp('gtbkg')
+    
   pass
   
   def performStandardCut(self,ra,dec,rad,irf,tstart,tstop,emin,emax,zenithCut,thetaCut=180.0,gtmktime=True,roicut=True,**kwargs):
@@ -1451,9 +1453,12 @@ class LATData(LLEData):
   
   def makeModelSkyMap(self,xml):
      self.getCuts()
-     self.doSkyCube()
-     self.makeBinnedExposureMap()
-     self.makeSourceMaps(xml)
+     if(not hasattr(self,'skyCube')):
+       self.doSkyCube()
+     if(not hasattr(self,'binnedExpoMap')):
+       self.makeBinnedExposureMap()
+     if(not hasattr(self,'sourceMaps')):
+       self.makeSourceMaps(xml)
      
      self.gtmodel['srcmaps']        = self.sourceMaps
      self.gtmodel['srcmdl']         = xml
@@ -1624,6 +1629,52 @@ class LATData(LLEData):
      return outfile
   pass
   
+  def doBinnedLikelihoodAnalysis(self,xmlmodel,tsmin=20,**kwargs):
+     expomap                        = None
+     ltcube                         = None
+     for k,v in kwargs.iteritems():
+       if(k=='expomap'):
+         expomap                    = v
+       elif(k=='ltcube'):
+         ltcube                     = v
+       pass
+     pass
+     self.getCuts()
+     if(ltcube==None or ltcube==''):
+       self.makeLivetimeCube()
+     else:
+       if(os.path.exists(ltcube)):
+         self.livetimeCube            = ltcube
+       else:
+         raise ValueError("The provided livetime cube (%s) does not exist." %(ltcube))
+     pass
+     
+     self.doSkyCube()
+     
+     if(expomap==None or expomap==''):
+       self.makeBinnedExposureMap()
+     else:
+       if(os.path.exists(expomap)):
+         self.binnedExpoMap         = expomap
+       else:
+         raise ValueError("The provided exposure map (%s) does not exist." %(expomap))
+       
+     pass
+     
+     self.makeSourceMaps(xmlmodel)
+          
+     print("Loading python Likelihood interface...")
+     
+     self.obs                       = BinnedAnalysis.BinnedObs(srcMaps=self.sourceMaps,
+                                                  expCube=self.livetimeCube,
+                                                  binnedExpMap=self.binnedExpoMap,
+                                                  irfs=self.irf)
+     self.like1                     = BinnedAnalysis.BinnedAnalysis(self.obs,xmlmodel,optimizer='MINUIT')
+     
+     return self._doLikelihood(xmlmodel,tsmin)
+  
+  pass
+  
   def doUnbinnedLikelihoodAnalysis(self,xmlmodel,tsmin=20,**kwargs):
      expomap                        = None
      ltcube                         = None
@@ -1659,16 +1710,22 @@ class LATData(LLEData):
      
      if(dogtdiffrsp):
        self.makeDiffuseResponse(xmlmodel)
-     
-     outfilelike                    = "%s_likeRes.xml" %(self.rootName)
-     outfilelike2                   = "%s_likeRes.dat" %(self.rootName)
-     
+          
      print("Loading python Likelihood interface...")
      
      self.obs                       = UnbinnedAnalysis.UnbinnedObs(self.eventFile,self.ft2File,
                                                   expMap=self.exposureMap,
                                                   expCube=self.livetimeCube,irfs=self.irf)
      self.like1                     = UnbinnedAnalysis.UnbinnedAnalysis(self.obs,xmlmodel,optimizer='MINUIT')
+     
+     return self._doLikelihood(xmlmodel,tsmin)
+  pass
+   
+  def _doLikelihood(self,xmlmodel,tsmin):
+     
+     outfilelike                    = "%s_likeRes.xml" %(self.rootName)
+     outfilelike2                   = "%s_likeRes.dat" %(self.rootName)
+
      
      #Add a Gaussian prior for the isotropicTemplate component (it should be either the 
      #isotropic template for Source class or the BKGE)
@@ -1700,6 +1757,7 @@ class LATData(LLEData):
      f.close()
      
      #Find the name of the GRB
+     
      grb_name                 = None
      for s in self.like1.sourceNames():
        if(s.find(_getParamFromXML(xmlmodel,"OBJECT"))==0):
@@ -1707,7 +1765,10 @@ class LATData(LLEData):
      pass
      
      if(grb_name!=None):
-       phIndex_beforeFit        = self.like1[grb_name]['Spectrum'].getParam("Index").value()
+       try:
+         phIndex_beforeFit        = self.like1[grb_name]['Spectrum'].getParam("Index").value()
+       except:
+         phIndex_beforeFit        = -2
      else:
        phIndex_beforeFit        = -2
      pass
