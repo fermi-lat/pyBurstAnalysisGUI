@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: giacomov  Tue Feb 11 06:11:00 PST 2014
+pyBurstAnalysisGUI
+
+Modified Files:
+	SConscript 
+Log Message:
+Added the binned analysis to gtburst
+    *
+------------------------------------------------------------
 User: giacomov  Tue Jan 21 09:52:34 PST 2014
 pyBurstAnalysisGUI/python/GtBurst
 
