@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: giacomov  Tue Feb 11 06:11:01 PST 2014
+pyBurstAnalysisGUI/python/GtBurst/commands
+
+Modified Files:
+	gtdolike.py 
+Log Message:
+Added the binned analysis to gtburst
+    *
+------------------------------------------------------------
+User: giacomov  Tue Feb 11 06:11:01 PST 2014
 pyBurstAnalysisGUI/python/GtBurst
 
 Modified Files:
