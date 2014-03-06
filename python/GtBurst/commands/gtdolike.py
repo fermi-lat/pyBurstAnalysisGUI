@@ -223,7 +223,7 @@ def run(**kwargs):
     img.set_tick_labels_font(size='small')
     img.set_axis_labels_font(size='small')
     vmax                     = max(pyfits.open(modelmapfile)[0].data.flatten())
-    img.show_colorscale(cmap='gist_heat',aspect='auto',stretch='log',vmax=0.5) 
+    img.show_colorscale(cmap='gist_heat',aspect='auto',stretch='log') 
     
     for src in detectedSources:
       img.add_label(float(src.ra),float(src.dec),
@@ -256,7 +256,7 @@ def run(**kwargs):
   pass
   
   print(localizationMessage)
-    
+  
   return 'likexmlresults', outfilelike, 'TS', grb_TS, 'bestra', bestra, 'bestdec', bestdec, 'poserr', poserr, 'distance', distance
 pass
 

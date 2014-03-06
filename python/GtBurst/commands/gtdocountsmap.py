@@ -3,6 +3,7 @@
 import sys
 import os
 from GtBurst import commandDefiner
+from GtBurst import IRFS
 from GtBurst.GtBurstException import GtBurstException
 import pyfits, numpy
 
@@ -20,7 +21,7 @@ thisCommand.addParameter("ft2file","Spacecraft file (FT2)",commandDefiner.MANDAT
 thisCommand.addParameter("ra","R.A. of the center of the Region of Interest (ROI) (J2000, deg)",commandDefiner.MANDATORY)
 thisCommand.addParameter("dec","Dec of the center of the Region of Interest (ROI) (J2000, deg)",commandDefiner.MANDATORY)
 thisCommand.addParameter("rad","Radius of the Region of Interest (ROI) (deg)",commandDefiner.MANDATORY,12)
-thisCommand.addParameter("irf","Data class (TRANSIENT or SOURCE)",commandDefiner.MANDATORY,'TRANSIENT',possiblevalues=['TRANSIENT','SOURCE'])
+thisCommand.addParameter("irf","Data class (TRANSIENT or SOURCE)",commandDefiner.MANDATORY,'TRANSIENT',possiblevalues=IRFS.IRFS.keys())
 thisCommand.addParameter("zmax","Zenith cut in deg. If strategy==time, then time intervals when the edge of the ROI exceed this limit will be excluded from the analysis. If strategy==events, events with a Zenith angle larger than this will be excluded from the analysis.",commandDefiner.MANDATORY,100)
 thisCommand.addParameter("tstart","Start time for the output file (seconds from trigger or MET)",commandDefiner.MANDATORY,0)
 thisCommand.addParameter("tstop","Stop time for the output file (seconds from trigger or MET)",commandDefiner.MANDATORY,100)
@@ -115,10 +116,10 @@ def run(**kwargs):
   
   LATdata                     = dataHandling.LATData(eventfile,rspfile,ft2file)
   
-  if(strategy=="time"):
+  if(strategy.lower()=="time"):
     #gtmktime cut
     filteredFile,nEvents      = LATdata.performStandardCut(ra,dec,rad,irf,tstart,tstop,emin,emax,zmax,thetamax,True,strategy='time')
-  elif(strategy=="events"):
+  elif(strategy.lower()=="events"):
     #no gtmktime cut, Zenith cut applied directly to the events
     filteredFile,nEvents      = LATdata.performStandardCut(ra,dec,rad,irf,tstart,tstop,emin,emax,zmax,thetamax,True,strategy='events')
   pass
@@ -145,7 +146,7 @@ def run(**kwargs):
       lastDisplay.unbind()
     pass
     from GtBurst.InteractiveFt1Display import InteractiveFt1Display
-    lastDisplay               = InteractiveFt1Display(filteredFile,outfile,figure)
+    lastDisplay               = InteractiveFt1Display(filteredFile,outfile,figure,ra,dec)
   pass  
   
   return 'skymap', outfile, 'filteredeventfile', filteredFile, 'irf', irf, 'eventDisplay', lastDisplay

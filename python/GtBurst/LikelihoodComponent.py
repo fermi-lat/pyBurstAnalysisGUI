@@ -11,29 +11,31 @@ from GtBurst import bkge
 import numpy
 import os
 from GtBurst.getDataPath import getDataPath
+from GtBurst import IRFS
 
-def findGalacticTemplate(reproc):
-  templates                   = {'120': 'gal_2yearp7v6_trim_v0.fits,ring_2year_P76_v0.fits',
-                                 '130': 'gal_2yearp7v6_trim_v0.fits,ring_2year_P76_v0.fits',
-                                 '202': 'gll_iem_v05.fits,template_4years_P7_v15_repro_v2_trim.fits'}
-  templ                       = findTemplate(templates[reproc])
+def findGalacticTemplate(irfname):
+  irf                         = IRFS.IRFS[irfname]
+  
+  templ                       = findTemplate(irf.galacticTemplate)
   if(templ==None):
-    raise RuntimeError("You don't have a Galactic template for Reprocessing %s. Cannot continue." %(reproc))
+    raise RuntimeError("You don't have a Galactic template for IRF %s. Cannot continue." %(irfname))
   else:
-    print("\nFound Galactic template for reproc. %s: %s" %(reproc,templ))
+    print("\nFound Galactic template for IRF. %s: %s" %(irfname,templ))
     return templ
 pass
 
-def findIsotropicTemplate(reproc):
-  templates                   = {'120': 'iso_p7v6source.txt,isotrop_2year_P76_source_v0.txt',
-                                 '130': 'iso_p7v6source.txt,isotrop_2year_P76_source_v0.txt',
-                                 '202': 'iso_source_v05.txt',
-                                 'BKGE': os.environ.get('THISBKGE')} #This is a trick, leave it as it is
-  templ                       = findTemplate(templates[reproc])
-  if(templ==None):
-    raise RuntimeError("You don't have a Isotropic template for Reprocessing %s. Cannot continue." %(reproc))
+def findIsotropicTemplate(irfname):
+  if(irfname=='BKGE'):
+    templ                     = findTemplate(os.environ.get('THISBKGE')) #This is a trick, leave it as it is
   else:
-    print("\nFound Istotropic template for reproc. %s: %s" %(reproc,templ))
+    irf                       = IRFS.IRFS[irfname]
+    templ                     = findTemplate(irf.isotropicTemplate)
+  pass
+  
+  if(templ==None):
+    raise RuntimeError("You don't have a Isotropic template for IRF %s. Cannot continue." %(irfname))
+  else:
+    print("\nFound Istotropic template for irf %s: %s" %(irfname,templ))
     return templ
 pass
 
@@ -67,12 +69,12 @@ def findTemplate(options):
   return None
 pass
 
-def DiffuseSrcTemplateFunc(reproc):
+def DiffuseSrcTemplateFunc(irf):
     diffuse = '''
    <spatialModel file="%s" type="MapCubeFunction">
      <parameter free="0" max="1000.0" min="0.001" name="Normalization" scale= "1.0" value="1.0"/>
    </spatialModel>
-    ''' %(findGalacticTemplate(reproc))
+    ''' %(findGalacticTemplate(irf))
     
     spectrum = '''
    <spectrum type="ConstantValue">
@@ -96,7 +98,7 @@ def DiffuseSrcTemplateFunc(reproc):
     return src
 pass
 
-def IsotropicTemplateFunc(reproc):
+def IsotropicTemplateFunc(irf):
     diffuse = '''
    <spatialModel type="ConstantValue">
       <parameter free="0" max="10.0" min="0.0" name="Value" scale="1.0" value="1.0"/>
@@ -107,7 +109,7 @@ def IsotropicTemplateFunc(reproc):
    <spectrum file="%s" type="FileFunction">
       <parameter free="1" max="1000" min="1e-05" name="Normalization" scale="1" value="1" />
    </spectrum>
-    ''' % (findIsotropicTemplate(reproc))
+    ''' % (findIsotropicTemplate(irf))
     
     completeExpression        = '<source name="isotropic template" type="DiffuseSource">%s\n%s\n</source>' %(diffuse,spectrum)
     (src, )                   = minidom.parseString(completeExpression).getElementsByTagName('source')
@@ -200,8 +202,8 @@ class IsotropicPowerlaw(GenericSource):
 pass
 
 class TemplateFile(GenericSource):
-  def __init__(self,name,reproc,constructorFunction,sysError=0.15,statError=0):
-    self.source               = constructorFunction(reproc)
+  def __init__(self,name,irf,constructorFunction,sysError=0.15,statError=0):
+    self.source               = constructorFunction(irf)
     self.source.name          = name
     self.source.sysErr        = '%s' % sysError
     self.source.node.setAttribute('sysErr','%s' % sysError)
@@ -224,14 +226,14 @@ class TemplateFile(GenericSource):
 pass
 
 class GalaxyAndExtragalacticDiffuse(TemplateFile):
-  def __init__(self,reproc='202'):
-    TemplateFile.__init__(self,"GalacticTemplate",reproc,DiffuseSrcTemplateFunc)
+  def __init__(self,irf):
+    TemplateFile.__init__(self,"GalacticTemplate",irf,DiffuseSrcTemplateFunc)
   pass
 pass
 
 class IsotropicTemplate(TemplateFile):
-  def __init__(self,reproc):
-    TemplateFile.__init__(self,"IsotropicTemplate",reproc,IsotropicTemplateFunc,0.1)
+  def __init__(self,irf):
+    TemplateFile.__init__(self,"IsotropicTemplate",irf,IsotropicTemplateFunc,0.1)
   pass
 pass
 

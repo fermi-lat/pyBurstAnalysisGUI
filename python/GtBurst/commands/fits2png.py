@@ -37,6 +37,10 @@ def fitsToPNG(fitsfile,pngfile,vmin=None,vmax=None,**kwargs):
                         verticalalignment='top', horizontalalignment='left')
         tsfig.show_markers([float(src[1])],[float(src[2])],edgecolor='green',marker='x')
       pass
+    if('ra' in kwargs.keys()):
+      ra                      = float(kwargs['ra'])
+      dec                     = float(kwargs['dec'])
+      tsfig.show_markers([ra],[dec],edgecolor='cyan',facecolor='cyan',marker='x',s=120,alpha=0.5,linewidth=3)
     pass
     
     #figure.canvas.draw()
@@ -55,4 +59,12 @@ if __name__=='__main__':
   #Get all key=value pairs as a dictionary
   fitsfile                    = sys.argv[1]
   pngfile                     = sys.argv[2]
-  fitsToPNG(fitsfile,pngfile)
+  if(len(sys.argv)==5):
+    ra                        = sys.argv[3]
+    dec                       = sys.argv[4]
+  else:
+    ra                        = None
+    dec                       = None
+  pass
+  
+  fitsToPNG(fitsfile,pngfile,ra=ra,dec=dec)

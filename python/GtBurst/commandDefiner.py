@@ -37,7 +37,7 @@ class Parameter(object):
   
   def setValue(self,value):
     if(self.possibleValues!=[] and value.lower() not in self.possibleValues):
-      raise ValueError("Value %s is not a valid value for parameter %s" %(value,self.parname))
+      raise ValueError("Value %s is not a valid value for parameter %s. Possible values are: %s" %(value,self.parname,",".join(self.possibleValues)))
     self.value                = value
   pass
   
