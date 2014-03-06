@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: giacomov  Wed Mar  5 22:08:27 PST 2014
+pyBurstAnalysisGUI
+
+Modified Files:
+	SConscript 
+Log Message:
+Added compatibility with P8
+    *
+------------------------------------------------------------
 User: giacomov  Tue Feb 11 06:11:01 PST 2014
 pyBurstAnalysisGUI/python/GtBurst/commands
 
