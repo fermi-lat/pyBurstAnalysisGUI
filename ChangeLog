@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: giacomov  Wed Mar  5 22:08:28 PST 2014
+pyBurstAnalysisGUI/python/GtBurst/commands
+
+Modified Files:
+	fits2png.py gtbuildxmlmodel.py gtdocountsmap.py gtdolike.py 
+	gtdotsmap.py 
+Log Message:
+Added compatibility with P8
+    *
+------------------------------------------------------------
 User: giacomov  Wed Mar  5 22:08:27 PST 2014
 pyBurstAnalysisGUI/python/GtBurst
 
