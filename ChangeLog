@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: giacomov  Wed Mar  5 22:09:04 PST 2014
+pyBurstAnalysisGUI/python/GtBurst
+
+Added Files:
+	IRFS.py 
+Log Message:
+P8 compatibility
+    *
+------------------------------------------------------------
 User: giacomov  Wed Mar  5 22:08:28 PST 2014
 pyBurstAnalysisGUI/python/GtBurst/commands
 
