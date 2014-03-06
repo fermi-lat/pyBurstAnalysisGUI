@@ -75,7 +75,7 @@ class dataCollector(object):
     try:
       ftp                       = ftplib.FTP(serverAddress,"anonymous",'','',timeout=60)
     except socket.error as socketerror:
-      raise GtBurstException(11,"Error when connecting: ", socketerror)
+      raise GtBurstException(11,"Error when connecting: %s" % os.strerror(socketerror.errno))
     
     print("Loggin in to %s..." % serverAddress),
     try:

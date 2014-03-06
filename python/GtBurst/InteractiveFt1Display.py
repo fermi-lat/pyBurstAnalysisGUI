@@ -1,24 +1,33 @@
 from GtBurst import aplpy
 import matplotlib.pyplot as plt
-import pyfits, time
+import pyfits, time, numpy
 from GtBurst import dataHandling
+from GtBurst import IRFS
+import matplotlib.colors as col
+import matplotlib.cm as cm
+
+# define individual colors which will be used for classes
+cpool                         = [ 'darkgrey','red','blue','cyan','green','magenta']
 
 class InteractiveFt1Display(object):
-  def __init__(self,ft1file,skyimage,figure):
+  def __init__(self,ft1file,skyimage,figure,obj_ra=None,obj_dec=None):
     self.skyimage             = skyimage
     ft1                       = pyfits.open(ft1file)
-    events                    = ft1['EVENTS'].data
+    self.events               = ft1['EVENTS'].data
     self.empty                = False
-    if(len(events)==0):
+    if(len(self.events)==0):
       print("No events in FT1 file %s" %(ft1file))
       self.empty              = True
       #raise RuntimeError("No events in FT1 file %s" %(ft1file))
     pass
     
+    self.obj_ra               = obj_ra
+    self.obj_dec              = obj_dec
+    
     #Read in the different classes of events
     self.trigtime             = dataHandling.getTriggerTime(ft1file)
-    time                      = events.field("TIME")
-    energy                    = events.field("ENERGY")
+    time                      = self.events.field("TIME")
+    energy                    = self.events.field("ENERGY")
     if(not self.empty):
       self.tmin                 = min(time)-self.trigtime
       self.tmax                 = max(time)-self.trigtime
@@ -30,51 +39,18 @@ class InteractiveFt1Display(object):
       self.energyMin          = 100
       self.energyMax          = 1e7
     pass
-    ra                        = events.field("RA")
-    dec                       = events.field("DEC")
-    bitmask                   = map(lambda x:bin(x),events.field('EVENT_CLASS'))
-    ids                       = events.field("EVENT_ID")
-    theta                     = events.field("THETA")
-    zenith                    = events.field("ZENITH_ANGLE")
-    try:
-      self.transient          = filter(lambda x:x[-1][-1]=='1' and 
-                                                  x[-1][-3]=='0' and 
-                                                  x[-1][-4]=='0' and 
-                                                  x[-1][-5]=='0',
-                                                  zip(time,energy,ra,dec,ids,theta,zenith,bitmask))
-    except:
-      #No events?
-      self.transient          = []
-    try:
-      self.source               = filter(lambda x:x[-1][-3]=='1' and 
-                                                  x[-1][-4]=='0' and 
-                                                  x[-1][-5]=='0',
-                                                  zip(time,energy,ra,dec,ids,theta,zenith,bitmask))
-    except:
-      self.source             = []
-    try:
-      self.clean                = filter(lambda x:x[-1][-4]=='1' and 
-                                                  x[-1][-5]=='0',
-                                                  zip(time,energy,ra,dec,ids,theta,zenith,bitmask))
-    except:
-      self.clean              = []
-    try:
-      self.ultraclean           = filter(lambda x:x[-1][-5]=='1',
-                                                   zip(time,energy,ra,dec,ids,theta,zenith,bitmask))
-    except:
-      self.ultraclean         = []
-    pass
     
-    ntransient                = len(self.transient)
-    nsource                   = len(self.source)
-    nclean                    = len(self.clean)
-    nultraclean               = len(self.ultraclean)
-    print("\nTransient class events:                     %s" %(ntransient+nsource+nclean+nultraclean))
-    print("Source class events:                        %s" %(nsource+nclean+nultraclean))
-    print("Clean class events:                         %s" %(nclean+nultraclean))
-    print("Ultra clean class events:                   %s\n" %(nultraclean))
+    #Get the reprocessing
+    self.reprocVer            = str(ft1[0].header['PROC_VER'])
+    self.generateColorMap()
     
-    self.forcedRefresh        = False
+    #Print a summary
+    irfs                      = numpy.array(map(lambda x:IRFS.fromEvclassToIRF(self.reprocVer,x),self.events.field("EVENT_CLASS")))
+    print("")
+    for irf in IRFS.PROCS[self.reprocVer]:
+      print("%-50s %s" %("Class %s only:" % irf,irfs[irfs==irf].shape[0]))
+
+    
     self.pickerID             = None
     self.oldxmin              = -1e9
     self.oldxmax              = 1e9
@@ -82,6 +58,7 @@ class InteractiveFt1Display(object):
     self.oldymax              = 1e9
     self.user_ra              = None
     self.user_dec             = None
+    self.evtext               = None
     
     self.figure               = figure
     self.figure.clear()
@@ -93,6 +70,20 @@ class InteractiveFt1Display(object):
     ft1.close()
   pass
   
+  def generateColorMap(self):    
+    #Translate from bitmask to color
+    
+    #Get all IRFS for this reprocessing
+    irfs                      = map(lambda x:IRFS.IRFS[x],IRFS.PROCS[self.reprocVer])
+    #Order by evclass
+    irfs                      = sorted(irfs,key=lambda x:x.evclass)
+    self.IRFToColor           = IRFS.CaseInsensitiveDict()
+    for i,ir in enumerate(irfs):
+      #print("%s (%s) -> %s" %(ir.name,ir.evclass,cpool[i]))
+      self.IRFToColor[ir.shortname] = cpool[i]
+    pass
+  pass
+    
   def unbind(self):
     #Clear all bindings in figures
     #print("UNBINDING")
@@ -129,8 +120,15 @@ class InteractiveFt1Display(object):
     try:
       self.image.show_grid()
     except:
-      #show_grid throw an expection if the grid was already there
+      #show_grid throw an exception if the grid was already there
       pass
+    pass
+    
+    #Try to plot a cross at the source position
+    
+    if(self.obj_ra!=None):
+      self.image.show_markers([float(self.obj_ra)], [float(self.obj_dec)], edgecolor='cyan', facecolor='cyan',marker='x', s=120, alpha=0.5,linewidth=2)
+    
     self.figure.canvas.draw()
   pass
   
@@ -153,32 +151,22 @@ class InteractiveFt1Display(object):
     pass
   pass
   
+  def mapEventClassesColors(self,classes):
+    return map(lambda x:self.IRFToColor[IRFS.fromEvclassToIRF(self.reprocVer,x)],classes)
+  pass
+  
   def displayEvents(self,xmin=-1,xmax=1e9,ymin=-1,ymax=1e9):
-    
     #Filter data
+    idx                       = numpy.array(map(lambda x:self.inRegion(x.field("RA"),x.field("DEC"),xmin,xmax,ymin,ymax),
+                                                self.events))
+    events                    = self.events[idx]
     
-    transient                 = filter(lambda x:self.inRegion(x[2],x[3],xmin,xmax,ymin,ymax),
-                                                self.transient)
-    source                    = filter(lambda x:self.inRegion(x[2],x[3],xmin,xmax,ymin,ymax),
-                                                self.source)
-    clean                     = filter(lambda x:self.inRegion(x[2],x[3],xmin,xmax,ymin,ymax),
-                                                self.clean)
-    ultraclean                = filter(lambda x:self.inRegion(x[2],x[3],xmin,xmax,ymin,ymax),
-                                                self.ultraclean)
     #Events display
     self.eventDisplay.cla()
-    self.eventDisplay.scatter(map(lambda x:x[0]-self.trigtime,transient),
-                 map(lambda x:x[1],transient),s=10,label='Transient',color='grey',
-                 picker=0)
-    self.eventDisplay.scatter(map(lambda x:x[0]-self.trigtime,source),
-                 map(lambda x:x[1],source),s=30,label='Source',color='red',
-                 picker=0)
-    self.eventDisplay.scatter(map(lambda x:x[0]-self.trigtime,clean),
-                 map(lambda x:x[1],clean),s=30,label='Clean',color='blue',
-                 picker=0)
-    self.eventDisplay.scatter(map(lambda x:x[0]-self.trigtime,ultraclean),
-                 map(lambda x:x[1],ultraclean),s=30,label='Ultra Clean',color='cyan',
-                 picker=0)
+    self.eventDisplay.scatter(events.field("TIME")-self.trigtime,
+                 events.field("ENERGY"),s=20,c=self.mapEventClassesColors(events.field("EVENT_CLASS")),
+                 picker=0,lw=0)
+    
     try:
       self.eventDisplay.set_yscale('log')
       self.eventDisplay.set_ylim([self.energyMin*0.8,self.energyMax*1.2])
@@ -190,14 +178,19 @@ class InteractiveFt1Display(object):
       pass
     self.eventDisplay.set_ylabel("Energy (MeV)",fontsize='small')
     self.eventDisplay.set_xlabel("Time since trigger (s)",fontsize='small')
+    
     #Put the legend on top of the figure
+    for k,v in self.IRFToColor.iteritems():
+      self.eventDisplay.scatter([],[],s=20,lw=0,label=k,c=v)
+    pass
+        
     legend                    = self.eventDisplay.legend(scatterpoints=1,
                                             ncol=2,labelspacing=0.05,
                                             loc='upper center',
-                                            bbox_to_anchor=(0.5,1.20),
+                                            bbox_to_anchor=(0.3,1.20),
                                             fancybox=True)
+    
     legend.get_title().set_fontsize('6')
-    self.forcedRefresh        = True
     self.figure.canvas.draw()
     
     #Destroy the callback with previous data, and create a new one with the new data
@@ -205,11 +198,7 @@ class InteractiveFt1Display(object):
       self.figure.canvas.mpl_disconnect(self.pickerID)
     pass
     self.pickerID             = self.figure.canvas.mpl_connect('pick_event',
-                                                                lambda x:self.on_events_plot_click(x,
-                                                                                     transient,
-                                                                                     source,
-                                                                                     clean,
-                                                                                     ultraclean))
+                                                                lambda x:self.on_events_plot_click(x,events))
   pass
   
   def connectEvents(self):
@@ -283,26 +272,18 @@ class InteractiveFt1Display(object):
       return
   pass
   
-  def on_events_plot_click(self,event,transient,source,clean,ultraclean):
+  def on_events_plot_click(self,event,events):
     ind                 = event.ind[0]
-    data_class          = event.artist.get_label().lower()
-    
-    if(data_class=='transient'):
-      v                 = transient
-    elif(data_class=='source'):
-      v                 = source
-    elif(data_class=='clean'):
-      v                 = clean
-    elif(data_class=='ultra clean'):
-      v                 = ultraclean
-    pass
     
     try:
-      ras             = v[ind][2]
-      decs            = v[ind][3]
-      event_id        = v[ind][4]
-      theta           = v[ind][5]
-      zenith          = v[ind][6]
+      ras             = events.field("RA")[ind]
+      decs            = events.field("DEC")[ind]
+      event_id        = events.field("EVENT_ID")[ind]
+      run_id          = events.field("RUN_ID")[ind]
+      theta           = events.field("THETA")[ind]
+      zenith          = events.field("ZENITH_ANGLE")[ind]
+      time            = events.field("TIME")[ind]
+      energy          = events.field("ENERGY")[ind]
     except:
       print("Could not get Ra,Dec of your event. Please retry...")
       pass
@@ -315,16 +296,18 @@ class InteractiveFt1Display(object):
     img_width              = min(abs(rass[0]-rass[1]),abs(decss[0]-decss[1]))
     radius_length          = 0.3
     
-    self.forcedRefresh     = True
     self.image.show_circles([ras],[decs],[radius_length],
                            facecolor='white',layer="circle",alpha=0.8)
-    self.forcedRefresh     = True
-    self.image.add_label(ras-radius_length,decs-radius_length,
-                         'id = %s\ntheta = %3.1f\nzenith = %3.1f' % (event_id,theta,zenith),
-                         color='white',layer='event_id',
-                         verticalalignment='top',size='small')
+    if(self.evtext!=None):
+      try:
+        self.evtext.remove()
+      except:
+        #if the user zoom between one and another, this will be emptied already
+        pass
+    self.evtext            = self.eventDisplay.text(time-self.trigtime,energy,
+                                                    'run = %s\nid = %s\ntheta = %3.1f\nzenith = %3.1f' % (run_id,event_id,theta,zenith),
+                                                    color='green',verticalalignment='top',size='small',fontweight='bold')
 
-    self.forcedRefresh = True
     self.figure.canvas.draw()
   pass
 pass

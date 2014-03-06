@@ -111,14 +111,13 @@ def run(**kwargs):
   tstop                         = float(f[0].header['_TMAX'])
   irf                           = str(f[0].header['_IRF'])
   roi                           = float(f[0].header['_ROI_RAD'])
-  reprocVersion                 = str(f[0].header['_REPROC'])
   
   #Lookup table for the models
   models = {}
   models['isotr with pow spectrum'] = LikelihoodComponent.IsotropicPowerlaw()
-  models['isotr template']          = LikelihoodComponent.IsotropicTemplate(reprocVersion)
-  models['template']                = LikelihoodComponent.GalaxyAndExtragalacticDiffuse(reprocVersion)
-  models['template (fixed norm.)']  = LikelihoodComponent.GalaxyAndExtragalacticDiffuse(reprocVersion)
+  models['isotr template']          = LikelihoodComponent.IsotropicTemplate(irf)
+  models['template']                = LikelihoodComponent.GalaxyAndExtragalacticDiffuse(irf)
+  models['template (fixed norm.)']  = LikelihoodComponent.GalaxyAndExtragalacticDiffuse(irf)
   models['template (fixed norm.)'].fixNormalization()
   
   deltat                        = numpy.sum(f['GTI'].data.field('STOP')-f['GTI'].data.field('START'))

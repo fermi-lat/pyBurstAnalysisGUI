@@ -26,7 +26,7 @@ thisCommand.addParameter("tsmap","Name for the output file for the TS map",comma
 #thisCommand.addParameter("optimizeposition","Optimize position?",commandDefiner.OPTIONAL,"yes",possiblevalues=['yes','no'])
 #thisCommand.addParameter("showmodelimage","Show an image representing the best fit likelihood model?",commandDefiner.OPTIONAL,"yes",possiblevalues=['yes','no'])
 thisCommand.addParameter("step","Size of the grid step (deg)",commandDefiner.OPTIONAL,0.8)
-thisCommand.addParameter("side","Number of steps per side of the TS map",commandDefiner.OPTIONAL,'auto',partype=commandDefiner.HIDDEN)
+thisCommand.addParameter("side","Size of the side of the TS map (deg). NB: (side/step)^2 likelihood analysis will be run",commandDefiner.OPTIONAL,'auto')
 thisCommand.addParameter("clobber","Overwrite output file? (possible values: 'yes' or 'no')",commandDefiner.OPTIONAL,"yes")
 thisCommand.addParameter("verbose","Verbose output (possible values: 'yes' or 'no')",commandDefiner.OPTIONAL,"yes")
 thisCommand.addParameter("figure","Matplotlib figure for the interactive mode",commandDefiner.OPTIONAL,None,partype=commandDefiner.PYTHONONLY)

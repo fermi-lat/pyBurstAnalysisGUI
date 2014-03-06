@@ -18,7 +18,7 @@ import subprocess
 from contextlib import contextmanager
 
 from GtBurst import LikelihoodComponent
-
+from GtBurst import IRFS
 from GtBurst.statMethods import *
 from GtBurst.Configuration import Configuration
 from GtBurst.GtBurstException import GtBurstException
@@ -53,37 +53,42 @@ BACK_SYS_ERROR                = 0.03
 optimizer                     = "DRMNFB"
 
 #Current IRFS lookup table
-irfs                                 = {}
-irfs['120','transient']             = 'P7TRANSIENT_V6'
-irfs['120','TRANSIENT']             = 'P7TRANSIENT_V6'
-irfs['120','P7TRANSIENT_V6']        = 'P7TRANSIENT_V6'
-irfs['120','source']                = 'P7SOURCE_V6'
-irfs['120','SOURCE']                = 'P7SOURCE_V6'
-irfs['120','P7SOURCE_V6']           = 'P7SOURCE_V6'
+#irfs                                 = {}
+#irfs['120','transient']             = 'P7TRANSIENT_V6'
+#irfs['120','TRANSIENT']             = 'P7TRANSIENT_V6'
+#irfs['120','P7TRANSIENT_V6']        = 'P7TRANSIENT_V6'
+#irfs['120','source']                = 'P7SOURCE_V6'
+#irfs['120','SOURCE']                = 'P7SOURCE_V6'
+#irfs['120','P7SOURCE_V6']           = 'P7SOURCE_V6'
 
-irfs['130','transient']             = 'P7TRANSIENT_V6'
-irfs['130','TRANSIENT']             = 'P7TRANSIENT_V6'
-irfs['130','P7TRANSIENT_V6']        = 'P7TRANSIENT_V6'
-irfs['130','source']                = 'P7SOURCE_V6'
-irfs['130','SOURCE']                = 'P7SOURCE_V6'
-irfs['130','P7SOURCE_V6']           = 'P7SOURCE_V6'
+#irfs['130','transient']             = 'P7TRANSIENT_V6'
+#irfs['130','TRANSIENT']             = 'P7TRANSIENT_V6'
+#irfs['130','P7TRANSIENT_V6']        = 'P7TRANSIENT_V6'
+#irfs['130','source']                = 'P7SOURCE_V6'
+#irfs['130','SOURCE']                = 'P7SOURCE_V6'
+#irfs['130','P7SOURCE_V6']           = 'P7SOURCE_V6'
 
-irfs['202','transient']             = 'P7REP_TRANSIENT_V15'
-irfs['202','TRANSIENT']             = 'P7REP_TRANSIENT_V15'
-irfs['202','P7REP_TRANSIENT_V15']   = 'P7REP_TRANSIENT_V15'
-irfs['202','source']                = 'P7REP_SOURCE_V15'
-irfs['202','SOURCE']                = 'P7REP_SOURCE_V15'
-irfs['202','P7REP_SOURCE_V15']      = 'P7REP_SOURCE_V15'
+#irfs['202','transient']             = 'P7REP_TRANSIENT_V15'
+#irfs['202','TRANSIENT']             = 'P7REP_TRANSIENT_V15'
+#irfs['202','P7REP_TRANSIENT_V15']   = 'P7REP_TRANSIENT_V15'
+#irfs['202','source']                = 'P7REP_SOURCE_V15'
+#irfs['202','SOURCE']                = 'P7REP_SOURCE_V15'
+#irfs['202','P7REP_SOURCE_V15']      = 'P7REP_SOURCE_V15'
 
-def translateIrfName(reproc,name):
-  if((reproc,name) not in irfs.keys()):
-    raise ValueError("Unknown IRF %s for reprocessing %s" %(name,reproc))
-  else:
-    if(irfs[reproc,name].find("TRANSIENT")>=0):
-      return 'transient'
-    if(irfs[reproc,name].find("SOURCE")>=0):
-      return 'source'
-pass
+#irfs['300','transient_r020']        = 'P8TRANSIENT_R020_V20R9P0_V0'
+#irfs['300','P8TRANSIENT_R020_V20R9P0_V0'] = 'P8TRANSIENT_R020_V20R9P0_V0'
+#irfs['300','TRANSIENT_R020']        = 'P8TRANSIENT_R020_V20R9P0_V0'
+#irfs['300','transient']             = os.environ.get('CUSTOM_IRF_NAMES')
+
+#def translateIrfName(reproc,name):
+#  if((reproc,name) not in irfs.keys()):
+#    raise ValueError("Unknown IRF %s for reprocessing %s" %(name,reproc))
+#  else:
+#    if(irfs[reproc,name].find("TRANSIENT")>=0):
+#      return 'transient'
+#    if(irfs[reproc,name].find("SOURCE")>=0):
+#      return 'source'
+#pass
 
 #This are made so that bin(33) give a bit mask compatible with a transient event
 simirfs                       = {}
@@ -1156,10 +1161,10 @@ class LATData(LLEData):
       if(gtmktime):
         self.gtmktime['scfile']          = self.ft2File
         if(self.strategy=="time"):
-          filt                           = "DATA_QUAL==1 && LAT_CONFIG==1 && IN_SAA!=T && LIVETIME>0 && (ANGSEP(RA_ZENITH,DEC_ZENITH,%s,%s)<=(%s-%s))" %(ra,dec,zenithCut,rad)
+          filt                           = "(DATA_QUAL>0 || DATA_QUAL==-1) && LAT_CONFIG==1 && IN_SAA!=T && LIVETIME>0 && (ANGSEP(RA_ZENITH,DEC_ZENITH,%s,%s)<=(%s-%s))" %(ra,dec,zenithCut,rad)
           self.gtmktime['roicut']        = "no"
         elif(self.strategy=="events"):
-          filt                           = "DATA_QUAL==1 && LAT_CONFIG==1 && IN_SAA!=T && LIVETIME>0"
+          filt                           = "(DATA_QUAL>0 || DATA_QUAL==-1) && LAT_CONFIG==1 && IN_SAA!=T && LIVETIME>0"
           self.gtmktime['roicut']        = "no"
         else:
           raise RuntimeError("Strategy must be either 'time' or 'events'")
@@ -1207,16 +1212,14 @@ class LATData(LLEData):
       self.gtselect['emin']            = emin
       self.gtselect['emax']            = emax
       self.gtselect['zmax']            = zenithCut
-      irf                              = translateIrfName(reprocessingVersion,irf)
-      if(irf=='transient'):
-        evclass                        = 0
-        irf                            = irfs[reprocessingVersion,irf]
-      elif(irf=='source'):
-        evclass                        = 2
-        irf                            = irfs[reprocessingVersion,irf]
+      
+      if(irf.lower() in IRFS.IRFS.keys() and IRFS.IRFS[irf].reprocessingVersion==str(reprocessingVersion)):
+        irf                            = IRFS.IRFS[irf]
       else:
-        raise ValueError("Class %s not known. Possible values are 'transient' and 'source'." %(irf))
-      self.gtselect['evclass']         = evclass
+        raise ValueError("Class %s not known or wrong class for this reprocessing version (%s)." %(irf,reprocessingVersion))
+      pass
+      
+      self.gtselect['evclass']         = irf.evclass
       self.gtselect['evclsmin']        = 0
       self.gtselect['evclsmax']        = 1000
       self.gtselect['convtype']        = -1
@@ -1229,13 +1232,7 @@ class LATData(LLEData):
         raise GtBurstException(23,"gtselect failed for unknown reason")
       
       #Now write a keyword which will be used by other methods to recover ra,dec,rad,emin,emax,zcut
-      f                                = pyfits.open(outfileselect,'update')
-      
-      #Verify if the GTI is smaller than the time interval requested
-      #gti                              = f['GTI'].data
-      #gtiStarts                        = map(lambda x:x-self.trigTime,gti.field("START"))
-      #gtiStops                         = map(lambda x:x-self.trigTime,gti.field("STOP"))
-      
+      f                                = pyfits.open(outfileselect,'update')      
       
       f[0].header.update('_ROI_RA',"%8.4f" % float(ra))
       f[0].header.update('_ROI_DEC',"%8.4f" % float(dec))
@@ -1246,7 +1243,7 @@ class LATData(LLEData):
       f[0].header.update('_EMAX',"%s" % float(emax))
       f[0].header.update('_ZMAX',"%12.5f" % float(zenithCut))
       f[0].header.update('_STRATEG',self.strategy)
-      f[0].header.update('_IRF',"%s" % irf)
+      f[0].header.update('_IRF',"%s" % irf.name)
       f[0].header.update('_REPROC','%s' % reprocessingVersion)
       
       nEvents                          = len(f['EVENTS'].data.TIME)
@@ -1386,8 +1383,8 @@ class LATData(LLEData):
      self.gtexpmap['outfile']       = outfileexpo
      self.gtexpmap['irfs']          = self.irf
      self.gtexpmap['srcrad']        = (2*self.rad)
-     self.gtexpmap['nlong']         = int(math.ceil(4*self.rad)/binsz)
-     self.gtexpmap['nlat']          = int(math.ceil(4*self.rad)/binsz)
+     self.gtexpmap['nlong']         = int(4*math.ceil(self.rad)/binsz)
+     self.gtexpmap['nlat']          = int(4*math.ceil(self.rad)/binsz)
      self.gtexpmap['nenergies']     = 10
      self.gtexpmap['clobber']       = 'yes'
      try:

@@ -47,6 +47,7 @@ from GtBurst import updater
 
 from GtBurst import dataHandling
 
+from GtBurst import IRFS
 from GtBurst.commands.gtllebin import thisCommand as gtllebin
 from GtBurst.commands.gtllebkg import thisCommand as gtllebkg
 from GtBurst.commands.gtllesrc import thisCommand as gtllesrc
@@ -877,6 +878,11 @@ class GUI(object):
   def likelihoodAnalysis(self):
     datasetsFilter            = lambda x:x.detector=="LAT"
     
+    #Get the processing version for this LAT data
+    reproc                    = pyfits.getval(filter(datasetsFilter,self.datasets)[0]['eventfile'],'PROC_VER',ext=0)
+    
+    gtdocountsmap.definedParameters['irf'].possibleValues = IRFS.PROCS[str(reproc)]
+    
     gtdocountsmap.definedParameters['ra'].type = commandDefiner.HIDDEN
     gtdocountsmap.definedParameters['ra'].value = self.objectInfoEntries['ra'].variable.get()
     
@@ -1642,7 +1648,7 @@ class GUI(object):
       
       #If there is a LAT dataset, activate also the likelihood and the simulations button
       if(len(filter(lambda x:x.detector=="LAT",self.datasets))>0):
-        for i in range(5):
+        for i in range(4):
           self.tasksmenu.entryconfig(i,state=NORMAL)
       #Sort the detectors by energy (NaIs, BGOs, LAT-LLE,LAT)
       def my_sorter(dataset):
