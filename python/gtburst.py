@@ -125,7 +125,7 @@ class MetaForExceptions(type):
                 
           msg                          = ("Snap! An unhandled exception has occurred at line %s of file %s.\n\n" %(line,filename) +
                                           "The program will try to continue running. If you think this is a bug, send a message" +
-                                          " to giacomov@slac.stanford.edu attaching your gtburst.log file.\n\n"+
+                                          " to fermihelp@milkyway.gsfc.nasa.gov attaching your gtburst.log file.\n\n"+
                                           "The full traceback has been saved to the log and printed in the console.")
           showerror("Unhandled exception",msg)
           
@@ -164,12 +164,15 @@ class GUI(object):
       #LLE or Transient
       if(filename.find("_tr_")>=0):
         #Transient data
-        rootName              = "_".join(os.path.basename(filename).split("_")[2:5]).split(".")[0]
+        rootName              = "_".join(os.path.basename(filename).split("_")[2:5]).split(".")[:-1]
+        rootName              = ".".join(rootName)
         detector              = "LAT"
         trigger               = rootName.split("_")[1]
       else:
         #LLE data
         rootName              = "_".join(os.path.basename(filename).split("_")[2:4]).split(".")[0]
+        rootName              = "_".join(os.path.basename(filename).split("_")[2:5]).split(".")[:-1]
+        rootName              = ".".join(rootName)
         detector              = "LAT-LLE"
         trigger                 = rootName.split("_")[0]
       pass

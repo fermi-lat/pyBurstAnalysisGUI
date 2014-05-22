@@ -52,44 +52,6 @@ BACK_SYS_ERROR                = 0.03
 #Optimizer
 optimizer                     = "DRMNFB"
 
-#Current IRFS lookup table
-#irfs                                 = {}
-#irfs['120','transient']             = 'P7TRANSIENT_V6'
-#irfs['120','TRANSIENT']             = 'P7TRANSIENT_V6'
-#irfs['120','P7TRANSIENT_V6']        = 'P7TRANSIENT_V6'
-#irfs['120','source']                = 'P7SOURCE_V6'
-#irfs['120','SOURCE']                = 'P7SOURCE_V6'
-#irfs['120','P7SOURCE_V6']           = 'P7SOURCE_V6'
-
-#irfs['130','transient']             = 'P7TRANSIENT_V6'
-#irfs['130','TRANSIENT']             = 'P7TRANSIENT_V6'
-#irfs['130','P7TRANSIENT_V6']        = 'P7TRANSIENT_V6'
-#irfs['130','source']                = 'P7SOURCE_V6'
-#irfs['130','SOURCE']                = 'P7SOURCE_V6'
-#irfs['130','P7SOURCE_V6']           = 'P7SOURCE_V6'
-
-#irfs['202','transient']             = 'P7REP_TRANSIENT_V15'
-#irfs['202','TRANSIENT']             = 'P7REP_TRANSIENT_V15'
-#irfs['202','P7REP_TRANSIENT_V15']   = 'P7REP_TRANSIENT_V15'
-#irfs['202','source']                = 'P7REP_SOURCE_V15'
-#irfs['202','SOURCE']                = 'P7REP_SOURCE_V15'
-#irfs['202','P7REP_SOURCE_V15']      = 'P7REP_SOURCE_V15'
-
-#irfs['300','transient_r020']        = 'P8TRANSIENT_R020_V20R9P0_V0'
-#irfs['300','P8TRANSIENT_R020_V20R9P0_V0'] = 'P8TRANSIENT_R020_V20R9P0_V0'
-#irfs['300','TRANSIENT_R020']        = 'P8TRANSIENT_R020_V20R9P0_V0'
-#irfs['300','transient']             = os.environ.get('CUSTOM_IRF_NAMES')
-
-#def translateIrfName(reproc,name):
-#  if((reproc,name) not in irfs.keys()):
-#    raise ValueError("Unknown IRF %s for reprocessing %s" %(name,reproc))
-#  else:
-#    if(irfs[reproc,name].find("TRANSIENT")>=0):
-#      return 'transient'
-#    if(irfs[reproc,name].find("SOURCE")>=0):
-#      return 'source'
-#pass
-
 #This are made so that bin(33) give a bit mask compatible with a transient event
 simirfs                       = {}
 simirfs['transient']          = 33
@@ -142,6 +104,45 @@ def exceptionPrinter(msg,exceptionText):
     sys.stderr.write("\n%s\n" % msg)
     sys.stderr.write("\n%s\n" % exceptionText)
     sys.stderr.write("-------------- EXCEPTION ---------------------------\n")      
+
+
+def getLATdataFromDirectory(directory):
+    cspecFiles                = glob.glob(os.path.join(os.path.abspath(directory),"gll_cspec_tr_*.pha"))
+    if(len(cspecFiles)==0):
+      print("No data available in directory %s." %(os.path.abspath(directory)))
+      return None
+    pass
+    
+    if(len(cspecFiles)>1):
+      raise RuntimeError("More than one LAT CSPEC file in %s" %(os.path.abspath(directory)))
+    else:
+      cspecFile               = cspecFiles[0]
+    pass
+    
+    filename                  = os.path.abspath(os.path.expanduser(cspecFile))
+    directory                 = os.path.dirname(os.path.abspath(filename))
+    
+    #Transient data
+    rootName                  = "_".join(os.path.basename(filename).split("_")[2:5]).split(".")[:-1]
+    rootName                  = ".".join(rootName)
+
+    detector                  = "LAT"
+    trigger                   = rootName.split("_")[1]
+            
+    triggered                 = True
+    triggerTime               = getTriggerTime(filename)
+    dataset                   = {}
+    dataset['eventfile']      = os.path.join(directory,"gll_ft1_%s.fit" %(rootName))
+    dataset['ft2file']        = os.path.join(directory,"gll_ft2_%s.fit" %(rootName))
+    dataset['rspfile']        = os.path.join(directory,"gll_cspec_%s.rsp" %(rootName))
+    dataset['cspecfile']      = cspecFile
+    #Check that they actually exists
+    for k,v in dataset.iteritems():
+      if(not os.path.exists(v)):
+        raise RuntimeError("Datafile %s (%s) does not exists! Corrupted dataset..." %(v,k))
+      pass
+    pass
+    return dataset
 
 
 def getPointing(triggertime,ft2,bothAxes=False):
@@ -285,7 +286,7 @@ def date2met(*kargs):
     datestring = kargs[0]
     
     if not isinstance(datestring,str):
-        if notisinstance(datestring,float): print "date2met: Single argument needs to be a string of the format 2008-05-16 00:00:00 or 2008/05/16 00:00:00"
+        if not isinstance(datestring,float): print "date2met: Single argument needs to be a string of the format 2008-05-16 00:00:00 or 2008/05/16 00:00:00"
         raise ValueError
     
     sep='-'
@@ -1075,10 +1076,14 @@ class my_gtexpmap(multiprocessScienceTools):
         self['nlong']                  = nlong+6
       pass     
       ybins                            = 2
-    elif(self.ncpus>=8):
+    elif(self.ncpus>=8 and self.ncpus< 16):
       xbins                            = 4
       ybins                            = 2
+    elif(self.ncpus>=16):
+      xbins                            = 4
+      ybins                            = 4
     pass
+    
     exepath                            = os.path.join(os.path.dirname(__file__),'gtapps_mp','gtexpmap_mp.py')
     cmdline                            = "%s %s %s %s %s %s %s %s %s %s %s %s" % (exepath,self['nlong'], self['nlat'], 
                                                    xbins, ybins, self['scfile'], self['evfile'], self['expcube'], 
@@ -1357,7 +1362,7 @@ class LATData(LLEData):
      self.gtltcube['outfile']       = outfilecube
      self.gtltcube['dcostheta']     = 0.025
      self.gtltcube['binsz']         = 1
-     self.gtltcube['phibins']       = 6
+     self.gtltcube['phibins']       = 1
      self.gtltcube['clobber']       = 'yes'
      if(self.strategy=="events"):
        print("\n\nApplying the Zenith cut in the livetime cube. Hope you know what you are doing...")
@@ -1383,8 +1388,9 @@ class LATData(LLEData):
      self.gtexpmap['outfile']       = outfileexpo
      self.gtexpmap['irfs']          = self.irf
      self.gtexpmap['srcrad']        = (2*self.rad)
-     self.gtexpmap['nlong']         = int(4*math.ceil(self.rad)/binsz)
-     self.gtexpmap['nlat']          = int(4*math.ceil(self.rad)/binsz)
+     #Guarantee that this is divisible by 4
+     self.gtexpmap['nlong']         = 4*int(math.ceil(4*self.rad/binsz/4.0))
+     self.gtexpmap['nlat']          = 4*int(math.ceil(4*self.rad/binsz/4.0))
      self.gtexpmap['nenergies']     = 10
      self.gtexpmap['clobber']       = 'yes'
      try:
@@ -1474,6 +1480,8 @@ class LATData(LLEData):
   pass
   
   def makeDiffuseResponse(self,xmlmodel):
+     self.getCuts()
+     
      self.gtdiffrsp['evfile']       = self.eventFile
      self.gtdiffrsp['scfile']       = self.ft2File
      self.gtdiffrsp['srcmdl']       = xmlmodel

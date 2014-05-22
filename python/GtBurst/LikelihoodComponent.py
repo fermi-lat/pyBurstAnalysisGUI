@@ -55,7 +55,13 @@ def findTemplate(options):
   if(publicTools):
     path                        = os.path.abspath(os.path.expanduser(os.path.join(envvar,'refdata','fermi','galdiffuse')))
   else:
-    path                        = os.path.abspath(os.path.expanduser(os.path.join(envvar,'diffuseModels','v2r0')))
+    if(os.environ.get('DIFFUSE_VER')==None):
+      ver                       = 'v2r0'
+    else:
+      ver                       = os.environ.get('DIFFUSE_VER')
+    pass
+    
+    path                        = os.path.abspath(os.path.expanduser(os.path.join(envvar,'diffuseModels',ver)))
   pass
   
   for tmp in templates:
@@ -66,6 +72,7 @@ def findTemplate(options):
   pass
   
   #If we are here no template has been found
+  print("\nI was looking into %s\n" %(path))
   return None
 pass
 
