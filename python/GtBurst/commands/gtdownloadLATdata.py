@@ -22,6 +22,7 @@ thisCommand.addParameter("dec","Dec. (if you want to override the value in the t
 thisCommand.addParameter("radius","Radius of the circular Region Of Interest (ROI)",commandDefiner.OPTIONAL,60.0)
 thisCommand.addParameter("timebefore","Start time (s relative from the trigger). Example: -100",commandDefiner.OPTIONAL,-100)
 thisCommand.addParameter("timeafter","Stop time (s relative from the trigger). Example: 10000",commandDefiner.OPTIONAL,10000)
+thisCommand.addParameter("datarepository","Where to store the files",commandDefiner.OPTIONAL,Configuration().get('dataRepository'))
 
 GUIdescription                = "The GUI has its own system to download data"
 thisCommand.setGUIdescription(GUIdescription)
@@ -69,6 +70,7 @@ def run(**kwargs):
     radius                        = float(thisCommand.getParValue('radius'))
     timebefore                    = float(thisCommand.getParValue('timebefore'))
     timeafter                     = float(thisCommand.getParValue('timeafter'))
+    datarepository                = os.path.abspath(os.path.expanduser(thisCommand.getParValue('datarepository')))
   except KeyError as err:
     print("\n\nERROR: Parameter %s not found or incorrect! \n\n" %(err.args[0]))
     
@@ -93,7 +95,7 @@ def run(**kwargs):
   pass
   
   LATdownloader           = downloadTransientData.DownloadTransientData(triggername,configuration.get('ftpWebsite'),
-                                                           configuration.get('dataRepository'))
+                                                           datarepository)
   try:
     LATdownloader.setCuts(ra,dec,radius,triggertime,triggertime+timebefore,triggertime+timeafter,'MET')
     LATdownloader.getFTP()

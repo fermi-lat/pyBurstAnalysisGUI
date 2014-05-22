@@ -257,7 +257,7 @@ def run(**kwargs):
   
   print(localizationMessage)
   
-  return 'likexmlresults', outfilelike, 'TS', grb_TS, 'bestra', bestra, 'bestdec', bestdec, 'poserr', poserr, 'distance', distance
+  return 'likexmlresults', outfilelike, 'TS', grb_TS, 'bestra', bestra, 'bestdec', bestdec, 'poserr', poserr, 'distance', distance,'sources', sources
 pass
 
 thisCommand.run = run
