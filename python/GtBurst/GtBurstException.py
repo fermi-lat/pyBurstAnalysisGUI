@@ -34,6 +34,10 @@ codes[42] = "Spacecraft file (FT2 file) stops before the end of the requested in
 codes[5] = "LLE or GBM data are not available"
 
 codes[6] = "Wrong Isotropic component"
+
+codes[60] = "No Isotropic template for selected class"
+codes[61] = "No Galactic template for selected class"
+
 class GtBurstException(RuntimeError):
   def __init__(self,code,message):
     RuntimeError.__init__(self,message)

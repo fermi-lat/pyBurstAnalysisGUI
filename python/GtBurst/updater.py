@@ -37,11 +37,7 @@ def update(debug=False):
   for ff in files:
     atoms                     = ff.split()
     pathname                  = atoms[-1].replace('*','')
-    if(ff[0]=='d'):
-      #This is a directory, skipping
-      if(debug):
-        print("Skip directory %s" %(pathname))
-    elif(ff.find("__file_list")>=0):
+    if(ff.find("__file_list")>=0):
       if(debug):
         print("Skipping %s..." %(ff))
     else:

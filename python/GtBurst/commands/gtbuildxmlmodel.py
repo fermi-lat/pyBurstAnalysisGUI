@@ -114,11 +114,18 @@ def run(**kwargs):
   
   #Lookup table for the models
   models = {}
-  models['isotr with pow spectrum'] = LikelihoodComponent.IsotropicPowerlaw()
-  models['isotr template']          = LikelihoodComponent.IsotropicTemplate(irf)
-  models['template']                = LikelihoodComponent.GalaxyAndExtragalacticDiffuse(irf)
-  models['template (fixed norm.)']  = LikelihoodComponent.GalaxyAndExtragalacticDiffuse(irf)
-  models['template (fixed norm.)'].fixNormalization()
+  if(particlemodel=='isotr with pow spectrum'):
+    models['isotr with pow spectrum'] = LikelihoodComponent.IsotropicPowerlaw()
+  elif(particlemodel=='isotr template'):
+    models['isotr template']          = LikelihoodComponent.IsotropicTemplate(irf)
+  pass
+  
+  if(galacticmodel=='template'):
+    models['template']                = LikelihoodComponent.GalaxyAndExtragalacticDiffuse(irf)
+  elif(galacticmodel=='template (fixed norm.)'):
+    models['template (fixed norm.)']  = LikelihoodComponent.GalaxyAndExtragalacticDiffuse(irf)
+    models['template (fixed norm.)'].fixNormalization()
+  pass
   
   deltat                        = numpy.sum(f['GTI'].data.field('STOP')-f['GTI'].data.field('START'))
   f.close()

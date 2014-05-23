@@ -12,13 +12,14 @@ import numpy
 import os
 from GtBurst.getDataPath import getDataPath
 from GtBurst import IRFS
+from GtBurst import GtBurstException
 
 def findGalacticTemplate(irfname):
   irf                         = IRFS.IRFS[irfname]
   
   templ                       = findTemplate(irf.galacticTemplate)
   if(templ==None):
-    raise RuntimeError("You don't have a Galactic template for IRF %s. Cannot continue." %(irfname))
+    raise GtBurstException.GtBurstException(61,"You don't have a Galactic template for IRF %s. Cannot continue." %(irfname))
   else:
     print("\nFound Galactic template for IRF. %s: %s" %(irfname,templ))
     return templ
@@ -33,7 +34,7 @@ def findIsotropicTemplate(irfname):
   pass
   
   if(templ==None):
-    raise RuntimeError("You don't have a Isotropic template for IRF %s. Cannot continue." %(irfname))
+    raise GtBurstException.GtBurstException(61,"You don't have an Isotropic template for IRF %s. Cannot continue." %(irfname))
   else:
     print("\nFound Istotropic template for irf %s: %s" %(irfname,templ))
     return templ
