@@ -1,5 +1,15 @@
 ------------------------------------------------------------
 User: giacomov  Thu May 22 18:08:16 PDT 2014
+pyBurstAnalysisGUI/python/GtBurst
+
+Modified Files:
+	GtBurstException.py IRFS.py LikelihoodComponent.py updater.py 
+	version.py 
+Log Message:
+Synch with git
+    *
+------------------------------------------------------------
+User: giacomov  Thu May 22 18:08:16 PDT 2014
 pyBurstAnalysisGUI
 
 Modified Files:
