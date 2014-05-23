@@ -6,6 +6,7 @@
   $Id $
   * EOH *
 
+ pyBurstAnalysisGUI-02-00-00 23-May-2014 giacomov Bug fix for the update process, plus added compatibility with P8
  pyBurstAnalysisGUI-01-04-05 03-Jan-2014 giacomov Fixing another problem in finding the data path in the public version of the ST
  pyBurstAnalysisGUI-01-04-04 02-Jan-2014 giacomov Fixing a problem in finding the data path in the public version of the ST
  pyBurstAnalysisGUI-01-04-03 20-Dec-2013 giacomov Fixing some issues to make the interface work in the ST packaging system
