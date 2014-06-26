@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: giacomov  Thu Jun 26 16:39:46 PDT 2014
+pyBurstAnalysisGUI/python/GtBurst
+
+Modified Files:
+	CommandPipeline.py IRFS.py InteractiveFt1Display.py 
+	dataHandling.py interactivePlots.py version.py 
+Log Message:
+Synch with git
+    *
+------------------------------------------------------------
 User: giacomov  Thu Jun 26 16:39:45 PDT 2014
 pyBurstAnalysisGUI/python
 
