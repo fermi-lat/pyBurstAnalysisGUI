@@ -1218,7 +1218,7 @@ class LATData(LLEData):
       self.gtselect['emax']            = emax
       self.gtselect['zmax']            = zenithCut
       
-      if(irf.lower() in IRFS.IRFS.keys() and IRFS.IRFS[irf].reprocessingVersion==str(reprocessingVersion)):
+      if(irf.lower() in IRFS.IRFS.keys() and IRFS.IRFS[irf].validateReprocessing(str(reprocessingVersion))):
         irf                            = IRFS.IRFS[irf]
       else:
         raise ValueError("Class %s not known or wrong class for this reprocessing version (%s)." %(irf,reprocessingVersion))
@@ -1505,8 +1505,8 @@ class LATData(LLEData):
      self.gtrspgen['thetacut']      = thetacut
      self.gtrspgen['dcostheta']     = dcostheta
      self.gtrspgen['ebinalg']       = 'LOG'
-     self.gtrspgen['emin']          = self.emin
-     self.gtrspgen['emax']          = self.emax
+     self.gtrspgen['emin']          = 30.0
+     self.gtrspgen['emax']          = 200000.0
      self.gtrspgen['enumbins']      = numbins
      try:
        self.gtrspgen.run()
@@ -2200,7 +2200,7 @@ class CspecBackground(object):
     
     tstart                      = self.timeIntervals[0].tstart + self.trigTime
     tstop                       = self.timeIntervals[-1].tstop + self.trigTime
-    mask                        = (s.data.field('QUALITY')==0) & (s.data.field("TIME") >= tstart) & (s.data.field("TIME")<= tstop)
+    mask                        = (s.data.field('QUALITY')==0) & (s.data.field("TIME") >= tstart) & (s.data.field("TIME")<= tstop) & (s.data.field("EXPOSURE")>0)
     d                           = s.data[mask]
     counts                      = d.field('COUNTS')
     t                           = d.field('TIME')-self.trigTime
@@ -2218,7 +2218,10 @@ class CspecBackground(object):
     residuals                   = []
     for i,t1,t2 in zip(range(N),t[:-1],t[1:]):
       backgroundCounts,backErr  = self.getTotalBackgroundCounts(t1,t2)
-      residuals.append((LC[i]-backgroundCounts)/math.sqrt(backgroundCounts+pow(backErr,2.0))) 
+      try:
+        residuals.append((LC[i]-backgroundCounts)/math.sqrt(backgroundCounts+pow(backErr,2.0))) 
+      except:
+        residuals.append(0)
     pass
     subfigures.append(lcFigure.add_subplot(2,1,2,xlabel=xlabel,ylabel="Sigma"))
     tmean                    = map(lambda x:(x[0]+x[1])/2.0,zip(t[:-1],t[1:]))

@@ -44,8 +44,9 @@ def getInteractiveFigureFromCSPEC(cspecfile,**kwargs):
   pass
   s                           = f['SPECTRUM']
   
-  d                           = s.data[(s.data.field('QUALITY')==0)] 
-  counts                      = d.field('COUNTS')
+  d                           = s.data[(s.data.field('QUALITY')==0)]
+  #Avoid overflow and underflow channels
+  counts                      = d.field('COUNTS')[:,3:126]
   met                         = d.field('TIME')-trigTime
   exposure                    = d.field('EXPOSURE')
   N                           = len(met)

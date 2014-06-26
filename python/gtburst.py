@@ -1547,6 +1547,7 @@ class GUI(object):
     triggerTimes              = []
     RAs                       = []
     DECs                      = []
+    names                     = []
     for dataset,yesNo in zip(datasets,map(lambda x:x.get(),parValues)):
       if(yesNo==1):
         triggerTimes.append(dataset.triggerTime)
@@ -1583,6 +1584,7 @@ class GUI(object):
         pass
         
         self.datasets.append(dataset)
+        names.append(dataset.detector)
       pass
     pass    
     parent.destroy()   
@@ -1591,7 +1593,8 @@ class GUI(object):
     
     #Check for the coordinates of the source
     if((max(RAs)-min(RAs) > 0.2) or (max(DECs)-min(DECs) > 0.2)):
-      showerror("Inconsistent coordinates","The selected datasets have been generated with inconsistent coordinates for the source.\nRA: %s\nDec: %s\n Please write to the FSSC." %(RAs,DECs),
+      string                  = map(lambda x:"%s -> (%s,%s); " %(x[0],x[1],x[2]),zip(names,RAs,DECs))
+      showerror("Inconsistent coordinates","The selected datasets have been generated with inconsistent coordinates for the source.\n%s\n Please write to the FSSC." %(string),
                 parent=self.root)
       self.datasets           = []
      

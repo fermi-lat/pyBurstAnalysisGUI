@@ -48,7 +48,12 @@ class InteractiveFt1Display(object):
     irfs                      = numpy.array(map(lambda x:IRFS.fromEvclassToIRF(self.reprocVer,x),self.events.field("EVENT_CLASS")))
     print("")
     for irf in IRFS.PROCS[self.reprocVer]:
-      print("%-50s %s" %("Class %s only:" % irf,irfs[irfs==irf].shape[0]))
+      try:
+        n                     = irfs[irfs==irf].shape[0]
+      except:
+        n                     = 0
+      pass
+      print("%-50s %s" %("Class %s only:" % irf,n))
 
     
     self.pickerID             = None
@@ -159,6 +164,7 @@ class InteractiveFt1Display(object):
     #Filter data
     idx                       = numpy.array(map(lambda x:self.inRegion(x.field("RA"),x.field("DEC"),xmin,xmax,ymin,ymax),
                                                 self.events))
+    
     events                    = self.events[idx]
     
     #Events display
