@@ -9,6 +9,15 @@ class IRF(object):
     self.galacticTemplate     = galacticTemplate
     self.isotropicTemplate    = isotropicTemplate
   pass
+  
+  def validateReprocessing(self,reproc):
+    if(str(reproc) in self.reprocessingVersion.split(",")):
+      return True
+    else:
+      return False
+    pass
+  pass
+  
 pass
 
 class CaseInsensitiveDict(collections.OrderedDict):
@@ -69,10 +78,10 @@ pass
 IRFS                          = CaseInsensitiveDict()
 
 #P7REP
-IRFS['P7REP_TRANSIENT']   = IRF('P7REP_TRANSIENT','P7REP_TRANSIENT_V15','202',0,'gll_iem_v05.fits,gll_iem_v05.fit,template_4years_P7_v15_repro_v2_trim.fits','iso_transient_v05.txt')
-IRFS['P7REP_SOURCE']      = IRF('P7REP_SOURCE','P7REP_SOURCE_V15','202',2,'gll_iem_v05.fits,gll_iem_v05.fit,template_4years_P7_v15_repro_v2_trim.fits','iso_source_v05.txt')
-IRFS['P7REP_CLEAN']       = IRF('P7REP_CLEAN','P7REP_CLEAN_V15','202',3,'gll_iem_v05.fits,gll_iem_v05.fit,template_4years_P7_v15_repro_v2_trim.fits','iso_clean_v05.txt')
-IRFS['P7REP_ULTRACLEAN']  = IRF('P7REP_ULTRACLEAN','P7REP_ULTRACLEAN_V15','202',4,'gll_iem_v05.fits,gll_iem_v05.fit,template_4years_P7_v15_repro_v2_trim.fits','iso_clean_v05.txt')
+IRFS['P7REP_TRANSIENT']   = IRF('P7REP_TRANSIENT','P7REP_TRANSIENT_V15','202,203',0,'gll_iem_v05_rev1.fit,gll_iem_v05_rev1.fits,gll_iem_v05.fits,gll_iem_v05.fit,template_4years_P7_v15_repro_v2_trim.fits','iso_transient_v05.txt')
+IRFS['P7REP_SOURCE']      = IRF('P7REP_SOURCE','P7REP_SOURCE_V15','202,203',2,'gll_iem_v05_rev1.fit,gll_iem_v05_rev1.fits,gll_iem_v05.fits,gll_iem_v05.fit,template_4years_P7_v15_repro_v2_trim.fits','iso_source_v05.txt,iso_source_v05_rev1.txt')
+IRFS['P7REP_CLEAN']       = IRF('P7REP_CLEAN','P7REP_CLEAN_V15','202,203',3,'gll_iem_v05_rev1.fit,gll_iem_v05_rev1.fits,gll_iem_v05.fits,gll_iem_v05.fit,template_4years_P7_v15_repro_v2_trim.fits','iso_clean_v05.txt')
+IRFS['P7REP_ULTRACLEAN']  = IRF('P7REP_ULTRACLEAN','P7REP_ULTRACLEAN_V15','202,203',4,'gll_iem_v05_rev1.fit,gll_iem_v05_rev1.fits,gll_iem_v05.fits,gll_iem_v05.fit,template_4years_P7_v15_repro_v2_trim.fits','iso_clean_v05.txt')
 
 
 #P8        
@@ -83,10 +92,13 @@ IRFS['P8_SOURCE']         = IRF('P8_SOURCE','P8_SOURCE_V1','300',4,'gll_iem_v05.
 
 PROCS                         = collections.OrderedDict()
 for k,v in IRFS.iteritems():
-  if(v.reprocessingVersion in PROCS.keys()):
-    PROCS[v.reprocessingVersion].append(k)
-  else:
-    PROCS[v.reprocessingVersion] = [k]
+  thisReprocessings       = v.reprocessingVersion.split(",")
+  for repro in thisReprocessings:
+    if(repro in PROCS.keys()):
+      PROCS[repro].append(k)
+    else:
+      PROCS[repro] = [k]
+    pass
   pass
 pass
   

@@ -355,7 +355,7 @@ class CommandPipeline(object):
           msg                          = ("Snap! An unhandled exception has occurred at line %s of file %s.\n\n" %(line,filename) +
                                         "The GUI will try to continue running. Check the parameters for the task which crashed.\n\n" +
                                         " If you think this is a bug, send a message" +
-                                        " to giacomov@slac.stanford.edu attaching your gtburst.log file.\n\n"+
+                                        " to fermihelp@milkyway.gsfc.nasa.gov attaching your gtburst.log file.\n\n"+
                                         "The full traceback has been saved to the log and printed in the console.")
           showerror("Unhandled exception",msg)
           

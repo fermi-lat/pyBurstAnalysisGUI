@@ -1,6 +1,10 @@
 # -*- python -*-
 #
-# $Id: SConscript,v 1.18 2014/05/23 01:08:16 giacomov Exp $
+<<<<<<< SConscript
+# $Id: SConscript,v 1.10 2013/12/21 00:06:37 giacomov Exp $
+=======
+# $Id: SConscript,v 1.19 2014/05/23 18:56:38 giacomov Exp $
+>>>>>>> 1.19
 # Authors: Giacomo Vianello <giacomov@slac.stanford.edu>
 # Version: pyBurstAnalysisGUI-02-00-00
 

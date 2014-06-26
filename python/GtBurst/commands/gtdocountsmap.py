@@ -32,6 +32,7 @@ thisCommand.addParameter("skymap","Name for the output file for the sky map",com
 thisCommand.addParameter("thetamax","Maximum theta angle for the source",commandDefiner.OPTIONAL,180.0)
 thisCommand.addParameter("clobber","Overwrite output file? (possible values: 'yes' or 'no')",commandDefiner.OPTIONAL,"yes")
 thisCommand.addParameter("strategy","Strategy for Zenith cut. (possible values: 'time' or 'events')",commandDefiner.OPTIONAL,"time",possibleValues=["time","events"])
+thisCommand.addParameter("allowEmpty","Allow empty output (possible values: 'yes' or 'no')",commandDefiner.OPTIONAL,'no',partype=commandDefiner.HIDDEN)
 thisCommand.addParameter("verbose","Verbose output (possible values: 'yes' or 'no')",commandDefiner.OPTIONAL,"yes")
 thisCommand.addParameter("figure","Matplotlib figure for the interactive mode",commandDefiner.OPTIONAL,None,partype=commandDefiner.PYTHONONLY)
 
@@ -100,6 +101,7 @@ def run(**kwargs):
     outfile                     = thisCommand.getParValue('skymap')
     strategy                    = thisCommand.getParValue('strategy')
     thetamax                    = float(thisCommand.getParValue('thetamax'))
+    allowEmpty                  = _yesOrNoToBool(thisCommand.getParValue('allowEmpty'))
     clobber                     = _yesOrNoToBool(thisCommand.getParValue('clobber'))
     verbose                     = _yesOrNoToBool(thisCommand.getParValue('verbose'))
     figure                      = thisCommand.getParValue('figure')
@@ -133,7 +135,7 @@ def run(**kwargs):
   skymap.close()
   print("\nTotal number of events in the counts map: %s" %(totalNumberOfEvents))
   print("Total time in Good Time Intervals:        %s" %(totalTime))
-  if(totalTime==0 or totalNumberOfEvents==0):
+  if((totalTime==0 or totalNumberOfEvents==0) and allowEmpty==False):
     raise GtBurstException(2,"Your filter resulted in either zero counts or zero exposure. \n\n" +
                              " Loose your cuts, or enlarge the time interval. You might want to "+
                              " check also the navigation plots (in the Tools menu) to make sure "+
