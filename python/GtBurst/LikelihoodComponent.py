@@ -27,7 +27,7 @@ pass
 
 def findIsotropicTemplate(irfname):
   if(irfname=='BKGE'):
-    templ                     = findTemplate(os.environ.get('THISBKGE')) #This is a trick, leave it as it is
+    templ                     = os.environ.get('THISBKGE') #This is a trick, leave it as it is
   else:
     irf                       = IRFS.IRFS[irfname]
     templ                     = findTemplate(irf.isotropicTemplate)
@@ -36,7 +36,7 @@ def findIsotropicTemplate(irfname):
   if(templ==None):
     raise GtBurstException.GtBurstException(61,"You don't have an Isotropic template for IRF %s. Cannot continue." %(irfname))
   else:
-    print("\nFound Istotropic template for irf %s: %s" %(irfname,templ))
+    print("\nFound Isotropic template for irf %s: %s" %(irfname,templ))
     return templ
 pass
 
@@ -53,16 +53,25 @@ def findTemplate(options):
       raise RuntimeError("Fermi Science tools are not properly configured. No FERMI_DIR nor GLAST_EXT variables are set. Cannot continue.")
     pass
   pass
-  if(publicTools):
-    path                        = os.path.abspath(os.path.expanduser(os.path.join(envvar,'refdata','fermi','galdiffuse')))
-  else:
-    if(os.environ.get('DIFFUSE_VER')==None):
-      ver                       = 'v2r0'
+  
+  if(os.environ.get('GTBURST_TEMPLATE_PATH')==None):
+    #This is normally the case
+    if(publicTools):
+      path                        = os.path.abspath(os.path.expanduser(os.path.join(envvar,'refdata','fermi','galdiffuse')))
     else:
-      ver                       = os.environ.get('DIFFUSE_VER')
+      if(os.environ.get('DIFFUSE_VER')==None):
+        ver                       = 'v2r0'
+      else:
+        ver                       = os.environ.get('DIFFUSE_VER')
+      pass
+      
+      path                        = os.path.abspath(os.path.expanduser(os.path.join(envvar,'diffuseModels',ver)))
     pass
+  else:
+    #The user forces the template path
     
-    path                        = os.path.abspath(os.path.expanduser(os.path.join(envvar,'diffuseModels',ver)))
+    path                          = os.environ.get('GTBURST_TEMPLATE_PATH')
+    print("\n\nUsing user-defined path for templates: %s\n\n" %(path))
   pass
   
   for tmp in templates:
@@ -250,7 +259,10 @@ class BKGETemplate(TemplateFile):
     #Make the BKGE estimate
     thisBkge                  = bkge.BKGE(filteredEventFile,ft2,triggerName,triggertime,os.getcwd())
     template,statErr,sysErr   = thisBkge.makeLikelihoodTemplate(tstart,tstop)
-    os.environ['THISBKGE']    = template
+    os.environ['THISBKGE']    = os.path.abspath(template)
+    print(template)
+    if(os.path.exists(os.environ['THISBKGE'])==False):
+      raise RuntimeError("The background estimator BKGE has failed!")
     TemplateFile.__init__(self,"IsotropicTemplate",'BKGE',IsotropicTemplateFunc,sysErr,statErr)
   pass
 pass

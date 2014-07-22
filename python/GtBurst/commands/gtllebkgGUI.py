@@ -16,7 +16,7 @@ thisCommand                   = commandDefiner.Command(executableName,shortDescr
 thisCommand.addParameter("intervals","Comma-separated definition of intervals, in seconds from trigger or MET. Ex: '10.2-20.3 , 52-132.0' or '283996802.12 - 283996802'. 'i' for interactive choice.",commandDefiner.MANDATORY,"interactive")
 thisCommand.addParameter("cspecfile","Input CSPEC file",commandDefiner.MANDATORY,partype=commandDefiner.DATASETFILE,extension="pha")
 thisCommand.addParameter("rspfile","LLE response (RSP file)",commandDefiner.MANDATORY,partype=commandDefiner.DATASETFILE,extension="rsp")
-#thisCommand.addParameter("bkgintervals","FITS file defining off-pulse time intervals",commandDefiner.MANDATORY,partype=commandDefiner.INPUTFILE,extension="fits")
+thisCommand.addParameter("bkgintervals","FITS file defining off-pulse time intervals",commandDefiner.OPTIONAL,"__bkgintervals.temp",partype=commandDefiner.OUTPUTFILE,extension="fits")
 thisCommand.addParameter("srcintervals","FITS file defining source time intervals",commandDefiner.MANDATORY,partype=commandDefiner.INPUTFILE,extension="fits")
 thisCommand.addParameter("bkgspectra","Name for the output file",commandDefiner.MANDATORY,partype=commandDefiner.OUTPUTFILE,extension="bak")
 thisCommand.addParameter("clobber","Overwrite output file? (possible values: 'yes' or 'no')",commandDefiner.OPTIONAL,"yes")
@@ -72,6 +72,7 @@ def run(**kwargs):
     intervals                   = thisCommand.getParValue('intervals')
     cspecfile                   = thisCommand.getParValue('cspecfile')
     rspfile                     = thisCommand.getParValue('rspfile')
+    bkgintervalsFile            = thisCommand.getParValue('bkgintervals')
     srcintervalsFile            = thisCommand.getParValue('srcintervals')
     outfile                     = thisCommand.getParValue('bkgspectra')
     figure                      = thisCommand.getParValue('figure')
@@ -91,12 +92,11 @@ def run(**kwargs):
   message                     = Message(verbose)
   while(1==1):
     #Run gtllebkgbindef
-    kwargs['bkgintervals']      = "__bkgintervals.temp"
+    kwargs['bkgintervals']      = bkgintervalsFile
     key, outfile                = gtllebkgbindef.run(**kwargs)
     #Run gtllebkg
     kwargs[key]                 = outfile
     key2, outfile2,cspecBackground = gtllebkg.run(**kwargs)
-    os.remove("__bkgintervals.temp")
     message("\n%s done!" %(thisCommand.name))
     
     if(figure!=None):
