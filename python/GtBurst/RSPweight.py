@@ -20,11 +20,14 @@ pass
 
 class EventsCounter(object):
   def __init__(self,**kwargs):
+    
+    eventfile                 = os.path.abspath(os.path.expanduser(os.path.expandvars(kwargs['eventfile'])))
+    
     #Check if the event file is a CSPEC
-    if(pyfits.getval(kwargs['eventfile'],"DATATYPE",ext=0).find("CSPEC")>=0):
-      self.initWithCSPEC(kwargs['eventfile'])
+    if(pyfits.getval(eventfile,"DATATYPE",ext=0).find("CSPEC")>=0):
+      self.initWithCSPEC(eventfile)
     else:
-      self.initWithTTE(kwargs['eventfile'])
+      self.initWithTTE(eventfile)
     pass  
   pass
   
@@ -99,6 +102,9 @@ class EventsCounter(object):
   
 pass
 
+def _fixPath(filename):
+  return os.path.abspath(os.path.expanduser(os.path.expandvars(filename)))
+
 class TimeIntervals(object):
   def __init__(self,**kwargs):
     
@@ -106,9 +112,9 @@ class TimeIntervals(object):
     self.tstops               = []
     self.counts               = []
     
-    eventsCounter                     = EventsCounter(eventfile=kwargs['eventfile'])
+    eventsCounter                     = EventsCounter(eventfile=_fixPath(kwargs['eventfile']))
     
-    timeBinsFile                      = pyfits.open(kwargs['timeBinsFile'])
+    timeBinsFile                      = pyfits.open(_fixPath(kwargs['timeBinsFile']))
     for rowID in range(timeBinsFile["TIMEBINS"].data.shape[0]):
       curTstart                       = timeBinsFile["TIMEBINS"].data[rowID][0]
       curTstop                        = timeBinsFile["TIMEBINS"].data[rowID][1]
@@ -133,8 +139,8 @@ def RSPweight(**kwargs):
     '''    
     timeIntervals                    = TimeIntervals(**kwargs)
     
-    rsp2                             = kwargs['rsp2file']
-    out                              = kwargs['outfile']
+    rsp2                             = _fixPath(kwargs['rsp2file'])
+    out                              = _fixPath(kwargs['outfile'])
     #The trigger time is only for printing purposes: if specified,
     #all the messages from the program will contain time intervals referred
     #to the trigger time, otherwise they will be in MET
@@ -150,10 +156,10 @@ def RSPweight(**kwargs):
     
     #Get instrument name
     try:
-      instrument                        = pyfits.getval(kwargs['eventfile'],"INSTRUME",extname="EVENTS",extver=1)
+      instrument                        = pyfits.getval(_fixPath(kwargs['eventfile']),"INSTRUME",extname="EVENTS",extver=1)
     except:
       try:
-        instrument                        = pyfits.getval(kwargs['eventfile'],"INSTRUME",extname="SPECTRUM",extver=1)
+        instrument                        = pyfits.getval(_fixPath(kwargs['eventfile']),"INSTRUME",extname="SPECTRUM",extver=1)
       except:
         instrument                        = "UNKN-INSTRUME"
     #For every interval contained in the time bins file
