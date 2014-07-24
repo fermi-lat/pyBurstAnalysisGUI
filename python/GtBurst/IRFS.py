@@ -1,4 +1,5 @@
 import collections
+import os
 
 class IRF(object):
   def __init__(self,shortname,name,reprocVer,evclass,galacticTemplate='',isotropicTemplate=''):
@@ -85,10 +86,17 @@ IRFS['P7REP_ULTRACLEAN']  = IRF('P7REP_ULTRACLEAN','P7REP_ULTRACLEAN_V15','202,2
 
 
 #P8        
-IRFS['P8_TRANSIENT_R100'] = IRF('P8_TRANSIENT_R100','P8_TRANSIENT_R100_V1','300',1,'gll_iem_v05.fits','p8_p300x_isotropic_source_v1.txt')
-IRFS['P8_TRANSIENT_R050'] = IRF('P8_TRANSIENT_R050','P8_TRANSIENT_R050_V1','300',2,'gll_iem_v05.fits','p8_p300x_isotropic_source_v1.txt')
-IRFS['P8_TRANSIENT_R020'] = IRF('P8_TRANSIENT_R020','P8_TRANSIENT_R020_V1','300',3,'gll_iem_v05.fits','p8_p300x_isotropic_source_v1.txt')
-IRFS['P8_SOURCE']         = IRF('P8_SOURCE','P8_SOURCE_V1','300',4,'gll_iem_v05.fits','p8_p300x_isotropic_source_v1.txt')                
+IRFS['P8_TRANSIENT_R100_V1'] = IRF('P8_TRANSIENT_R100_V1','P8_TRANSIENT_R100_V1','300',1,'gll_iem_v05.fits','p8_p300x_isotropic_source_v1.txt')
+IRFS['P8_TRANSIENT_R050_V1'] = IRF('P8_TRANSIENT_R050_V1','P8_TRANSIENT_R050_V1','300',2,'gll_iem_v05.fits','p8_p300x_isotropic_source_v1.txt')
+IRFS['P8_TRANSIENT_R020_V1'] = IRF('P8_TRANSIENT_R020_V1','P8_TRANSIENT_R020_V1','300',3,'gll_iem_v05.fits','p8_p300x_isotropic_source_v1.txt')
+IRFS['P8_SOURCE_V1']         = IRF('P8_SOURCE_V1','P8_SOURCE_V1','300',4,'gll_iem_v05.fits','p8_p300x_isotropic_source_v1.txt')                
+
+#P8        
+IRFS['P8_TRANSIENT_R100'] = IRF('P8_TRANSIENT_R100','P8_TRANSIENT_R100_V4','301',4,'gll_iem_v05.fits','p8_p300x_isotropic_source_v1.txt')
+IRFS['P8_TRANSIENT_R020'] = IRF('P8_TRANSIENT_R020','P8_TRANSIENT_R020_V4','301',16,'gll_iem_v05.fits','p8_p300x_isotropic_source_v1.txt')
+IRFS['P8_TRANSIENT_R010'] = IRF('P8_TRANSIENT_R010','P8_TRANSIENT_R010_V4','301',64,'gll_iem_v05.fits','p8_p300x_isotropic_source_v1.txt')
+IRFS['P8_SOURCE']         = IRF('P8_SOURCE','P8_SOURCE_V4','301',128,'gll_iem_v05.fits','p8_p300x_isotropic_source_v1.txt')                
+
 
 PROCS                         = collections.OrderedDict()
 for k,v in IRFS.iteritems():
