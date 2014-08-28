@@ -1,5 +1,15 @@
 ------------------------------------------------------------
 User: giacomov  Thu Aug 28 14:03:17 PDT 2014
+pyBurstAnalysisGUI/python/GtBurst
+
+Modified Files:
+	IRFS.py InteractiveFt1Display.py LikelihoodComponent.py 
+	dataHandling.py downloadTransientData.py version.py 
+Log Message:
+Synch with git
+    *
+------------------------------------------------------------
+User: giacomov  Thu Aug 28 14:03:17 PDT 2014
 pyBurstAnalysisGUI
 
 Modified Files:
