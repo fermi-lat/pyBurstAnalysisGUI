@@ -166,7 +166,7 @@ class PointSource(GenericSource):
     self.source                        = PtSrc()
     self.source.name                   = name
     self.source.spectrum.Integral.max  = 1e5
-    self.source.spectrum.Integral.min  = 0
+    self.source.spectrum.Integral.min  = 1e-6
     self.source.spectrum.Integral.scale = 1e-03
     self.source.spectrum.Integral.value = 0.01
     self.source.spectrum.Integral.units = ''

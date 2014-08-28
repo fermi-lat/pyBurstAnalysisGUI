@@ -194,9 +194,10 @@ class InteractiveFt1Display(object):
                                             ncol=2,labelspacing=0.05,
                                             loc='upper center',
                                             bbox_to_anchor=(0.3,1.20),
-                                            fancybox=True)
-    
-    legend.get_title().set_fontsize('6')
+                                            fancybox=True,)
+    ltext                     = legend.get_texts()
+    plt.setp(ltext, fontsize='small') 
+    legend.get_title().set_fontsize('x-small')
     self.figure.canvas.draw()
     
     #Destroy the callback with previous data, and create a new one with the new data
