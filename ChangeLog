@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: giacomov  Thu Aug 28 14:16:38 PDT 2014
+pyBurstAnalysisGUI/python/GtBurst/scripts
+
+Added Files:
+	doTimeResolvedLike.py 
+Log Message:
+Script for time resolved likelihood
+    *
+------------------------------------------------------------
 User: giacomov  Thu Aug 28 14:16:09 PDT 2014
 pyBurstAnalysisGUI/python/GtBurst
 
