@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: giacomov  Thu Aug 28 14:16:08 PDT 2014
+pyBurstAnalysisGUI
+
+Modified Files:
+	SConscript 
+Log Message:
+Synch with git
+    *
+------------------------------------------------------------
 User: giacomov  Thu Aug 28 14:03:17 PDT 2014
 pyBurstAnalysisGUI/python/GtBurst/commands
 
