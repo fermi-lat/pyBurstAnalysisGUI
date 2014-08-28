@@ -230,7 +230,7 @@ class DownloadTransientData(dataCollector):
         if(estimatedTimeForTheQuery==0):
           m1.set(1)
         else:
-          m1.set((time.time()-startTime)/float(estimatedTimeForTheQuery))
+          m1.set((time.time()-startTime)/float(max(estimatedTimeForTheQuery,1)))
       sys.stdout.flush()
       #Fetch the html with the results
       try:

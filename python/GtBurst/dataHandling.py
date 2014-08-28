@@ -372,9 +372,14 @@ def _getLatestVersion(filename):
     extension                 = m.group(3)
     
     fileList                  = glob.glob(os.path.join(directory,"%sv*.%s" %(rootName,extension)))
-
     #Get the versions
-    versions                  = map(lambda x:int(re.search(regExp,x).group(2)[1:]),fileList)
+    matches                   = map(lambda x:re.search(regExp,x),fileList)
+    matches                   = filter(lambda x:x!=None,matches)
+
+    if(len(matches)==0):
+      raise RuntimeError("No version found for file of type %s. Does the directory contain data?" %("%sv*.%s" %(rootName,extension)))
+    
+    versions                  = map(lambda x:int(x.group(2)[1:]),matches)
     #Get the position of the maximum
     idx                       = versions.index(max(versions))
     #Get the most recent version of the file and return it
@@ -1783,11 +1788,11 @@ class LATData(LLEData):
      print(self.like1)
      print("\nPerforming likelihood fit...")
      try:
-       logL                         = self.like1.fit(verbosity=2,covar=True)
+       logL                         = self.like1.fit(verbosity=1,covar=True)
      except:
        raise RuntimeError("Likelihood fit did not converged. Probably your model is too complex for your selection.")
-     
-     self.like1.logLike.writeXml(outfilelike)
+       
+     self.like1.writeXml(outfilelike)
      #Now add the errors for the isotropic template, which are removed by writeXml
      if(sysErr!=None and statErr != None):
        tree                        = ET.parse(outfilelike)
@@ -1802,15 +1807,33 @@ class LATData(LLEData):
        tree.write(outfilelike)
      pass
      
-     self.like1.plot()
+     try:
+       self.like1.plot()
+     except:
+       print("Could not produce likelihood plots")
+     pass
      
      if(grb_name!=None):
-       self.like1.plotSource(grb_name,'red')
+       try:
+         self.like1.plotSource(grb_name,'red')
+       except:
+         pass
      for s in self.like1.sourceNames():
        if(s.lower().find("earthlimb")>=0):
-         self.like1.plotSource(s,'blue')
-     self.like1.residualPlot.canvas.Print('%s_residuals.png' % (self.rootName))
-     self.like1.spectralPlot.canvas.Print('%s_spectral.png' % (self.rootName))
+         try:
+           self.like1.plotSource(s,'blue')
+         except:
+           pass
+         pass
+       pass
+     pass
+     
+     try:
+       self.like1.residualPlot.canvas.Print('%s_residuals.png' % (self.rootName))
+       self.like1.spectralPlot.canvas.Print('%s_spectral.png' % (self.rootName))
+     except:
+       pass
+     pass
      
      printer                        = LikelihoodComponent.LikelihoodResultsPrinter(self.like1,self.emin,self.emax)
      detectedSources                = printer.niceXMLprint(outfilelike,tsmin,phIndex_beforeFit)

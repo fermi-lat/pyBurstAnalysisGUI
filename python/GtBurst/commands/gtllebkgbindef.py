@@ -81,7 +81,7 @@ def run(**kwargs):
   
   message                     = Message(verbose)
   
-  #Just run gtllebkgbindef
+  #Just run gtllebindef
   from gtllebindef import thisCommand as gtllebindef
   kwargs['intervaltype']      = "background"
   kwargs['outfile']           = outfile
