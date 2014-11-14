@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: giacomov  Fri Nov 14 15:16:34 PST 2014
+pyBurstAnalysisGUI/python/GtBurst
+
+Modified Files:
+	InteractiveFt1Display.py LikelihoodComponent.py RSPweight.py 
+	angularDistance.py dataHandling.py downloadTransientData.py 
+Log Message:
+Synch with git
+    *
+------------------------------------------------------------
 User: giacomov  Fri Nov 14 15:16:33 PST 2014
 pyBurstAnalysisGUI/python
 
