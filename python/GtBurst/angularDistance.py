@@ -150,3 +150,61 @@ def getRaDecROOT(ra_scx,dec_scx,ra_scz,dec_scz,theta,phi):
   if ra<0: ra+=360
   return ra,dec
 pass
+
+def getBoundingCoordinates(lon,lat,radius):
+  '''
+  Finds the smallest "rectangle" which contains the given Region Of Interest.
+  It returns lat_min, lat_max, dec_min, dec_max. If a point has latitude
+  within lat_min and lat_max, and longitude within dec_min and dec_max,
+  it is possibly contained in the ROI. Otherwise, it is certainly NOT 
+  within the ROI.
+  '''
+  radLat                      = np.deg2rad(lat)
+  radLon                      = np.deg2rad(lon)
+  
+  radDist                     = np.deg2rad(radius)
+  
+  minLat                      = radLat - radDist
+  maxLat                      = radLat + radDist
+  
+  MIN_LAT                     = np.deg2rad(-90.0)
+  MAX_LAT                     = np.deg2rad(90.0)
+  MIN_LON                     = np.deg2rad(-180.0)
+  MAX_LON                     = np.deg2rad(180.0)
+  
+  if(minLat > MIN_LAT and maxLat < MAX_LAT):
+    pole                      = False
+    
+    deltaLon                  = np.arcsin(np.sin(radDist)/np.cos(radLat))
+    
+    minLon                    = radLon - deltaLon
+    maxLon                    = radLon + deltaLon
+    
+    if(minLon < MIN_LON):
+      minLon                 += 2.0*np.pi
+    if(maxLon > MAX_LON):
+      maxLon                 -= 2.0*np.pi
+    
+    #In FITS files the convention is to have longitude from 0 to 360, instead of
+    #-180,180. Correct this
+    if(minLon < 0):
+      minLon                   += 2.0*np.pi
+    if(maxLon < 0):
+      maxLon                   += 2.0*np.pi
+  else:
+    pole                      = True
+    #A pole is within the ROI
+    minLat                    = max(minLat,MIN_LAT)
+    maxLat                    = min(maxLat,MAX_LAT)
+    minLon                    = 0
+    maxLon                    = 2.0*np.pi
+  pass
+  
+  #Inversion can happen due to boundaries, so make sure min and max are right
+  #minLatf,maxLatf             = min(minLat,maxLat),max(minLat,maxLat)
+  #minLonf,maxLonf             = min(minLon,maxLon),max(minLon,maxLon)
+  
+  return np.rad2deg(minLon), np.rad2deg(maxLon), np.rad2deg(minLat), np.rad2deg(maxLat), pole
+  
+pass
+

@@ -381,8 +381,8 @@ def RSPweight(**kwargs):
         
           #Fix the CHANNEL column, and TLMIN/TLMAX keywords
           data['EBOUNDS'].data.field('CHANNEL')[:]=numpy.array(range(1,nChannels+1))
-          data['EBOUNDS'].header.update("TLMIN%s" %(tlminID),1)
-          data['EBOUNDS'].header.update("TLMAX%s" %(tlminID),nChannels)
+          data['EBOUNDS'].header.set("TLMIN%s" %(tlminID),1)
+          data['EBOUNDS'].header.set("TLMAX%s" %(tlminID),nChannels)
           #SPECRESP MATRIX
           #Now we have to correct the rows whith wrong F_CHAN and N_CHAN values:
           #There are rows where F_CHAN = 128, and N_CHAN = 1, but the only element not null
@@ -406,8 +406,8 @@ def RSPweight(**kwargs):
           #Find what is the tlminColumn column                  
           columns                                            = data['SPECRESP MATRIX'].data.names          
           tlminID                                            = columns.index('F_CHAN')+1 
-          data['SPECRESP MATRIX'].header.update("TLMIN%s" %(tlminID),1)
-          data['SPECRESP MATRIX'].header.update("TLMAX%s" %(tlminID),nChannels)
+          data['SPECRESP MATRIX'].header.set("TLMIN%s" %(tlminID),1)
+          data['SPECRESP MATRIX'].header.set("TLMAX%s" %(tlminID),nChannels)
           data.close()
         pass        
         
@@ -439,9 +439,9 @@ def RSPweight(**kwargs):
     #now append all the produced matrix in one RSP2 file
     #Take the PRIMARY extension from the input RSP2 file
     primary                          = rsp2File[0].copy()
-    primary.header.update("DRM_NUM",nIntervals)
-    primary.header.update("TSTART",timeIntervals.tstarts[0])
-    primary.header.update("TSTOP",timeIntervals.tstops[-1])
+    primary.header.set("DRM_NUM",nIntervals)
+    primary.header.set("TSTART",timeIntervals.tstarts[0])
+    primary.header.set("TSTOP",timeIntervals.tstops[-1])
     primary.writeto(outrsp,clobber='True')
     
     #Get the EBOUNDS extension from the first matrix
@@ -474,14 +474,14 @@ def RSPweight(**kwargs):
       curData                 = curM.data
       
       #Update TSTART and TSTOP
-      curHeader.update("TSTART",timeIntervals.tstarts[intervalNumber])
-      curHeader.update("TSTOP",timeIntervals.tstops[intervalNumber])
+      curHeader.set("TSTART",timeIntervals.tstarts[intervalNumber])
+      curHeader.set("TSTOP",timeIntervals.tstops[intervalNumber])
       
       #Update RSP_NUM keyword
-      curHeader.update("RSP_NUM",i+1)
+      curHeader.set("RSP_NUM",i+1)
       
       #update EXTVER keyword
-      curHeader.update("EXTVER",i+1)
+      curHeader.set("EXTVER",i+1)
       
       #Add history
       history="This is a matrix computed by weighting applying matrices contained in "+rsp2

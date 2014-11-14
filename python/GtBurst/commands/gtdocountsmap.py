@@ -135,8 +135,8 @@ def run(**kwargs):
   skymap.close()
   print("\nTotal number of events in the counts map: %s" %(totalNumberOfEvents))
   print("Total time in Good Time Intervals:        %s" %(totalTime))
-  if((totalTime==0 or totalNumberOfEvents==0) and allowEmpty==False):
-    raise GtBurstException(2,"Your filter resulted in either zero counts or zero exposure. \n\n" +
+  if((totalTime==0) and allowEmpty==False):
+    raise GtBurstException(2,"Your filter resulted in zero exposure. \n\n" +
                              " Loose your cuts, or enlarge the time interval. You might want to "+
                              " check also the navigation plots (in the Tools menu) to make sure "+
                              " that the ROI is within the LAT FOV in the desired time interval.")

@@ -454,7 +454,7 @@ class GUI(object):
     for dataset in self.datasets:
       for key in ['rspfile','cspecfile','eventfile']:
         f                     = pyfits.open(dataset[key],"update")
-        f[0].header.update("UREFTIME",triggerTime)
+        f[0].header.set("UREFTIME",triggerTime)
         f.close()
       pass
     pass  
@@ -1099,7 +1099,7 @@ class GUI(object):
           coldef         = f['SPECTRUM',1].columns + newtable.columns
           finalTable     = pyfits.new_table(coldef,header=header)
         pass
-        finalTable.header.update("POISSERR",True)
+        finalTable.header.set("POISSERR",True)
         
         #Copy also GTI and EBOUNDS
         primary        = f[0].copy()
@@ -1628,7 +1628,7 @@ class GUI(object):
     for dataset in datasets:
       for key in ['rspfile','cspecfile']:
         f                     = pyfits.open(dataset[key],"update")
-        f[0].header.update("UREFTIME",float(triggerTime))
+        f[0].header.set("UREFTIME",float(triggerTime))
         f.close()
       pass
     pass  
