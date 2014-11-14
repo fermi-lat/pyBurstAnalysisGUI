@@ -130,7 +130,7 @@ class DownloadTransientData(dataCollector):
     parameters['shapefield']    = "%s" %(self.roi)
     parameters['timefield']     = "%s,%s" %(self.tstart,self.tstop)
     parameters['timetype']      = "%s" %(self.timetype)
-    parameters['energyfield']   = "30,300000"
+    parameters['energyfield']   = "30,1000000"
     parameters['photonOrExtendedOrNone'] = what
     parameters['destination']   = 'query'
     parameters['spacecraft']    = 'checked'

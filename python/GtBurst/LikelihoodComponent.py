@@ -2,6 +2,7 @@
 #for GRBs
 
 #FuncFactory is part of the Science Tools
+import pywcs
 from FuncFactory import *
 import os
 import xml.etree.ElementTree as ET
@@ -13,8 +14,11 @@ import os
 from GtBurst.getDataPath import getDataPath
 from GtBurst import IRFS
 from GtBurst import GtBurstException
+from GtBurst import cutout
+import pyfits
+import skymaps
 
-def findGalacticTemplate(irfname):
+def findGalacticTemplate(irfname,ra,dec,rad):
   irf                         = IRFS.IRFS[irfname]
   
   templ                       = findTemplate(irf.galacticTemplate)
@@ -22,7 +26,11 @@ def findGalacticTemplate(irfname):
     raise GtBurstException.GtBurstException(61,"You don't have a Galactic template for IRF %s. Cannot continue." %(irfname))
   else:
     print("\nFound Galactic template for IRF. %s: %s" %(irfname,templ))
-    return templ
+    print("\nCutting the template around the ROI: \n")
+    name,ext                  = os.path.basename(templ).split(".")
+    newName                   = name+"_cut.%s" % ext
+    cutout.cutout(templ,ra,dec,'equatorial',rad,newName,True)
+    return newName
 pass
 
 def findIsotropicTemplate(irfname):
@@ -86,12 +94,12 @@ def findTemplate(options):
   return None
 pass
 
-def DiffuseSrcTemplateFunc(irf):
+def DiffuseSrcTemplateFunc(irf,ra,dec,rad):
     diffuse = '''
    <spatialModel file="%s" type="MapCubeFunction">
      <parameter free="0" max="1000.0" min="0.001" name="Normalization" scale= "1.0" value="1.0"/>
    </spatialModel>
-    ''' %(findGalacticTemplate(irf))
+    ''' %(findGalacticTemplate(irf,ra,dec,rad))
     
     spectrum = '''
    <spectrum type="ConstantValue">
@@ -243,8 +251,9 @@ class TemplateFile(GenericSource):
 pass
 
 class GalaxyAndExtragalacticDiffuse(TemplateFile):
-  def __init__(self,irf):
-    TemplateFile.__init__(self,"GalacticTemplate",irf,DiffuseSrcTemplateFunc)
+  def __init__(self,irf,ra,dec,rad):
+    TemplateFile.__init__(self,"GalacticTemplate",irf,
+                          lambda irf:DiffuseSrcTemplateFunc(irf,ra,dec,rad))
   pass
 pass
 

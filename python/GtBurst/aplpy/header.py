@@ -10,14 +10,14 @@ def check(header, convention=None, dimensions=[0, 1]):
     # missing or incomplete, and replace it with a 1-to-1 pixel mapping
     if 'CTYPE%i' % ix not in header or 'CTYPE%i' % iy not in header:
         logger.warn("No WCS information found in header - using pixel coordinates")
-        header.update('CTYPE%i' % ix, 'PIXEL')
-        header.update('CTYPE%i' % iy, 'PIXEL')
-        header.update('CRVAL%i' % ix, 0.)
-        header.update('CRVAL%i' % iy, 0.)
-        header.update('CRPIX%i' % ix, 0.)
-        header.update('CRPIX%i' % iy, 0.)
-        header.update('CDELT%i' % ix, 1.)
-        header.update('CDELT%i' % iy, 1.)
+        header.set('CTYPE%i' % ix, 'PIXEL')
+        header.set('CTYPE%i' % iy, 'PIXEL')
+        header.set('CRVAL%i' % ix, 0.)
+        header.set('CRVAL%i' % iy, 0.)
+        header.set('CRPIX%i' % ix, 0.)
+        header.set('CRPIX%i' % iy, 0.)
+        header.set('CDELT%i' % ix, 1.)
+        header.set('CDELT%i' % iy, 1.)
 
     if header['CTYPE%i' % ix][4:] == '-CAR' and header['CTYPE%i' % iy][4:] == '-CAR':
 
@@ -46,8 +46,8 @@ def check(header, convention=None, dimensions=[0, 1]):
                     header['CRPIX%i' % ilat] = crpix
                     header['CRVAL%i' % ilat] = 0.
                 except:  # older versions of PyFITS
-                    header.update('CRPIX%i' % ilat, crpix)
-                    header.update('CRVAL%i' % ilon, 0.)
+                    header.set('CRPIX%i' % ilat, crpix)
+                    header.set('CRVAL%i' % ilon, 0.)
 
             else:
                 raise Exception('''WARNING: projection is Plate Caree (-CAR) and

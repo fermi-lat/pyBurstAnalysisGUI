@@ -204,7 +204,7 @@ def run(**kwargs):
     telapsed                 = pyfits.open(eventfile)[0].header['TSTOP']-pyfits.open(eventfile)[0].header['TSTART']
     orig.set_tick_labels_font(size='small')
     orig.set_axis_labels_font(size='small')
-    orig.show_colorscale(cmap='gist_heat',vmin=0.1,vmax=vmax,stretch='log',aspect='auto')
+    orig.show_colorscale(cmap='gist_heat',vmin=0.1,vmax=max(vmax,0.11),stretch='log',aspect='auto')
     # Modify the tick labels for precision and format
     orig.tick_labels.set_xformat('ddd.dd')
     orig.tick_labels.set_yformat('ddd.dd')
@@ -222,7 +222,7 @@ def run(**kwargs):
                                                 figure=figure,subplot=[0.55,0.1,0.4,0.7])
     img.set_tick_labels_font(size='small')
     img.set_axis_labels_font(size='small')
-    vmax                     = max(pyfits.open(modelmapfile)[0].data.flatten())
+    #vmax                     = max(pyfits.open(modelmapfile)[0].data.flatten())
     img.show_colorscale(cmap='gist_heat',aspect='auto',stretch='log') 
     
     for src in detectedSources:

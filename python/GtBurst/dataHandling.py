@@ -363,15 +363,15 @@ def _getLatestVersion(filename):
     directory                 = os.path.dirname(filename)
     filename                  = os.path.basename(filename)
     
-    regExp                    = "([^v]+)(v[0-9]{2})\.(.+)"
+    regExp                    = "(.+)(_v[0-9]{2})\.(.+)"
     m                         = re.search(regExp,filename)
     
-    #This is something like "glg_tte_bn100724029_" or "glg_tte_n0_bn100724029_"
+    #This is something like "glg_tte_bn100724029" or "glg_tte_n0_bn100724029"
     rootName                  = m.group(1)
-    oldVersion                = m.group(2)
+    oldVersion                = m.group(2).replace("_","")
     extension                 = m.group(3)
     
-    fileList                  = glob.glob(os.path.join(directory,"%sv*.%s" %(rootName,extension)))
+    fileList                  = glob.glob(os.path.join(directory,"%s_v*.%s" %(rootName,extension)))
     #Get the versions
     matches                   = map(lambda x:re.search(regExp,x),fileList)
     matches                   = filter(lambda x:x!=None,matches)
@@ -379,7 +379,7 @@ def _getLatestVersion(filename):
     if(len(matches)==0):
       raise RuntimeError("No version found for file of type %s. Does the directory contain data?" %("%sv*.%s" %(rootName,extension)))
     
-    versions                  = map(lambda x:int(x.group(2)[1:]),matches)
+    versions                  = map(lambda x:int(x.group(2)[2:]),matches)
     #Get the position of the maximum
     idx                       = versions.index(max(versions))
     #Get the most recent version of the file and return it
@@ -479,10 +479,10 @@ def _makeDatasetsOutOfLATdata(ft1,ft2,grbName,tstart,tstop,
     emaxs_column              = pyfits.Column(name='E_MAX', format='E', array=emaxs)
     cols                      = pyfits.ColDefs([emins_column, emaxs_column])
     tbhdu                     = pyfits.new_table(cols)
-    tbhdu.header.update('EXTNAME','EBOUNDS')
+    tbhdu.header.set('EXTNAME','EBOUNDS')
     hdu                       = pyfits.PrimaryHDU(None)
     fakematrixhdu             = pyfits.new_table(pyfits.ColDefs([pyfits.Column(name="FAKE",format='E')]))
-    fakematrixhdu.header.update('EXTNAME',"SPECRESP MATRIX")
+    fakematrixhdu.header.set('EXTNAME',"SPECRESP MATRIX")
     eboundsFilename           = os.path.join(localRepository,"gll_cspec_tr_bn%s_v00.rsp" %(grbName))
     thdulist                  = pyfits.HDUList([hdu, tbhdu, fakematrixhdu])
     print("Writing %s..." %(eboundsFilename))
@@ -541,10 +541,10 @@ def updateKeywords(filename,triggerTime,ra,dec,grbName):
   #Now update some keywords in the ft1 file
   ft1                       = pyfits.open(filename,'update')
   for i in range(len(ft1)):
-    ft1[i].header.update("TRIGTIME",triggerTime)
-    ft1[i].header.update("RA_OBJ",ra)
-    ft1[i].header.update("DEC_OBJ",dec)
-    ft1[i].header.update("OBJECT",grbName)
+    ft1[i].header.set("TRIGTIME",triggerTime)
+    ft1[i].header.set("RA_OBJ",ra)
+    ft1[i].header.set("DEC_OBJ",dec)
+    ft1[i].header.set("OBJECT",grbName)
   pass
   ft1.close()
 pass
@@ -600,6 +600,8 @@ def getTriggerTime(ff):
   f                             = pyfits.open(os.path.abspath(os.path.expanduser(ff)))
   if("UREFTIME" in f[0].header.keys()):
     trigTime                    = f[0].header['UREFTIME']
+  elif("TRIGTIME" in f[0].header.keys()):
+    trigTime                    = f[0].header['TRIGTIME']
   else:  
     trigTime                    = -1
     for extname in [cspecExtName,eventsExtName,'SPECRESP MATRIX','MATRIX']:
@@ -950,7 +952,7 @@ class my_gtltcube(multiprocessScienceTools):
   pass
   
   def multiproc_run(self):
-    return self.singleproc_run()
+    #return self.singleproc_run()
     exepath                            = os.path.join(os.path.dirname(__file__),'gtapps_mp','gtltcube_mp.py')
     cmdline                            = "%s %s %s %s %s" % (exepath,self.ncpus,
                                                                          self['scfile'],
@@ -1190,8 +1192,8 @@ class LATData(LLEData):
         self.gtmktime['apply_filter']    = 'yes'
         self.gtmktime['overwrite']       = 'no'
         self.gtmktime['header_obstimes'] = 'yes'
-        self.gtmktime['tstart']          = 0
-        self.gtmktime['tstop']           = 0
+        self.gtmktime['tstart']          = float(tstart)
+        self.gtmktime['tstop']           = float(tstop)
         self.gtmktime['clobber']         = 'yes'
         try:
           self.gtmktime.run()
@@ -1244,17 +1246,17 @@ class LATData(LLEData):
       #Now write a keyword which will be used by other methods to recover ra,dec,rad,emin,emax,zcut
       f                                = pyfits.open(outfileselect,'update')      
       
-      f[0].header.update('_ROI_RA',"%8.4f" % float(ra))
-      f[0].header.update('_ROI_DEC',"%8.4f" % float(dec))
-      f[0].header.update('_ROI_RAD',"%8.4f" % float(rad))
-      f[0].header.update('_TMIN',"%50.10f" % float(tmin))
-      f[0].header.update('_TMAX',"%50.10f" % float(tmax))
-      f[0].header.update('_EMIN',"%s" % float(emin))
-      f[0].header.update('_EMAX',"%s" % float(emax))
-      f[0].header.update('_ZMAX',"%12.5f" % float(zenithCut))
-      f[0].header.update('_STRATEG',self.strategy)
-      f[0].header.update('_IRF',"%s" % irf.name)
-      f[0].header.update('_REPROC','%s' % reprocessingVersion)
+      f[0].header.set('_ROI_RA',"%8.4f" % float(ra))
+      f[0].header.set('_ROI_DEC',"%8.4f" % float(dec))
+      f[0].header.set('_ROI_RAD',"%8.4f" % float(rad))
+      f[0].header.set('_TMIN',"%50.10f" % float(tmin))
+      f[0].header.set('_TMAX',"%50.10f" % float(tmax))
+      f[0].header.set('_EMIN',"%s" % float(emin))
+      f[0].header.set('_EMAX',"%s" % float(emax))
+      f[0].header.set('_ZMAX',"%12.5f" % float(zenithCut))
+      f[0].header.set('_STRATEG',self.strategy)
+      f[0].header.set('_IRF',"%s" % irf.name)
+      f[0].header.set('_REPROC','%s' % reprocessingVersion)
       
       nEvents                          = len(f['EVENTS'].data.TIME)
       print("\nSelected %s events." %(nEvents))
@@ -1356,8 +1358,8 @@ class LATData(LLEData):
      f                                = pyfits.open("__ft2temp.fits","update")
      idx                              = (f['SC_DATA'].data.START > self.tmin-300) & (f['SC_DATA'].data.STOP < self.tmax+300)
      f['SC_DATA'].data                = f['SC_DATA'].data[idx]
-     f['SC_DATA'].header.update("TSTART",self.tmin-300)
-     f['SC_DATA'].header.update("TSTOP",self.tmax+300)
+     f['SC_DATA'].header.set("TSTART",self.tmin-300)
+     f['SC_DATA'].header.set("TSTOP",self.tmax+300)
      f.close()
 
      
@@ -1396,7 +1398,7 @@ class LATData(LLEData):
      #Guarantee that this is divisible by 4
      self.gtexpmap['nlong']         = 4*int(math.ceil(4*self.rad/binsz/4.0))
      self.gtexpmap['nlat']          = 4*int(math.ceil(4*self.rad/binsz/4.0))
-     self.gtexpmap['nenergies']     = 10
+     self.gtexpmap['nenergies']     = 20
      self.gtexpmap['clobber']       = 'yes'
      try:
        self.gtexpmap.run()
@@ -2929,29 +2931,29 @@ class Spectra(object):
     #Set POISSERR=F because our errors are NOT poissonian!
     #(anyway, neither Rmfit neither XSPEC actually uses the errors
     #on the background spectrum, BUT rmfit ignores channel with STAT_ERR=0)
-    newTable.header.update('EXTNAME','SPECTRUM')
-    newTable.header.update('CORRSCAL',1.0)
-    newTable.header.update('AREASCAL',1.0)
-    newTable.header.update('BACKSCAL',1.0) 
-    newTable.header.update('HDUCLASS','OGIP')    
-    newTable.header.update('HDUCLAS1','SPECTRUM')
-    newTable.header.update('HDUCLAS2',self.spectra[0].spectrumType)
-    newTable.header.update('HDUCLAS3','RATE')
-    newTable.header.update('HDUCLAS4','TYPE:II')
-    newTable.header.update('HDUVERS','1.2.0')
-    newTable.header.update('TELESCOP',self.spectra[0].telescope)
-    newTable.header.update('INSTRUME',self.spectra[0].instrument)
+    newTable.header.set('EXTNAME','SPECTRUM')
+    newTable.header.set('CORRSCAL',1.0)
+    newTable.header.set('AREASCAL',1.0)
+    newTable.header.set('BACKSCAL',1.0) 
+    newTable.header.set('HDUCLASS','OGIP')    
+    newTable.header.set('HDUCLAS1','SPECTRUM')
+    newTable.header.set('HDUCLAS2',self.spectra[0].spectrumType)
+    newTable.header.set('HDUCLAS3','RATE')
+    newTable.header.set('HDUCLAS4','TYPE:II')
+    newTable.header.set('HDUVERS','1.2.0')
+    newTable.header.set('TELESCOP',self.spectra[0].telescope)
+    newTable.header.set('INSTRUME',self.spectra[0].instrument)
     
     if(self.spectra[0].filter!='unknown'):
-      newTable.header.update('FILTER',self.spectra[0].filter)
+      newTable.header.set('FILTER',self.spectra[0].filter)
     
-    newTable.header.update('CHANTYPE',self.spectra[0].chanType)
-    newTable.header.update('POISSERR',self.poisserr)
-    newTable.header.update('DETCHANS',len(self.channel[0]))
-    newTable.header.update('CREATOR',"dataHandling.py v.%s" %(moduleVersion),"(G.Vianello, giacomov@slac.stanford.edu)")
+    newTable.header.set('CHANTYPE',self.spectra[0].chanType)
+    newTable.header.set('POISSERR',self.poisserr)
+    newTable.header.set('DETCHANS',len(self.channel[0]))
+    newTable.header.set('CREATOR',"dataHandling.py v.%s" %(moduleVersion),"(G.Vianello, giacomov@slac.stanford.edu)")
     
     for key,value in self.spectrumHeader.iteritems():
-      newTable.header.update(key,value)
+      newTable.header.set(key,value)
     pass
     
     #Write to the required filename
@@ -2960,7 +2962,7 @@ class Spectra(object):
     #Reopen the file and add the primary keywords, if any
     f                         = pyfits.open(filename,"update")
     for key,value in self.primaryHeader.iteritems():
-      f[0].header.update(key,value)
+      f[0].header.set(key,value)
     pass
     f.close()
     
@@ -3036,30 +3038,30 @@ class Spectra(object):
     #Set POISSERR=F because our errors are NOT poissonian!
     #(anyway, neither Rmfit neither XSPEC actually uses the errors
     #on the background spectrum, BUT rmfit ignores channel with STAT_ERR=0)
-    newTable.header.update('EXTNAME','SPECTRUM')
-    newTable.header.update('CORRSCAL',1.0)
-    newTable.header.update('AREASCAL',1.0)
-    newTable.header.update('BACKSCAL',1.0) 
-    newTable.header.update('HDUCLASS','OGIP')    
-    newTable.header.update('HDUCLAS1','SPECTRUM')
-    newTable.header.update('HDUCLAS2',self.spectra[0].spectrumType)
-    newTable.header.update('HDUCLAS3','COUNT')
-    newTable.header.update('HDUCLAS4','TYPE:II')
-    newTable.header.update('HDUVERS','1.0.0')
-    newTable.header.update('TELESCOP',self.spectra[0].telescope)
-    newTable.header.update('INSTRUME',self.spectra[0].instrument)
+    newTable.header.set('EXTNAME','SPECTRUM')
+    newTable.header.set('CORRSCAL',1.0)
+    newTable.header.set('AREASCAL',1.0)
+    newTable.header.set('BACKSCAL',1.0) 
+    newTable.header.set('HDUCLASS','OGIP')    
+    newTable.header.set('HDUCLAS1','SPECTRUM')
+    newTable.header.set('HDUCLAS2',self.spectra[0].spectrumType)
+    newTable.header.set('HDUCLAS3','COUNT')
+    newTable.header.set('HDUCLAS4','TYPE:II')
+    newTable.header.set('HDUVERS','1.0.0')
+    newTable.header.set('TELESCOP',self.spectra[0].telescope)
+    newTable.header.set('INSTRUME',self.spectra[0].instrument)
     
     if(self.spectra[0].filter!='unknown'):
-      newTable.header.update('FILTER',self.spectra[0].filter)
+      newTable.header.set('FILTER',self.spectra[0].filter)
     
-    newTable.header.update('CHANTYPE',self.spectra[0].chanType)
-    newTable.header.update('POISSERR',self.poisserr)
-    newTable.header.update('DETCHANS',len(self.channel[0]))
-    newTable.header.update('TRIGTIME',trigTime)
-    newTable.header.update('CREATOR',"dataHandling.py v.%s" %(moduleVersion),"(G.Vianello, giacomov@slac.stanford.edu)")
+    newTable.header.set('CHANTYPE',self.spectra[0].chanType)
+    newTable.header.set('POISSERR',self.poisserr)
+    newTable.header.set('DETCHANS',len(self.channel[0]))
+    newTable.header.set('TRIGTIME',trigTime)
+    newTable.header.set('CREATOR',"dataHandling.py v.%s" %(moduleVersion),"(G.Vianello, giacomov@slac.stanford.edu)")
     
     for key,value in self.spectrumHeader.iteritems():
-      newTable.header.update(key,value)
+      newTable.header.set(key,value)
     pass
     
     #Write to the required filename
@@ -3071,7 +3073,7 @@ class Spectra(object):
     self.primaryHeader["DATATYPE"] = 'CSPEC   '
     self.primaryHeader["FILETYPE"] = 'PHAII   '
     for key,value in self.primaryHeader.iteritems():
-      primaryExt.header.update(key,value)
+      primaryExt.header.set(key,value)
     pass
     
     if(self.ebounds != None):
@@ -3137,7 +3139,7 @@ def fixHeaders(llefile,cspecfile,sourceExt=eventsExtName,destExt="SPECTRUM"):
       continue
     pass
       
-    cspecPrimary.update(key,value,comments)
+    cspecPrimary.set(key,value,comments)
   pass
   
   for key in keywordsToCopySpectrum:
@@ -3148,7 +3150,7 @@ def fixHeaders(llefile,cspecfile,sourceExt=eventsExtName,destExt="SPECTRUM"):
       continue
     pass
       
-    cspecSpectrum.update(key,value,comments)
+    cspecSpectrum.set(key,value,comments)
   pass
   llef.close()
   cspecf.close()

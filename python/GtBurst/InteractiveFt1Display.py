@@ -163,7 +163,7 @@ class InteractiveFt1Display(object):
   def displayEvents(self,xmin=-1,xmax=1e9,ymin=-1,ymax=1e9):
     #Filter data
     idx                       = numpy.array(map(lambda x:self.inRegion(x.field("RA"),x.field("DEC"),xmin,xmax,ymin,ymax),
-                                                self.events))
+                                                self.events),'bool')
     
     events                    = self.events[idx]
     

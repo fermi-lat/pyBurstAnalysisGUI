@@ -110,6 +110,8 @@ def run(**kwargs):
   tstart                        = float(f[0].header['_TMIN'])
   tstop                         = float(f[0].header['_TMAX'])
   irf                           = str(f[0].header['_IRF'])
+  ra                            = float(f[0].header['_ROI_RA'])
+  dec                           = float(f[0].header['_ROI_DEC'])
   roi                           = float(f[0].header['_ROI_RAD'])
   
   #Lookup table for the models
@@ -121,9 +123,9 @@ def run(**kwargs):
   pass
   
   if(galacticmodel=='template'):
-    models['template']                = LikelihoodComponent.GalaxyAndExtragalacticDiffuse(irf)
+    models['template']                = LikelihoodComponent.GalaxyAndExtragalacticDiffuse(irf,ra,dec,2.5*roi)
   elif(galacticmodel=='template (fixed norm.)'):
-    models['template (fixed norm.)']  = LikelihoodComponent.GalaxyAndExtragalacticDiffuse(irf)
+    models['template (fixed norm.)']  = LikelihoodComponent.GalaxyAndExtragalacticDiffuse(irf,ra,dec,2.5*roi)
     models['template (fixed norm.)'].fixNormalization()
   pass
   
