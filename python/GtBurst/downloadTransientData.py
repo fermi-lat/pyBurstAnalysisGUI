@@ -158,19 +158,25 @@ class DownloadTransientData(dataCollector):
     except:
       raise GtBurstException(1,"Problems with the download. Check your connection or that you can access http://fermi.gsfc.nasa.gov, then retry.")
     pass
+    
     #Now open the file, parse it and get the query ID
     htmlFile                    = open(temporaryFileName)
-    html                        = " ".join(htmlFile.readlines()).strip()
+    lines                       = []
+    for line in htmlFile:
+      lines.append(line.encode('utf-8'))
+    pass
+    html                        = " ".join(lines).strip()
     htmlFile.close()
     print("\nAnswer from the LAT data server:\n")
     
     text                        = html2text.html2text(html.encode('utf-8').strip()).split("\n")
+    
     if("".join(text).replace(" ","")==""):
       raise GtBurstException(1,"Problems with the download. Empty answer from the LAT server. Normally this means that the server is ingesting new data, please retry in half an hour or so.")
     text                        = filter(lambda x:x.find("[") < 0 and 
                                                   x.find("]") < 0 and 
                                                   x.find("#") < 0 and 
-                                                  x.find("*") < 0 and
+                                                  x.find("* ") < 0 and
                                                   x.find("+") < 0 and
                                                   x.find("Skip navigation")<0,text)
     text                        = filter(lambda x:len(x.replace(" ",""))>1,text)
@@ -192,7 +198,7 @@ class DownloadTransientData(dataCollector):
       estimatedTimeLine           = filter(lambda x:x.find("The estimated time for your query to complete is")==0,parser.data)[0]
       estimatedTimeForTheQuery    = re.findall("The estimated time for your query to complete is ([0-9]+) seconds",estimatedTimeLine)[0]
     except:
-      raise GtBurstException(1,"Problems with the download. Empty answer from the LAT server. Please retry later.")
+      raise GtBurstException(1,"Problems with the download. Empty or wrong answer from the LAT server (see console). Please retry later.")
     pass
     
     httpAddress                 = filter(lambda x:x.find("http://fermi.gsfc.nasa.gov") >=0,parser.data)[0]

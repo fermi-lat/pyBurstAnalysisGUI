@@ -82,7 +82,7 @@ if __name__=="__main__":
   try:
     dataset                     = dataHandling.getLATdataFromDirectory(os.path.join(args.datarepository,'bn%s' %args.triggername.replace('bn','')))
   except:
-    import pdb;pdb.set_trace()
+    raise
   
   if(dataset==None):
     #Download data
@@ -169,7 +169,7 @@ if __name__=="__main__":
     targs['ra']                  = args.ra
     targs['dec']                 = args.dec
     targs['irf']                 = irf
-    targs['allowEmpty']          = 'yes'
+    targs['allowEmpty']          = 'no'
     
     printCommand("gtdocountsmap.py",targs)
     try:

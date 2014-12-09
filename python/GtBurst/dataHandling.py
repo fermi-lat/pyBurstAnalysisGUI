@@ -953,6 +953,15 @@ class my_gtltcube(multiprocessScienceTools):
   
   def multiproc_run(self):
     #return self.singleproc_run()
+    
+    #Get the length of the time interval
+    data                               = pyfits.getdata(self['evfile'],'EVENTS')
+    if(data.shape[0]==0 or (data.field("TIME").max()-data.field("TIME").min() <= 1000.0)):
+      #Use the single processor version (there is no gain in splitting)
+      return self.singleproc_run()
+    else:
+      pass
+    
     exepath                            = os.path.join(os.path.dirname(__file__),'gtapps_mp','gtltcube_mp.py')
     cmdline                            = "%s %s %s %s %s" % (exepath,self.ncpus,
                                                                          self['scfile'],
