@@ -4,6 +4,7 @@ import sys
 import os, pyfits, numpy
 from GtBurst import commandDefiner
 from GtBurst import xmlModelGUI
+import subprocess
 
 ################ Command definition #############################
 executableName                = "gteditxmlmodel"
@@ -14,6 +15,7 @@ thisCommand                   = commandDefiner.Command(executableName,shortDescr
 
 #Define the command parameters
 thisCommand.addParameter("xmlmodel","XML model file to edit",commandDefiner.MANDATORY,partype=commandDefiner.INPUTFILE,extension="xml")
+#thisCommand.addParameter("usesteditor","Use the Model Editor available in the ST instead",commandDefiner.OPTIONAL,"no",possiblevalues=['no','yes'])
 thisCommand.addParameter("tkwindow","Tk root window",commandDefiner.OPTIONAL,None,partype=commandDefiner.PYTHONONLY)
 
 GUIdescription                = "After clicking 'run', you can modify the parameters of your likelihood model"
@@ -33,7 +35,7 @@ def _yesOrNoToBool(value):
   elif(value.lower()=="no"):
     return False
   else:
-    raise ValueError("Unrecognized clobber option. You can use 'yes' or 'no'")    
+    raise ValueError("Unrecognized option. You can use 'yes' or 'no'")    
   pass
 pass
 
@@ -62,6 +64,7 @@ def run(**kwargs):
   thisCommand.setParValuesFromDictionary(kwargs)
   try:
     xmlmodel                    = thisCommand.getParValue('xmlmodel')
+    #usesteditor                 = _yesOrNoToBool(thisCommand.getParValue('usesteditor'))
     tkwindow                    = thisCommand.getParValue('tkwindow')
   except KeyError as err:
     print("\n\nERROR: Parameter %s not found or incorrect! \n\n" %(err.args[0]))
@@ -77,12 +80,13 @@ def run(**kwargs):
   dec                         = dataHandling._getParamFromXML(xmlmodel,'DEC')
   name                        = dataHandling._getParamFromXML(xmlmodel,'OBJECT')
   
-  xml                         = xmlModelGUI.xmlModelGUI(xmlmodel,tkwindow)
-  
+  xml                         = xmlModelGUI.xmlModelGUI(xmlmodel,tkwindow)  
+      
   if(irf!=None):
     dataHandling._writeParamIntoXML(xmlmodel,IRF=irf,OBJECT=name,RA=ra,DEC=dec)
   pass
-    
+  
+  
   return 'xmlmodel', xmlmodel
 pass
 

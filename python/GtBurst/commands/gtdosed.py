@@ -182,7 +182,7 @@ def run(**kwargs):
   pass
   print("\n")
   print("\nNumber of energy bins: %s\n" %(len(energyBoundaries)-1))
-  
+    
   fluxes                      = numpy.zeros(len(energyBoundaries)-1)
   fluxes_errors               = numpy.zeros(len(energyBoundaries)-1)
   phfluxes                    = numpy.zeros(len(energyBoundaries)-1)

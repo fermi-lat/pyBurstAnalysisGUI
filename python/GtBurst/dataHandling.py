@@ -503,10 +503,6 @@ def _makeDatasetsOutOfLATdata(ft1,ft2,grbName,tstart,tstop,
     gtselect['emin']          = 10.0
     gtselect['emax']          = 300000.0
     gtselect['zmax']          = 110.0
-    gtselect['evclsmin']      = 0
-    gtselect['evclsmax']      = 1000
-    gtselect['evclass']       = 0
-    gtselect['convtype']      = -1
     gtselect['clobber']       = 'yes'
     gtselect.run()
     
@@ -2252,8 +2248,9 @@ class CspecBackground(object):
     residuals                   = []
     for i,t1,t2 in zip(range(N),t[:-1],t[1:]):
       backgroundCounts,backErr  = self.getTotalBackgroundCounts(t1,t2)
+      liveFrac                  = exposure[i]/(t2-t1)
       try:
-        residuals.append((LC[i]-backgroundCounts)/math.sqrt(backgroundCounts+pow(backErr,2.0))) 
+        residuals.append((LC[i]-backgroundCounts*liveFrac)/math.sqrt(backgroundCounts*liveFrac+pow(backErr*liveFrac,2.0))) 
       except:
         residuals.append(0)
     pass

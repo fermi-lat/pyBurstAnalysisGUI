@@ -33,13 +33,20 @@ thisCommand.addParameter("galactic_model",'''Model for the Galactic background (
                                              'template (fixed norm.)', 'template', 'none')''',commandDefiner.MANDATORY,
                                          'template (fixed norm.)',
                                          possiblevalues=['template (fixed norm.)','template','none'])
+thisCommand.addParameter("source_model",'''Spectral model for the new source (GRB or SF).''',
+                                           commandDefiner.MANDATORY,
+                                         'PowerLaw2',
+                                         possiblevalues=LikelihoodComponent.availableSourceSpectra.keys())
+
 thisCommand.addParameter("ft2file","Spacecraft file (FT2)",commandDefiner.OPTIONAL,partype=commandDefiner.DATASETFILE,extension="fits")
 thisCommand.addParameter("xmlmodel","Name for the output file for the XML model",commandDefiner.MANDATORY,partype=commandDefiner.OUTPUTFILE,extension="xml")
 thisCommand.addParameter("clobber","Overwrite output file? (possible values: 'yes' or 'no')",commandDefiner.OPTIONAL,"yes")
 thisCommand.addParameter("verbose","Verbose output (possible values: 'yes' or 'no')",commandDefiner.OPTIONAL,"yes")
 
 GUIdescription                = "You have to choose which model include in the likelihood analysis."
-GUIdescription               += "TIP For TRANSIENT class data you should use "
+GUIdescription               += " See http://fermi.gsfc.nasa.gov/ssc/data/analysis/scitools/source_models.html for the list"
+GUIdescription               += " of available spectral model for the source_model parameter."
+GUIdescription               += "TIP Use 'PowerLaw2' for normal GRB analysis. For TRANSIENT class data you should use "
 GUIdescription               += "'isotr with pow spectrum' for the particle background and 'template (fixed norm.)' for "
 GUIdescription               += "the Galactic component. For SOURCE class data you should use "
 GUIdescription               += "'isotr template' for the particle background and 'template' for the Galactic component."
@@ -87,6 +94,7 @@ def run(**kwargs):
     dec                         = thisCommand.getParValue('dec')
     particlemodel               = thisCommand.getParValue('particle_model')
     galacticmodel               = thisCommand.getParValue('galactic_model')
+    sourcemodel                 = thisCommand.getParValue('source_model')
     filteredeventfile           = thisCommand.getParValue('filteredeventfile')
     xmlmodel                    = thisCommand.getParValue('xmlmodel')
     triggername                 = thisCommand.getParValue('triggername')
@@ -137,7 +145,7 @@ def run(**kwargs):
     raise GtBurstException(6,"Do not use '%s' as model for the particle background in SOURCE class. Use '%s' instead." 
                      %(particlemodel,'isotropic template'))
   
-  modelsToUse                   = [LikelihoodComponent.PointSource(ra,dec,triggername)]
+  modelsToUse                   = [LikelihoodComponent.PointSource(ra,dec,triggername,sourcemodel)]
   if(particlemodel!='none'):
     if(particlemodel=='bkge'):
       if(ft2file==None or ft2file==''):
