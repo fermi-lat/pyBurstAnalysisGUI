@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: giacomov  Tue Mar  3 11:00:29 PST 2015
+pyBurstAnalysisGUI/python/GtBurst/commands
+
+Modified Files:
+	gtbuildxmlmodel.py gtdosed.py gtdotsmap.py gteditxmlmodel.py 
+Log Message:
+Pass8 changes
+    *
+------------------------------------------------------------
+User: giacomov  Tue Mar  3 11:00:29 PST 2015
 pyBurstAnalysisGUI/python/GtBurst
 
 Modified Files:
