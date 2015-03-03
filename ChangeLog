@@ -1,4 +1,14 @@
 ------------------------------------------------------------
+User: giacomov  Tue Mar  3 11:00:29 PST 2015
+pyBurstAnalysisGUI/python/GtBurst
+
+Modified Files:
+	LikelihoodComponent.py cutout.py dataCollector.py 
+	dataHandling.py sunpos.py version.py 
+Log Message:
+Pass8 changes
+    *
+------------------------------------------------------------
 User: giacomov  Tue Mar  3 10:59:40 PST 2015
 pyBurstAnalysisGUI
 
