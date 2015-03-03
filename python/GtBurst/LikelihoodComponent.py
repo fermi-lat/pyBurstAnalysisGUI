@@ -16,7 +16,22 @@ from GtBurst import IRFS
 from GtBurst import GtBurstException
 from GtBurst import cutout
 import pyfits
-import skymaps
+import collections
+
+#List of available spectra, and respective constructors
+availableSourceSpectra        = IRFS.CaseInsensitiveDict()
+#The order here is what will show up in the menu in the GUI,
+#in particular the first model will become the pre-defined choice
+availableSourceSpectra['PowerLaw2'] =  PowerLaw2
+availableSourceSpectra['PowerLaw'] =  PowerLaw
+availableSourceSpectra['ExpCutoff'] =  ExpCutoff
+availableSourceSpectra['BPLExpCutoff'] =  BPLExpCutoff
+availableSourceSpectra['BrokenPowerLaw'] =  BrokenPowerLaw
+availableSourceSpectra['BrokenPowerLaw2'] =  BrokenPowerLaw2
+availableSourceSpectra['LogParabola'] =  LogParabola
+availableSourceSpectra['Gaussian'] =  Gaussian
+availableSourceSpectra['PLSuperExpCutoff'] =  PLSuperExpCutoff
+
 
 def findGalacticTemplate(irfname,ra,dec,rad):
   irf                         = IRFS.IRFS[irfname]
@@ -169,32 +184,93 @@ class GenericSource(object):
   pass 
 pass
 
+def myPtSrc(spectrumFunction):
+    name = ""
+    
+    src = '\n'.join( (('<source name= "%s" ' % name) + 'type="PointSource">',
+                      '   <spectrum type="PowerLaw2"/>',
+                      '   <!-- point source units are cm^-2 s^-1 MeV^-1 -->',
+                      '   <spatialModel type="SkyDirFunction"/>',
+                      '</source>\n') )
+    src = minidom.parseString(src).getElementsByTagName('source')[0]
+    src = Source(src)
+    
+    if(spectrumFunction not in availableSourceSpectra.keys()):
+      raise RuntimeError("Spectrum function %s is not available. Available functions are: %s" %(spectrumFunction,
+                                                                                              ",".join(availableSourceSpectra.keys())
+                                                                                              ))
+    
+    src.spectrum = availableSourceSpectra[spectrumFunction]()
+    src.deleteChildElements('spectrum')
+    src.node.appendChild(src.spectrum.node)
+    
+    src.spatialModel = SkyDirFunction()
+    src.deleteChildElements('spatialModel')
+    src.node.appendChild(src.spatialModel.node)
+
+    return src
+
+
 class PointSource(GenericSource):
-  def __init__(self,ra,dec,name='GRB'):
-    self.source                        = PtSrc()
+  def __init__(self,ra,dec,name='GRB',spectrumFunction='PowerLaw2'):
+    
+    self.source                        = myPtSrc(spectrumFunction)
     self.source.name                   = name
-    self.source.spectrum.Integral.max  = 1e5
-    self.source.spectrum.Integral.min  = 1e-6
-    self.source.spectrum.Integral.scale = 1e-03
-    self.source.spectrum.Integral.value = 0.01
-    self.source.spectrum.Integral.units = ''
-    self.source.spectrum.Integral.node.setAttribute('units','ph./cm2/s')
     
-    self.source.spectrum.Index.max      = 0.01
-    self.source.spectrum.Index.min      = -6.0
-    self.source.spectrum.Index.value    = -2.0
-    self.source.spectrum.Index.units    = ''
-    self.source.spectrum.Index.node.setAttribute('units','-')
+    if(spectrumFunction.lower()=='powerlaw2'):
+      #Some pre-defined values for GRBs
+      self.source.spectrum.Integral.max  = 1e5
+      self.source.spectrum.Integral.min  = 1e-6
+      self.source.spectrum.Integral.scale = 1e-03
+      self.source.spectrum.Integral.value = 0.01
     
-    self.source.spectrum.LowerLimit.value = 100
-    self.source.spectrum.LowerLimit.units  = ''
-    self.source.spectrum.LowerLimit.node.setAttribute('units','MeV')
-    self.source.spectrum.UpperLimit.max   = 500000
-    self.source.spectrum.UpperLimit.value = 100000
-    self.source.spectrum.UpperLimit.units  = ''
-    self.source.spectrum.UpperLimit.node.setAttribute('units','MeV')
+      self.source.spectrum.Index.max      = 0.01
+      self.source.spectrum.Index.min      = -6.0
+      self.source.spectrum.Index.value    = -2.0
     
-    self.source.spectrum.setAttributes()
+      self.source.spectrum.LowerLimit.value = 100
+      self.source.spectrum.LowerLimit.units  = ''
+      #self.source.spectrum.LowerLimit.node.setAttribute('units','MeV')
+      self.source.spectrum.UpperLimit.max   = 500000
+      self.source.spectrum.UpperLimit.value = 100000
+      self.source.spectrum.UpperLimit.units  = ''
+      #self.source.spectrum.UpperLimit.node.setAttribute('units','MeV')
+    
+      self.source.spectrum.setAttributes()
+    
+    elif(spectrumFunction.lower()=='plsuperexpcutoff'):
+    
+      #Pre-defined values for Solar Flares
+    
+      self.source.spectrum.Prefactor.value = 1e-5
+      self.source.spectrum.Prefactor.max = 1e6
+      self.source.spectrum.Prefactor.min = 1e-6
+      self.source.spectrum.Prefactor.scale = 0.001
+      
+      self.source.spectrum.Index1.value = -1.5
+      self.source.spectrum.Index1.max = 5
+      self.source.spectrum.Index1.min = -5
+      self.source.spectrum.Index1.scale = 1
+      
+      self.source.spectrum.Scale.value = 50
+      self.source.spectrum.Scale.max = 2000
+      self.source.spectrum.Scale.min = 30
+      self.source.spectrum.Scale.scale = 1
+      
+      self.source.spectrum.Cutoff.value = 300
+      self.source.spectrum.Cutoff.max = 1e5
+      self.source.spectrum.Cutoff.min = 30
+      self.source.spectrum.Cutoff.scale = 1
+      
+      self.source.spectrum.Index2.value = 1.0
+      self.source.spectrum.Index2.max = 5
+      self.source.spectrum.Index2.min = -5
+      self.source.spectrum.Index2.scale = 1
+      self.source.spectrum.Index2.free = 0
+      
+      self.source.spectrum.setAttributes()
+      
+    pass
     
     self.source.spatialModel.RA.value  = ra
     self.source.spatialModel.DEC.value = dec
@@ -506,15 +582,16 @@ class LikelihoodResultsPrinter(object):
       for par in source.find('spectrum').iter('parameter'):
         name                    = par.get('name')
         free                    = par.get('free')
-        units                   = par.get('units')
-        if(units==None or units=='None'):
-          units                 = '-'
+        
         if(name=='Integral'):
           name                  = "Integral"
           units                 = 'ph./cm2/s'
         elif(name=='LowerLimit' or name=='UpperLimit'):
           units                 = "MeV"
+        else:
+          units                 = '-'
         pass
+        
         value                   = '%10.3g' % (float(par.get('value'))*float(par.get('scale')))
         try:
           error                 = '%12.3g' % (float(par.get('error'))*float(par.get('scale')))

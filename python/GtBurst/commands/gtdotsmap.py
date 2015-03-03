@@ -108,6 +108,19 @@ def run(**kwargs):
   origdec                     = float(dataHandling._getParamFromXML(xmlmodel,'DEC'))
   sourceName                  = dataHandling._getParamFromXML(xmlmodel,'OBJECT')
   
+  #Verify that TS map, if provided, is compatible with the position in the XML
+  if(tsexpomap!=None and tsexpomap!=''):
+    if(os.path.exists(tsexpomap)):
+      header                  = pyfits.getheader(tsexpomap)
+      ra,dec                  = (float(header.get('CRVAL1')),float(header.get('CRVAL2')))
+      angdist                 = getAngularDistance(origra,origdec,ra,dec)
+      if(angdist > 0.1):
+        print("Provided exposure map has a different center. Will compute it again.")
+        tsexpomap             = None
+    else:
+      print("Provided exposure map does not exist. Will compute it again.")
+      tsexpomap               = None
+  
   LATdata                     = dataHandling.LATData(eventfile,rspfile,ft2file)
   tsmap                       = LATdata.makeTSmap(xmlmodel,sourceName,step,side,tsmap,tsltcube,tsexpomap)
   tsltcube                    = LATdata.livetimeCube

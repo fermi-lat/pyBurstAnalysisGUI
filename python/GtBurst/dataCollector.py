@@ -61,7 +61,7 @@ class dataCollector(object):
     print("Local data repository (destination): %s (%s)" %(self.localRepository,message))    
   pass
   
-  def downloadDirectoryWithFTP(self,address,filenames=None):
+  def downloadDirectoryWithFTP(self,address,filenames=None,namefilter=None):
     #Connect to the server
     if(address.find("ftp://")==0):
       serverAddress           = address.split("/")[2]
@@ -133,6 +133,10 @@ class dataCollector(object):
     pass
     
     for i,filename in enumerate(filenames):
+      if(namefilter!=None and filename.find(namefilter)<0):
+        #Filename does not match, do not download it
+        continue
+      
       if(root!=None):
         m2.set((float(i))/len(filenames))
       skip                    = False
@@ -209,7 +213,7 @@ class dataCollector(object):
     pass
   pass
   
-  def getFTP(self,errorCode=None):
+  def getFTP(self,errorCode=None,namefilter=None):
     #Path in the repository is [year]/bn[grbname]/current
     
     #Get the year
@@ -219,7 +223,7 @@ class dataCollector(object):
     
     remotePath                = "%s/%s/triggers/%s/%s/current" %(self.dataRepository,self.instrument,year,triggerNumber)
         
-    self.downloadDirectoryWithFTP(remotePath)
+    self.downloadDirectoryWithFTP(remotePath,None,namefilter)
   pass
     
 pass

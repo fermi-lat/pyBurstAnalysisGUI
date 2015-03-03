@@ -1,7 +1,7 @@
 import pyfits
 import pywcs
 import numpy
-import skymaps
+from pyLikelihood import SkyDir
 from GtBurst.angularDistance import getAngularDistance
 from GtBurst.angularDistance import getBoundingCoordinates
 
@@ -56,13 +56,13 @@ def cutout(filename, ra_or_l, dec_or_b, coordsys, radius, outfile, clobber=True)
       if coordsys=='equatorial' and wcs.wcs.lngtyp=='GLON':
       
             #Convert RA,Dec in Galactic coordinates
-            sdir                        = skymaps.SkyDir(ra_or_l,dec_or_b,skymaps.SkyDir.EQUATORIAL)
+            sdir                        = SkyDir(ra_or_l,dec_or_b,SkyDir.EQUATORIAL)
             xc,yc                       = (sdir.l(),sdir.b())
       
       elif coordsys=='galactic' and wcs.wcs.lngtyp=='RA':
             
             #Convert L,B in Equatorial coordinates
-            sdir                        = skymaps.SkyDir(ra_or_l,dec_or_b,skymaps.SkyDir.EQUATORIAL)
+            sdir                        = SkyDir(ra_or_l,dec_or_b,SkyDir.EQUATORIAL)
             xc,yc                       = (sdir.ra(),sdir.dec())
 
       else:
