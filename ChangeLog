@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: giacomov  Thu Mar 12 17:04:32 PDT 2015
+pyBurstAnalysisGUI
+
+Modified Files:
+	SConscript 
+Log Message:
+Changes for the new Background Estimator
+    *
+------------------------------------------------------------
 User: giacomov  Tue Mar  3 11:00:29 PST 2015
 pyBurstAnalysisGUI/python/GtBurst/commands
 
