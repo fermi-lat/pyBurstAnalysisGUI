@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: giacomov  Thu Mar 12 17:05:16 PDT 2015
+pyBurstAnalysisGUI/python/GtBurst/commands
+
+Added Files:
+	gtdownloadGBMdata.py gtdownloadLLEdata.py 
+Log Message:
+Commands to download GBM and LLE data
+    *
+------------------------------------------------------------
 User: giacomov  Thu Mar 12 17:04:33 PDT 2015
 pyBurstAnalysisGUI/python/GtBurst/commands
 
