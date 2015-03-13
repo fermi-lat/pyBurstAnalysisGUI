@@ -150,6 +150,7 @@ def run(**kwargs):
     if(particlemodel=='bkge'):
       if(ft2file==None or ft2file==''):
         raise ValueError("If you want to use the BKGE, you have to provide an FT2 file!")
+      
       modelsToUse.append(LikelihoodComponent.BKGETemplate(filteredeventfile,
                                                           ft2file,tstart,tstop,triggername,triggertime))
     else:

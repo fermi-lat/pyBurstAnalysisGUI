@@ -1,6 +1,8 @@
 import pyfits
 import os
 
+from GtBurst.GtBurstException import GtBurstException
+
 try:
   import BKGE_interface
 except:
@@ -44,6 +46,27 @@ class BKGE(object):
     start                     = float(start)-int(float(start) > 231292801.000)*self.triggertime
     stop                      = float(stop)-int(float(stop) > 231292801.000)*self.triggertime
     outdir                    = self.outdir+'/Bkg_Estimates/%.2f_%.2f/' %(start,stop)
+    
+    try:
+      _                       = BKGE_interface.allowedIRFS
+    except AttributeError:
+      if(self.irf.upper().find("P8")>=0):
+        raise RuntimeError("Looks like you are using the old Background Estimator,"+
+                           " and Pass 8 IRFS. You cannot do that. You have to update"+
+                           " your Science Tools.")
+      else:
+         #It is fine, this is the old BKGE with P7
+         pass
+      pass
+    
+    else:
+      #Using the new version of the BKGE
+      if(not self.irf.upper() in BKGE_interface.allowedIRFS):
+         raise GtBurstException(7,"IRF %s is not supported by the BKGE" %(self.irf))
+      
+      else:
+        BKGE_interface.setResponseFunction(self.irf.upper())
+    
     try:
       BKGE_interface.MakeGtLikeTemplate(start, stop, self.triggertime, 
                                       self.ra, self.dec, 
