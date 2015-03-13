@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: giacomov  Thu Mar 12 17:10:02 PDT 2015
+pyBurstAnalysisGUI
+
+Modified Files:
+	SConscript 
+Log Message:
+Changed tag name
+    *
+------------------------------------------------------------
 User: giacomov  Thu Mar 12 17:05:16 PDT 2015
 pyBurstAnalysisGUI/python/GtBurst/commands
 
