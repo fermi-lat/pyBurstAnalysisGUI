@@ -1686,7 +1686,7 @@ class LATData(LLEData):
                                                   expCube=self.livetimeCube,
                                                   binnedExpMap=self.binnedExpoMap,
                                                   irfs=self.irf)
-     self.like1                     = BinnedAnalysis.BinnedAnalysis(self.obs,xmlmodel,optimizer='MINUIT')
+     self.like1                     = BinnedAnalysis.BinnedAnalysis(self.obs,xmlmodel,optimizer='NEWMINUIT')
      
      return self._doLikelihood(xmlmodel,tsmin)
   
@@ -1733,7 +1733,7 @@ class LATData(LLEData):
      self.obs                       = UnbinnedAnalysis.UnbinnedObs(self.eventFile,self.ft2File,
                                                   expMap=self.exposureMap,
                                                   expCube=self.livetimeCube,irfs=self.irf)
-     self.like1                     = UnbinnedAnalysis.UnbinnedAnalysis(self.obs,xmlmodel,optimizer='MINUIT')
+     self.like1                     = UnbinnedAnalysis.UnbinnedAnalysis(self.obs,xmlmodel,optimizer='NEWMINUIT')
      
      return self._doLikelihood(xmlmodel,tsmin)
   pass
@@ -1868,7 +1868,7 @@ class LATData(LLEData):
     self.gtfindsrc['expmap']        = self.exposureMap
     self.gtfindsrc['srcmdl']        = tmpxml
     self.gtfindsrc['target']        = sourceName
-    self.gtfindsrc['optimizer']     = 'MINUIT'
+    self.gtfindsrc['optimizer']     = 'NEWMINUIT'
     self.gtfindsrc['ftol']          = 1E-10
     self.gtfindsrc['reopt']         = 'yes'
     self.gtfindsrc['atol']          = 1E-3

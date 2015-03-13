@@ -38,6 +38,8 @@ codes[6] = "Wrong Isotropic component"
 codes[60] = "No Isotropic template for selected class"
 codes[61] = "No Galactic template for selected class"
 
+codes[7] = "The provided irf is not supported by the Background Estimator"
+
 class GtBurstException(RuntimeError):
   def __init__(self,code,message):
     RuntimeError.__init__(self,message)

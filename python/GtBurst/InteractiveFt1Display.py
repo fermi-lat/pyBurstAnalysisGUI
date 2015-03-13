@@ -7,7 +7,7 @@ import matplotlib.colors as col
 import matplotlib.cm as cm
 
 # define individual colors which will be used for classes
-cpool                         = [ 'darkgrey','red','blue','cyan','green','magenta']
+cpool                         = [ '#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99','#b15928']
 
 class InteractiveFt1Display(object):
   def __init__(self,ft1file,skyimage,figure,obj_ra=None,obj_dec=None):
