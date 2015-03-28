@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: omodei  Fri Mar 27 17:20:34 PDT 2015
+ScienceTools-scons/pyBurstAnalysisGUI/python/GtBurst
+
+Modified Files:
+	IRFS.py 
+Log Message:
+Added the trimmed diffuse model by default
+    *
+------------------------------------------------------------
 User: giacomov  Thu Mar 12 17:10:02 PDT 2015
 pyBurstAnalysisGUI
 
