@@ -114,7 +114,8 @@ IRFS['P7REP_ULTRACLEAN']  = IRF('P7REP_ULTRACLEAN','P7REP_ULTRACLEAN_V15','202,2
 
 
 #Pass 8 final (?)
-galactic='template_4years_P8_V2_scaled.fits'
+#galactic='template_4years_P8_V2_scaled.fits'
+galactic='template_4years_P8_V2_scaled_trim.fits'
 
 IRFS['P8_TRANSIENT100E']    = IRF('P8_TRANSIENT100E' ,'P8R2_TRANSIENT100E_V6' ,'302',     2, galactic, 'isotropic_transient_r020_4years_P8V4_rev3.txt') # YOU SHOULD USE THE BKGE FOR THIS 
 IRFS['P8_TRANSIENT100']     = IRF('P8_TRANSIENT100' ,'P8R2_TRANSIENT100_V6'  ,'302',     4, galactic, 'isotropic_transient_r020_4years_P8V4_rev3.txt') # YOU SHOULD USE THE BKGE FOR THIS 
