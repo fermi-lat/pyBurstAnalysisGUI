@@ -187,6 +187,7 @@ if __name__=="__main__":
     targs['ra']                  = args.ra
     targs['dec']                 = args.dec
     targs['ft2file']             = dataset['ft2file']
+    targs['source_model']        = 'powerlaw2'
     printCommand("gtbuildxmlmodel",targs)
     _,xmlmodel                   = gtbuildxmlmodel.run(**targs)
     

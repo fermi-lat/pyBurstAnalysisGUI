@@ -131,7 +131,7 @@ def gtltcube_mp(bins, SCFile, EVFile, OutFile, SaveTemp, zmax):
                 if(not good_times):
                     if verbose: print "   Checking gti",gti_data[gti_i]['START'],"to",gti_data[gti_i]['STOP']
                     gti_starts = interval[0] <= gti_data[gti_i]['START'] <= interval[1]
-                    gti_stops = interval[0] <= gti_data[gti_i]['STOP'] <= interval[1]
+                    gti_stops = interval[0] < gti_data[gti_i]['STOP'] <= interval[1]
                     if verbose: print "   Does this gti start inside this interval? ", gti_starts
                     if verbose: print "   Does this gti stop inside this interval? ", gti_stops
                     good_times = gti_starts or gti_stops

@@ -24,9 +24,9 @@ thisCommand.addParameter("ltcube","pre-computed livetime cube",commandDefiner.OP
 thisCommand.addParameter("xmlmodel","XML model",commandDefiner.MANDATORY,partype=commandDefiner.DATASETFILE,extension="fits")
 thisCommand.addParameter("skymap","Name for the sky map (needed only if you want to plot your results)",commandDefiner.OPTIONAL,partype=commandDefiner.INPUTFILE,extension="fit")
 thisCommand.addParameter("tsmin","Minimum TS to consider a source detected",commandDefiner.OPTIONAL,20)
-thisCommand.addParameter("optimizeposition","Optimize position?",commandDefiner.OPTIONAL,"yes",possiblevalues=['yes','no'])
+thisCommand.addParameter("optimizeposition","Optimize position?",commandDefiner.OPTIONAL,"yes",possiblevalues=['no','yes'])
 thisCommand.addParameter("showmodelimage","Show an image representing the best fit likelihood model?",commandDefiner.OPTIONAL,"yes",possiblevalues=['yes','no'])
-thisCommand.addParameter("spectralfiles","Produce spectral files for XSPEC?",commandDefiner.OPTIONAL,"no",possiblevalues=['yes','no'])
+thisCommand.addParameter("spectralfiles","Produce spectral files for XSPEC?",commandDefiner.OPTIONAL,"no",possiblevalues=['no','yes'])
 thisCommand.addParameter("liketype","Likelihood type",commandDefiner.OPTIONAL,"unbinned",possiblevalues=['unbinned','binned'])
 #thisCommand.addParameter("irf","Data class (TRANSIENT or SOURCE)",commandDefiner.MANDATORY,'TRANSIENT',possiblevalues=['TRANSIENT','SOURCE'])
 thisCommand.addParameter("clobber","Overwrite output file? (possible values: 'yes' or 'no')",commandDefiner.OPTIONAL,"yes")
@@ -108,8 +108,17 @@ def run(**kwargs):
     else:
       #Generation of spectral files and optimization of the position is
       #not supported yet for binned analysis
-      spectralfiles               = 'no'
-      optimize                    = 'no'
+      
+      if(spectralfiles=='yes'):
+      
+        print("\nWARNING: you specified spectralfiles=yes, but the generation of spectral files is not supported for binned analysis\n")
+        spectralfiles               = 'no'
+      
+      if(optimize=='yes'):
+      
+        print("\nWARNING: you specified optimize=yes, but position optimization is not supported for binned analysis\n") 
+        optimize                    = 'no'
+      
       outfilelike, sources        = LATdata.doBinnedLikelihoodAnalysis(xmlmodel,tsmin,expomap=expomap,ltcube=ltcube)
   except GtBurstException as gt:
     raise gt
@@ -239,26 +248,76 @@ def run(**kwargs):
     # Display a grid and tweak the properties
     img.show_grid()
     
-    ax                        = figure.add_axes([0.1,0.72,0.85,0.25],frame_on=False)
-    ax.xaxis.set_visible(False) 
-    ax.yaxis.set_visible(False)
-    col_labels                =['Source Name','TS','Energy flux','Photon index']
-    table_vals                = map(lambda x:[x.name,"%i" %(int(math.ceil(x.TS))),
-                                              "%s +/- %s" % (x.flux,x.fluxError),
-                                              "%s +/- %s" % (x.photonIndex,x.photonIndexError)],detectedSources)
+    #ax                        = figure.add_axes([0.1,0.72,0.85,0.25],frame_on=False)
+    #ax.xaxis.set_visible(False) 
+    #ax.yaxis.set_visible(False)
+    #col_labels                =['Source Name','TS','Energy flux','Photon index']
+    #table_vals                = map(lambda x:[x.name,"%i" %(int(math.ceil(x.TS))),
+    #                                          "%s +/- %s" % (x.flux,x.fluxError),
+    #                                          "%s +/- %s" % (x.photonIndex,x.photonIndexError)],detectedSources)
+    #
+    #if(len(table_vals)>0):
+    #  the_table                 = ax.table(cellText=table_vals,
+    #                                        colLabels=col_labels,
+    #                                       loc='upper center')
     
-    if(len(table_vals)>0):
-      the_table                 = ax.table(cellText=table_vals,
-                                            colLabels=col_labels,
-                                            loc='upper center')
     figure.canvas.draw()
     figure.savefig("likelihood_results.png")
   pass
+  
+  if(figure!=None):
+        
+    #Assume we have an X server running
+    #Now display the results
+    likemsg = "Log(likelihood) = %s" %(LATdata.logL)
+    displayResults(figure.canvas._tkcanvas, LATdata.resultsStrings + "\n" + likemsg + "\n" + localizationMessage)
   
   print(localizationMessage)
   
   return 'likexmlresults', outfilelike, 'TS', grb_TS, 'bestra', bestra, 'bestdec', bestdec, 'poserr', poserr, 'distance', distance,'sources', sources
 pass
+
+def displayResults(master, text):
+    
+    #Now display the results
+    from GtBurst import SubWindow
+    from GtBurst.fontDefinitions import NORMALFONT
+    from GtBurst import AutoHideScrollbar
+    from Tkinter import Canvas
+    from Tkinter import Text, W, E, N, S, INSERT
+    
+    try:
+      
+      sub                     = SubWindow.SubWindow(master, 
+                        initialhint="Results of the last likelihood analysis. Select 'close' from the file menu to close this window.", 
+                        title="Likelihood results")
+      
+      sub.bottomtext.config(height=3)
+      
+    except:
+      
+      #Cannot display the results. Oh, well...
+      raise
+      
+    else:
+      
+      helpscrollbar             = AutoHideScrollbar.AutoHideScrollbar(sub.frame)
+      helptextCanvas       = Canvas(sub.frame,yscrollcommand=helpscrollbar.set)
+      bottomtext           = Text(helptextCanvas, wrap='word',height=30,width=100,
+                                       yscrollcommand=helpscrollbar.set, bg='white')
+      helpscrollbar.config(command=bottomtext.yview)
+      bottomtext.grid(row=0,column=0,sticky=W+E+N+S)
+      
+      bottomtext.mark_set("beginning", INSERT)
+      bottomtext.insert("beginning", text)
+      bottomtext.config(state='disabled')
+      
+      helptextCanvas.grid(row=0,column=0)
+      helpscrollbar.grid(row=0,column=1,sticky=W+E+N+S)    
+    pass
+  
+  
+  
 
 thisCommand.run = run
 

@@ -106,7 +106,13 @@ def run(**kwargs):
     raise gt
   except:
     raise
-
+    
+  #Now produce a pha1 file (just to compute the total exposure)
+  pha1file                    = LATdata.binByEnergy(2)
+  
+  totalExposure               = pyfits.getheader(pha1file,'SPECTRUM').get("EXPOSURE")
+  
+  print("\nTotal exposure: %s s" %(totalExposure))
   
   #Transfer information on the source from the input to the output XML
   irf                         = dataHandling._getParamFromXML(xmlmodel,'IRF')
@@ -193,11 +199,17 @@ def run(**kwargs):
   for i,e1,e2 in zip(range(len(fluxes)),energyBoundaries[:-1],energyBoundaries[1:]):
     thisLATdata               = dataHandling.LATData(eventfile,rspfile,ft2file,root="SED_%s-%s" %(e1,e2))
     #Further cut in the energy range for this Band
-    outf,thisCounts           = thisLATdata.performStandardCut(LATdata.ra,LATdata.dec,LATdata.rad,LATdata.irf,
+    #Remove the version _vv from the name of the irf
+    cleanedIrf                = "_".join(LATdata.irf.split("_")[:-1])
+    outf,thisCounts           = thisLATdata.performStandardCut(LATdata.ra,LATdata.dec,LATdata.rad,cleanedIrf,
                                                                LATdata.tmin,LATdata.tmax,e1,e2,180,gtmktime=False,roicut=False)
     totalCounts              += thisCounts
     #Perform the likelihood analysis
-    outfilelike, sources      = thisLATdata.doUnbinnedLikelihoodAnalysis("__temporary_XML.xml",tsmin=tsmin,dogtdiffrsp=False)
+    outfilelike, sources      = thisLATdata.doUnbinnedLikelihoodAnalysis("__temporary_XML.xml",
+                                                                         tsmin=tsmin,
+                                                                         dogtdiffrsp=False,
+                                                                         expomap=expomap,
+                                                                         ltcube=ltcube)
     source                    = filter(lambda x:x.name==sourceName,sources)[0]
     if(source.flux.find("<")>=0):
       #This is an upper limit
@@ -227,14 +239,15 @@ def run(**kwargs):
   #Use the photon index of the total fit to compute the mean energy
   pow                         = numpy.power
   meanEnergies                = numpy.array(map(lambda x:computeMeanEnergy(x[0],x[1],x[2]),zip(phIndexes,ee1,ee2)))
-  nuFnu                       = phfluxes/de*pow(meanEnergies,2.0)*MeV2Erg
-  nuFnuError                  = phfluxes_errors/de*pow(meanEnergies,2.0)*MeV2Erg
+  nuFnu                       = phfluxes / de * pow(meanEnergies,2.0) * MeV2Erg
+  nuFnuError                  = phfluxes_errors / de * pow(meanEnergies,2.0) * MeV2Erg
 
   
   #Print the results of the SED
   fw                           = open(sedtxt,'w+')
   fw.write("#Energy_min Energy_Max Flux Flux_error PhotonFlux PhotonFluxError TS nuFnu_energy nuFnu_energy_negerr nuFnu_energy_poserr nuFnu_value nuFnu_value_error\n")
   fw.write("#MeV MeV erg/cm2/s erg/cm2/s ph/cm2/s ph/cm2/s - MeV MeV MeV erg/cm2/s erg/cm2/s\n")
+  fw.write("#Total exposure: %s s\n" %(totalExposure))
   for e1,e2,f,fe,ph,phe,ts,ne,nee1,nee2,nuF,nuFe in zip(energyBoundaries[:-1],energyBoundaries[1:],fluxes,fluxes_errors,phfluxes,phfluxes_errors,TSs,meanEnergies,meanEnergies-ee1,ee2-meanEnergies,nuFnu,nuFnuError):
     fw.write("%s %s %s %s %s %s %s %s %s %s %s %s\n" %(e1,e2,f,fe,ph,phe,ts,ne,nee1,nee2,nuF,nuFe))
     print("%10s - %10s MeV -> %g +/- %g erg/cm2/s, %g +/- %g ph/cm2/s, TS = %s" %(e1,e2,f,fe,ph,phe,ts))

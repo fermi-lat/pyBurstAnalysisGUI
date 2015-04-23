@@ -1741,38 +1741,60 @@ class LATData(LLEData):
   def _doLikelihood(self,xmlmodel,tsmin):
      
      outfilelike                    = "%s_likeRes.xml" %(self.rootName)
-     outfilelike2                   = "%s_likeRes.dat" %(self.rootName)
-
      
      #Add a Gaussian prior for the isotropicTemplate component (it should be either the 
      #isotropic template for Source class or the BKGE)
      #Open the XML to read in the statistical and systematic errors
-     f                              = open(xmlmodel)
+     #f                              = open(xmlmodel)
+     
+     tree                           = ET.parse(xmlmodel)
+     _root                           = tree.getroot()
      sysErr                         = None
      statErr                        = None
-     try:
-       line                         = filter(lambda x:x.find('name="IsotropicTemplate"')>=0,f.readlines())[0]
-     except:
+     
+     #Get Isotropic DOM
+     iso                            = _root.findall("./source[@name='IsotropicTemplate']")
+     
+     if(len(iso)==0):
+       
        #No isotropic template
        print("\nNo isotropic template found in the XML file!")
+     
      else:
-       atoms                        = [ss.split("=") for ss in filter(lambda x:x.find("=")>=0,line.split(" "))]
-       d                            = {}
-       for k,v in atoms:
-         d[k]                       = v
-       sysErr                       = float(d['sysErr'].replace("'","").replace('"',""))
-       statErr                      = float(d['statErr'].replace("'","").replace('"',""))
-       total_error                  = numpy.sqrt(numpy.power(sysErr,2)+ numpy.power(statErr,2))
-       if(total_error!=0):
-         print("\nApplying a Gaussian prior with sigma %s on the normalization of the Isotropic Template" %(total_error))
-         idx                        = self.like1.par_index("IsotropicTemplate","Normalization")
-	 self.like1[idx].addGaussianPrior(1.0,total_error)
-         print self.like1[idx].getPriorParams()
+       
+       iso                          = iso[0]
+       
+       ps                           = iso.findall("./spectrum/parameter")
+       
+       if(len(ps)==0):
+       
+         raise RuntimeError("Malformed XML file! The Isotropic template source has no parameters!")
+       
+       param                        = ps[0]
+       
+       if(param.get('free')=='0'):
+         #Parameter is fixed, do not add prior (which would cause an error in minuit)
+         print("Isotropic template is fixed, not using any prior on it.")
+       
+       else:
+         
+         sysErr                       = float(iso.get('sysErr'))
+         statErr                      = float(iso.get('statErr'))
+         
+         total_error                  = numpy.sqrt(numpy.power(sysErr,2)+ numpy.power(statErr,2))
+         
+         if(total_error!=0):
+           
+           print("\nApplying a Gaussian prior with sigma %s on the normalization of the Isotropic Template" %(total_error))
+           idx                        = self.like1.par_index("IsotropicTemplate","Normalization")
+	   self.like1[idx].addGaussianPrior(1.0,total_error)
+           print self.like1[idx].getPriorParams()
+         
+         pass
+       
        pass
      pass
-     
-     f.close()
-     
+          
      #Find the name of the GRB
      
      grb_name                 = None
@@ -1786,6 +1808,7 @@ class LATData(LLEData):
          phIndex_beforeFit        = self.like1[grb_name]['Spectrum'].getParam("Index").value()
        except:
          phIndex_beforeFit        = -2
+              
      else:
        phIndex_beforeFit        = -2
      pass
@@ -1800,6 +1823,7 @@ class LATData(LLEData):
        raise RuntimeError("Likelihood fit did not converged. Probably your model is too complex for your selection.")
        
      self.like1.writeXml(outfilelike)
+     
      #Now add the errors for the isotropic template, which are removed by writeXml
      if(sysErr!=None and statErr != None):
        tree                        = ET.parse(outfilelike)
@@ -1845,6 +1869,10 @@ class LATData(LLEData):
      printer                        = LikelihoodComponent.LikelihoodResultsPrinter(self.like1,self.emin,self.emax)
      detectedSources                = printer.niceXMLprint(outfilelike,tsmin,phIndex_beforeFit)
      print("\nLog(likelihood) = %s" %(logL))
+     
+     self.logL                      = logL
+     self.resultsStrings            = printer.resultsStrings
+     
      return outfilelike, detectedSources
   pass
   

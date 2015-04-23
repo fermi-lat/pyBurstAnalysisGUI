@@ -101,7 +101,7 @@ class InteractiveFt1Display(object):
   def displayImage(self):
     self.image               = aplpy.FITSFigure(self.skyimage,convention='calabretta',
                                                 figure=self.figure,
-                                                subplot=[0.1,0.15,0.40,0.7],
+                                                subplot=[0.1,0.10,0.40,0.7],
                                                 label='sky image')
     
     imageFits                = pyfits.open(self.skyimage)
@@ -139,7 +139,7 @@ class InteractiveFt1Display(object):
   
   def initEventDisplay(self):
     #This must be called just once!
-    self.eventDisplay         = self.figure.add_axes([0.60,0.15,0.35,0.7],label='event display')
+    self.eventDisplay         = self.figure.add_axes([0.60,0.10,0.35,0.7],label='event display')
   pass
   
   def inRegion(self,ra,dec,xmin,xmax,ymin,ymax):
@@ -191,9 +191,11 @@ class InteractiveFt1Display(object):
     pass
         
     legend                    = self.eventDisplay.legend(scatterpoints=1,
-                                            ncol=2,labelspacing=0.05,
+                                            ncol=3,labelspacing=0.01,
+                                            columnspacing=0.02,
                                             loc='upper center',
-                                            bbox_to_anchor=(0.3,1.20),
+                                            handletextpad=0.1,
+                                            bbox_to_anchor=(0.45,1.25),
                                             fancybox=True,)
     ltext                     = legend.get_texts()
     plt.setp(ltext, fontsize='small') 
