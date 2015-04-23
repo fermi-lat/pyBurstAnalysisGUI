@@ -1,8 +1,8 @@
 # -*- python -*-
 #
-# $Id: SConscript,v 1.10 2013/12/21 00:06:37 giacomov Exp $
+# $Id: SConscript,v 1.32 2015/04/23 16:01:23 giacomov Exp $
 # Authors: Giacomo Vianello <giacomov@slac.stanford.edu>
-# Version: pyBurstAnalysisGUI-01-04-03
+# Version: pyBurstAnalysisGUI-02-01-01
 
 Import('baseEnv')
 Import('listFiles')
