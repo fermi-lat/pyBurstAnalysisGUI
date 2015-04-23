@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: giacomov  Thu Apr 23 09:01:24 PDT 2015
+pyBurstAnalysisGUI/python/GtBurst/scripts
+
+Modified Files:
+	doTimeResolvedLike.py 
+Log Message:
+Sync with git
+    *
+------------------------------------------------------------
+User: giacomov  Thu Apr 23 09:01:24 PDT 2015
 pyBurstAnalysisGUI/python/GtBurst/gtapps_mp
 
 Modified Files:
