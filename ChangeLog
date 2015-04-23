@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: giacomov  Thu Apr 23 09:05:22 PDT 2015
+pyBurstAnalysisGUI/python/GtBurst
+
+Added Files:
+	BayesianBlocks.py 
+Log Message:
+Bayesian blocks for light curve analysis
+    *
+------------------------------------------------------------
 User: giacomov  Thu Apr 23 09:04:19 PDT 2015
 pyBurstAnalysisGUI
 
