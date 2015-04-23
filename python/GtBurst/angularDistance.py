@@ -84,9 +84,12 @@ pass
 def getVector(ra,dec):
   ra1                         = math.radians(ra)
   dec1                        = math.radians(dec)
-  return Vector(np.array([math.cos(ra1)*math.cos(dec1), 
-                          math.sin(ra1)*math.cos(dec1),
-                          math.sin(dec1)]))
+  
+  cd                          = math.cos(dec1)
+  
+  return Vector([math.cos(ra1) * cd, 
+                          math.sin(ra1) * cd,
+                          math.sin(dec1)])
 
 class Vector(object):
   def __init__(self,array):

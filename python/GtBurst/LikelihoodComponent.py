@@ -64,7 +64,7 @@ def findIsotropicTemplate(irfname):
 pass
 
 def findTemplate(options):
-  templates                   = options.split(",")
+  templates                   = options.replace(" ","").split(",")
   foundTemplate               = None
   envvar                      = os.environ.get("FERMI_DIR")
   publicTools                 = True
@@ -105,7 +105,7 @@ def findTemplate(options):
   pass
   
   #If we are here no template has been found
-  print("\nI was looking into %s\n" %(path))
+  print("\nI was looking for %s into %s\n" %(",".join(templates), path))
   return None
 pass
 
@@ -497,17 +497,47 @@ class LikelihoodResultsPrinter(object):
     tree                        = ET.parse(inputxmlmodel)
     root                        = tree.getroot()
     
-    print("|%20s|%15s|%10s|%12s|%10s|%6s|" %(20*'-',15*'-',10*'-',10*'-',10*'-',6*'-'))
-    print("|%20s|%15s|%10s|%12s|%10s|%6s|" %('Source name','Par. Name','Value','Error','Units','TS'))
-    print("|%20s|%15s|%10s|%12s|%10s|%6s|" %(20*'-',15*'-',10*'-',12*'-',10*'-',6*'-'))
+    resultsStrings              = []
+    
+    def append(message):
+      resultsStrings.append(message)
+    
+    append("|%20s|%15s|%10s|%12s|%10s|%6s|" %(20*'-',15*'-',10*'-',10*'-',10*'-',6*'-'))
+    append("|%20s|%15s|%10s|%12s|%10s|%6s|" %('Source name','Par. Name','Value','Error','Units','TS'))
+    append("|%20s|%15s|%10s|%12s|%10s|%6s|" %(20*'-',15*'-',10*'-',12*'-',10*'-',6*'-'))
     
     listOfSources             = []
     nNonPrinted               = 0
     
-    for source in root.findall('source'):
+    allSources                = root.findall('source')
+        
+    #Count the total number of free parameters
+    nFreeParameters           = 0
+    for source in allSources:
+      sourceName                = source.get('name')
+      thisSrcNfree              = self.likelihoodObj.model[sourceName].src.getSrcFuncs()['Spectrum'].getNumFreeParams()
+      nFreeParameters          += thisSrcNfree
+        
+    for source in allSources:
       sourceName                = source.get('name')
       sourceType                = source.get('type')
-      TS                        = max(0,self.likelihoodObj.Ts(sourceName,reoptimize=True,MaxIterations=10000))
+      
+      #We need to know if removing this source will remove all the free parameters.
+      #If that's the case, the TS computation with reoptimize=True will crash gtburst,
+      #because minuit will throw a fatal error complaining about a fit without free parameters
+      thisSrcNfree              = self.likelihoodObj.model[sourceName].src.getSrcFuncs()['Spectrum'].getNumFreeParams()
+      
+      if(thisSrcNfree == nFreeParameters):
+        
+        reoptimize              = False
+      
+      else:
+        
+        reoptimize              = True
+        
+      pass
+         
+      TS                        = max(0,self.likelihoodObj.Ts(sourceName,reoptimize=reoptimize,MaxIterations=10000))
       
       #energy flux
       MeVtoErg                  = 1.60217646E-6
@@ -576,7 +606,7 @@ class LikelihoodResultsPrinter(object):
         continue
       pass
       
-      print("|%-20s|%15s|%10s|%12s|%10s|%6i|" %(sourceName,'','','','',math.ceil(TS)))
+      append("|%-20s|%15s|%10s|%12s|%10s|%6i|" %(sourceName,'','','','',math.ceil(TS)))
       photonIndex               = 'n.a.'
       photonIndexError          = 'n.a.'
       for par in source.find('spectrum').iter('parameter'):
@@ -603,18 +633,23 @@ class LikelihoodResultsPrinter(object):
           photonIndexError      = error
         
         if(not upperLimitComputed):
-          print("|%20s|%15s|%10s|%12s|%10s|%6s|" %('',name,value,error,units,''))
+          append("|%20s|%15s|%10s|%12s|%10s|%6s|" %('',name,value,error,units,''))
       pass
       
-      print("|%20s|%15s|%10s|%12s|%10s|%6s|" %('','Energy flux',flux,fluxError,'erg/cm2/s',''))
-      print("|%20s|%15s|%10s|%12s|%10s|%6s|" %('','Photon flux',phflux,phfluxError,'ph./cm2/s',''))
+      append("|%20s|%15s|%10s|%12s|%10s|%6s|" %('','Energy flux',flux,fluxError,'erg/cm2/s',''))
+      append("|%20s|%15s|%10s|%12s|%10s|%6s|" %('','Photon flux',phflux,phfluxError,'ph./cm2/s',''))
       listOfSources.append(SourceStruct(sourceName,sourceType,thisRa,thisDec,flux,fluxError,phflux,phfluxError,photonIndex,photonIndexError,TS))
     pass
-    print("-%20s-%15s-%10s-%12s-%10s-%6s-\n" %(20*'-',15*'-',10*'-',12*'-',10*'-',6*'-'))
+    append("-%20s-%15s-%10s-%12s-%10s-%6s-\n" %(20*'-',15*'-',10*'-',12*'-',10*'-',6*'-'))
     if(nNonPrinted!=0):
-      print("*** plus %s 2FGL sources with TS<1 (not printed to save space)" %(nNonPrinted))
-    print("*** All fluxes and upper limits have been computed in the %s - %s energy range." %(self.emin,self.emax))
-    print("*** Upper limits (if any) are computed assuming a photon index of %3.1f, with the 95 %s c.l." %(phIndexForUL,'%'))
+      append("*** plus %s 2FGL sources with TS<1 (not printed to save space)" %(nNonPrinted))
+    append("*** All fluxes and upper limits have been computed in the %s - %s energy range." %(self.emin,self.emax))
+    append("*** Upper limits (if any) are computed assuming a photon index of %3.1f, with the 95 %s c.l." %(phIndexForUL,'%'))
+          
+    print("\n".join(resultsStrings))
+    
+    self.resultsStrings = "\n".join(resultsStrings)
+    
     return listOfSources
   pass
   
