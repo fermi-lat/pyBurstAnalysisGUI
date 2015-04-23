@@ -1,4 +1,13 @@
 ------------------------------------------------------------
+User: giacomov  Thu Apr 23 09:01:23 PDT 2015
+pyBurstAnalysisGUI
+
+Modified Files:
+	SConscript 
+Log Message:
+Sync with git
+    *
+------------------------------------------------------------
 User: omodei  Fri Mar 27 17:20:34 PDT 2015
 ScienceTools-scons/pyBurstAnalysisGUI/python/GtBurst
 
