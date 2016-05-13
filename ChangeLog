@@ -1,5 +1,17 @@
 ------------------------------------------------------------
 User: giacomov  Fri May 13 14:09:41 PDT 2016
+pyBurstAnalysisGUI/data/templates
+
+Added Files:
+	CygnusCocoon.fits HB21.fits HESSJ1303-631.fits 
+	HESSJ1614-518.fits HESSJ1616-508.fits HESSJ1632-478.fits 
+	HESSJ1837-069.fits HESSJ1841-055.fits PuppisA.fits 
+	RXJ1713.fits S147.fits VelaJr.fits gammaCygni.fits 
+Log Message:
+Synch with github
+    *
+------------------------------------------------------------
+User: giacomov  Fri May 13 14:09:41 PDT 2016
 pyBurstAnalysisGUI/data
 
 Added Files:
