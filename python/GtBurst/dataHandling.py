@@ -5,6 +5,7 @@ import UnbinnedAnalysis
 import BinnedAnalysis
 
 import numpy
+import random
 import os,sys, re, glob, shutil, datetime, time
 import pyfits
 import math
@@ -105,6 +106,46 @@ def exceptionPrinter(msg,exceptionText):
     sys.stderr.write("\n%s\n" % exceptionText)
     sys.stderr.write("-------------- EXCEPTION ---------------------------\n")      
 
+def convertXML(gtlikexml,obssimxml,emin,emax):
+  
+  from uw.utilities.xml_parsers import parse_sources
+  import uw.like.roi_monte_carlo
+
+  
+  ps,ds=parse_sources(gtlikexml)
+  sources = ps
+  sources.extend(ds)
+  directory = os.path.dirname(obssimxml)
+  if(directory==''):
+    directory = os.path.abspath('.')
+  else:
+    directory = os.path.abspath(directory)
+  pass
+  
+  mc = uw.like.roi_monte_carlo.MCModelBuilder(sources,
+                                              savedir=directory,
+                                              emin=float(emin),
+                                              emax=float(emax))
+  swap = mc.build(obssimxml)
+    
+  # Return the list of the sources contained in the file
+  
+  source_names = map(lambda x:x.name, sources)
+  
+  fgl_sources = filter(lambda x:x.find("FGL ")>=0, source_names)
+  fgl_sources = map(lambda x:"_%s" % x.replace(" ","_").replace("-","m").replace("+","p").replace(".",""),
+                    fgl_sources)
+  
+  other_sources = filter(lambda x:x.find("FGL ")<0, source_names)
+  
+    
+  all_sources = other_sources
+  all_sources.extend(fgl_sources)
+    
+  return all_sources
+  
+pass
+
 
 def getLATdataFromDirectory(directory):
     cspecFiles                = glob.glob(os.path.join(os.path.abspath(directory),"gll_cspec_tr_*.pha"))
@@ -151,6 +192,7 @@ def getPointing(triggertime,ft2,bothAxes=False):
   #Find first element after trigger time in FT2 file
   idx_after               = numpy.searchsorted(numpy.sort(data.START),triggertime)
   idx_before              = idx_after-1
+    
   if(idx_after==len(data) or idx_before < 0):
     raise RuntimeError("Provided FT2 file do not cover enough time")
   f.close()
@@ -316,7 +358,8 @@ def date2met(*kargs):
     met= diff.days*86400. + diff.seconds + time + decsec
     if float(year)>2005:    met+=1
     if float(year)>2008:    met+=1
-    if float(met)>362793601.0: met+=1 # June 2012 leap second    
+    if float(met)>362793601.0: met+=1 # June 2012 leap second 
+    if float(met)>457401602.0: met+=1 # 2015 leap second
     return met
 
 
@@ -326,9 +369,10 @@ def met2date(MET,opt=None):
     If opt=="grbname", the GRB name format 080725434 is returned. 
     """
 
-    if MET>252460801:   MET=MET-1
-    if MET>156677800:   MET=MET-1
+    if MET>157766400:   MET=MET-1 # leap second before launch
+    if MET>252460800:   MET=MET-1 # end of 2008
     if MET>362793601:   MET=MET-1 # 2012 leap second
+    if MET>457401602:   MET=MET-1 # 2015 leap second
     
     metdate  = datetime.datetime(2001, 1, 1,0,0,0)
     dt=datetime.timedelta(seconds=float(MET))
@@ -386,6 +430,32 @@ def _getLatestVersion(filename):
     return os.path.join(directory,fileList[idx])
 pass
 
+def convertTemplatesToAbsolutePath(xmlmodel):
+  
+  tree                        = ET.parse(xmlmodel)
+  root                        = tree.getroot()
+  
+  for source in root.findall('source'):
+        
+    spectrum                = source.findall('spectrum')[0]
+    file_name               = spectrum.get('file')
+    
+    if file_name is not None:
+        
+        spectrum.set('file',os.path.abspath(file_name))
+    
+    spatialModel            = source.findall('spatialModel')[0]
+    file_name               = spatialModel.get('file')
+    
+    if file_name is not None:
+        
+        spatialModel.set('file',os.path.abspath(file_name))
+      
+  pass
+  
+  tree.write(xmlmodel)
+  
+pass
 
 def getIsotropicTemplateNormalization(xmlmodel):
   tree                        = ET.parse(xmlmodel)
@@ -864,7 +934,7 @@ class LLEData(object):
       
       for interval in timeIntervals.getIntervals():
         #Find all spectra between start and stop
-        mask                  = (spectraStop >= interval.tstart) & (spectraStart <= interval.tstop)
+        mask                  = (spectraStop >= interval.tstart) & (spectraStart <= interval.tstop) & (spectraExposure > 0)
         
         #Compute the weight for each interval: the weight will be 1 for intervals
         #completely contained between tstart and tstop, and < 1 for the first and
@@ -917,15 +987,28 @@ class multiprocessScienceTools(dict):
   def __init__(self,scienceTool):
     #If there is more than one processor, use the multi-processor
     #version, otherwise the standard one
+    
+    # Read configuration
+
     configuration                      = Configuration()
+
+    
     self.ncpus                         = min(int(float(configuration.get('maxNumberOfCPUs'))),multiprocessing.cpu_count()) #Save 1 processor for system usage
     if(self.ncpus > 1):
       self.run                         = self.multiproc_run
     else:
       self.run                         = self.singleproc_run
     pass
-    self.scienceTool                   = scienceTool
+    self.scienceTool                   = GtApp(scienceTool)
+    
     dict.__init__(self)
+    
+    #This is to make this class behave like the GtApp class
+    for i,k in enumerate(self.scienceTool.keys()):
+      try:
+        self[k]                          = self.scienceTool[k]
+      except:
+        self[k]                          = ''
   pass
   
   def multiproc_run(self):
@@ -934,11 +1017,11 @@ class multiprocessScienceTools(dict):
   pass
   
   def singleproc_run(self):
-    tool                               = GtApp(self.scienceTool)
+     
     for k,v in self.iteritems():
-      tool[k]                      = v
+      self.scienceTool[k]               = v
     pass
-    tool.run()
+    self.scienceTool.run()
   pass
 pass
 
@@ -1021,7 +1104,7 @@ class my_gttsmap(multiprocessScienceTools):
   def multiproc_run(self):
     pars = {}
 
-    pars['evfile']            = self['evfile']
+    pars['evfile']            = os.path.abspath(self['evfile'])
     pars['scfile']            = self['scfile']
     pars['nxpix']             = self['nxpix']
     pars['nypix']             = self['nypix']
@@ -1132,13 +1215,27 @@ class LATData(LLEData):
     
   pass
   
-  def performStandardCut(self,ra,dec,rad,irf,tstart,tstop,emin,emax,zenithCut,thetaCut=180.0,gtmktime=True,roicut=True,**kwargs):
+  def performStandardCut(self,ra,dec,rad,irf,tstart,tstop,
+                              emin,emax,zenithCut,
+                              thetaCut=180.0,gtmktime=True,
+                              roicut=True,**kwargs):
+      
       self.strategy                    = 'time'
+      
+      #Use the evtype 
+      if(irf.lower().find("p8")>=0):
+        
+        self.evtype                    = 3
+      
+      else:
+        
+        self.evtype                     = 'INDEF'
       
       for key in kwargs.keys():
         if(key=="strategy"):
           self.strategy                = kwargs[key]
-        pass
+        elif(key=="evtype"):
+          self.evtype                  = int(kwargs[key])
       pass
       
       #Get tstart and tstop always in MET
@@ -1148,6 +1245,7 @@ class LATData(LLEData):
       dec                              = float(dec)
       emin                             = float(emin)
       emax                             = float(emax)
+      zenithCut                        = float(zenithCut)
       
       
       #Check that the FT2 file covers the time interval requested
@@ -1178,7 +1276,16 @@ class LATData(LLEData):
       if(gtmktime):
         self.gtmktime['scfile']          = self.ft2File
         if(self.strategy=="time"):
-          filt                           = "(DATA_QUAL>0 || DATA_QUAL==-1) && LAT_CONFIG==1 && IN_SAA!=T && LIVETIME>0 && (ANGSEP(RA_ZENITH,DEC_ZENITH,%s,%s)<=(%s-%s))" %(ra,dec,zenithCut,rad)
+          filt                           = "(DATA_QUAL>0 || DATA_QUAL==-1) && LAT_CONFIG==1 && IN_SAA!=T && LIVETIME>0"
+          
+          if(zenithCut < 180):
+            
+            filt                        += " && (ANGSEP(RA_ZENITH,DEC_ZENITH,%s,%s)<=(%s-%s))" %(ra,dec,zenithCut,rad)
+          
+          else:
+            
+            print("\nNo Zenith cut used\n")
+            
           self.gtmktime['roicut']        = "no"
         elif(self.strategy=="events"):
           filt                           = "(DATA_QUAL>0 || DATA_QUAL==-1) && LAT_CONFIG==1 && IN_SAA!=T && LIVETIME>0"
@@ -1187,7 +1294,7 @@ class LATData(LLEData):
           raise RuntimeError("Strategy must be either 'time' or 'events'")
         
         if(thetaCut!=180.0):
-          filt                          += " && (ANGSEP(RA_SCZ,DEC_SCZ,%s,%s)<=%s)" %(ra,dec,thetaCut)
+          filt                          += " && (ANGSEP(RA_SCZ,DEC_SCZ,%s,%s)<=%s - %s)" %(ra,dec,thetaCut, rad)
         pass
         
         self.gtmktime['filter']          = filt
@@ -1202,8 +1309,8 @@ class LATData(LLEData):
         self.gtmktime['clobber']         = 'yes'
         try:
           self.gtmktime.run()
-        except:
-          raise GtBurstException(22,"gtmktime failed. Likely your filter resulted in zero exposure.")
+        except BaseException as e:
+          raise GtBurstException(22,"gtmktime failed: %s" % str(e))
       else:
         outfilemk                      = self.originalEventFile
       
@@ -1239,14 +1346,21 @@ class LATData(LLEData):
       self.gtselect['evclass']         = irf.evclass
       self.gtselect['evclsmin']        = 0
       self.gtselect['evclsmax']        = 1000
+      
+      #This try/except is to preserve compatibility with the
+      #old science tools, which didn't have the evtype parameter
+      if( 'evtype' in self.gtselect.keys() ):
+        self.gtselect['evtype']         = self.evtype
+      pass
+            
       self.gtselect['convtype']        = -1
       self.gtselect['clobber']         = "yes"
       outfileselect                    = "%s_filt.fit" %(self.rootName)
       self.gtselect['outfile']         = outfileselect
       try:
         self.gtselect.run()
-      except:
-        raise GtBurstException(23,"gtselect failed for unknown reason")
+      except BaseException as e:
+        raise GtBurstException(23,"gtselect failed for unknown reason: %s " % str(e))
       
       #Now write a keyword which will be used by other methods to recover ra,dec,rad,emin,emax,zcut
       f                                = pyfits.open(outfileselect,'update')      
@@ -1260,8 +1374,10 @@ class LATData(LLEData):
       f[0].header.set('_EMAX',"%s" % float(emax))
       f[0].header.set('_ZMAX',"%12.5f" % float(zenithCut))
       f[0].header.set('_STRATEG',self.strategy)
+      f[0].header.set('_EVTYPE',self.evtype)
       f[0].header.set('_IRF',"%s" % irf.name)
       f[0].header.set('_REPROC','%s' % reprocessingVersion)
+      f[0].header.set('_THETAC','%12.5f' %float(thetaCut))
       
       nEvents                          = len(f['EVENTS'].data.TIME)
       print("\nSelected %s events." %(nEvents))
@@ -1287,6 +1403,16 @@ class LATData(LLEData):
       self.strategy                 = str(h['_STRATEG'])
       self.irf                      = str(h['_IRF'])
       self.reprocessingVersion      = str(h['_REPROC'])
+      try:
+        self.evtype                 = int(h['_EVTYPE'])
+      except:
+        self.evtype                 = 'INDEF'
+      
+      try:
+        self.thetamax                 = float(h['_THETAC'])
+      except:
+        self.thetamax               = 180.0
+      
       f.close()
   pass
   
@@ -1300,7 +1426,7 @@ class LATData(LLEData):
      self.gtbin['outfile']          = outfile
      self.gtbin['algorithm']        = 'CMAP'
      
-     nxpix                          = int(2*float(self.rad)/float(binsz))
+     nxpix                          = int(2*float(self.rad)/float(binsz)) + 1
      nypix                          = nxpix
      if(fullsky):
        nxpix                        = 360.0/float(binsz)
@@ -1318,8 +1444,8 @@ class LATData(LLEData):
      self.gtbin['proj']             = projection
      try:
        self.gtbin.run()
-     except:
-       raise GtBurstException(24,"gtbin failed for unknown reason while producing the sky map")
+     except BaseException as e:
+       raise GtBurstException(24,"gtbin failed for unknown reason while producing the sky map: %s" %(str(e)))
   pass
     
   def doSkyCube(self,nebins=10,binsz=0.2):
@@ -1331,7 +1457,11 @@ class LATData(LLEData):
      self.gtbin['outfile']          = outfile
      self.gtbin['algorithm']        = 'CCUBE'
      
-     nxpix                          = int(2*float(self.rad)/float(binsz))+10
+     #The largest square inscribed in the current ROI has
+     #this side
+     side                           = 2.0 * self.rad / math.sqrt(2.0)
+     
+     nxpix                          = int( side / float(binsz) )
      nypix                          = nxpix
      self.gtbin['nxpix']            = nxpix
      self.gtbin['nypix']            = nypix
@@ -1349,8 +1479,8 @@ class LATData(LLEData):
      self.gtbin['enumbins']         = nebins
      try:
        self.gtbin.run()
-     except:
-       raise GtBurstException(25,"gtbin failed for unknown reason while producing the sky cube")
+     except BaseException as e:
+       raise GtBurstException(25,"gtbin failed for unknown reason while producing the sky cube: %s" % str(e))
      
      self.skyCube                   = outfile
   pass
@@ -1384,8 +1514,8 @@ class LATData(LLEData):
      
      try:
        self.gtltcube.run()
-     except:
-       raise GtBurstException(26,"gtltcube failed in an unexpected way")     
+     except BaseException as e:
+       raise GtBurstException(26,"gtltcube failed in an unexpected way: %s" % str(e))     
      self.livetimeCube              = outfilecube
      os.remove("__ft2temp.fits")
   pass
@@ -1399,7 +1529,14 @@ class LATData(LLEData):
      outfileexpo                    = "%s_expomap.fit" %(self.rootName)
      self.gtexpmap['outfile']       = outfileexpo
      self.gtexpmap['irfs']          = self.irf
-     self.gtexpmap['srcrad']        = (2*self.rad)
+     
+     #This try/except is to preserve compatibility with the
+     #old science tools, which didn't have the evtype parameter
+     if( 'evtype' in self.gtexpmap.keys() ):
+       self.gtexpmap['evtype']         = self.evtype
+     pass
+     
+     self.gtexpmap['srcrad']        = min(2*self.rad,88.0)
      #Guarantee that this is divisible by 4
      self.gtexpmap['nlong']         = 4*int(math.ceil(4*self.rad/binsz/4.0))
      self.gtexpmap['nlat']          = 4*int(math.ceil(4*self.rad/binsz/4.0))
@@ -1407,8 +1544,8 @@ class LATData(LLEData):
      self.gtexpmap['clobber']       = 'yes'
      try:
        self.gtexpmap.run()
-     except:
-       raise GtBurstException(27,"gtexpmap failed in an unexpected way")
+     except BaseException as e:
+       raise GtBurstException(27,"gtexpmap failed in an unexpected way: %s" % str(e))
      self.exposureMap               = outfileexpo
   pass
     
@@ -1435,6 +1572,16 @@ class LATData(LLEData):
      outfileexpo                    = "%s_binExpMap.fit" %(self.rootName)
      self.gtexpcube2['outfile']     = outfileexpo
      self.gtexpcube2['irfs']        = self.irf
+     
+     #This try/except is to preserve compatibility with the
+     #old science tools, which didn't have the evtype parameter
+     if( 'evtype' in self.gtexpcube2.keys() ):
+       if(self.irf.find("P7") >= 0):
+         self.gtexpcube2['evtype']  = 3
+       else:
+         self.gtexpcube2['evtype']         = self.evtype
+     pass
+     
      self.gtexpcube2['clobber']     = 'yes'
      #All other parameters will be taken from the livetime cube
      try:
@@ -1451,6 +1598,13 @@ class LATData(LLEData):
      self.gtsrcmaps['cmap']         = self.skyCube
      self.gtsrcmaps['srcmdl']       = xml
      self.gtsrcmaps['irfs']         = self.irf
+     
+     #This try/except is to preserve compatibility with the
+     #old science tools, which didn't have the evtype parameter
+     if( 'evtype' in self.gtsrcmaps.keys()):
+       self.gtsrcmaps['evtype']         = self.evtype
+     pass
+     
      self.gtsrcmaps['bexpmap']      = self.binnedExpoMap
      outfilesrcmap                  = "%s_srcMap.fit" %(self.rootName)
      self.gtsrcmaps['outfile']      = outfilesrcmap
@@ -1458,7 +1612,8 @@ class LATData(LLEData):
      self.gtsrcmaps['resample']     = 'no'
      self.gtsrcmaps['minbinsz']     = 1.0
      self.gtsrcmaps['psfcorr']      = 'no'
-     self.gtsrcmaps['emapbnds']     = 'no'     
+     self.gtsrcmaps['emapbnds']     = 'no'  
+     self.gtsrcmaps['ptsrc']        = 'yes'  
      try:
        self.gtsrcmaps.run()
      except:
@@ -1480,6 +1635,16 @@ class LATData(LLEData):
      outfilemodelmap                = "%s_modelMap.fit" %(self.rootName)
      self.gtmodel['outfile']        = outfilemodelmap
      self.gtmodel['irfs']           = self.irf
+     
+     #This try/except is to preserve compatibility with the
+     #old science tools, which didn't have the evtype parameter
+     if( 'evtype' in self.gtmodel.keys() ):
+       if(self.irf.find("P7") >= 0):
+         self.gtmodel['evtype']     = 3
+       else:
+         self.gtmodel['evtype']     = self.evtype
+     pass
+     
      self.gtmodel['expcube']        = self.livetimeCube
      self.gtmodel['bexpmap']        = self.binnedExpoMap
      self.gtmodel['clobber']        = 'yes'
@@ -1498,6 +1663,19 @@ class LATData(LLEData):
      self.gtdiffrsp['scfile']       = self.ft2File
      self.gtdiffrsp['srcmdl']       = xmlmodel
      self.gtdiffrsp['irfs']         = self.irf
+     
+     #This try/except is to preserve compatibility with the
+     #old science tools, which didn't have the evtype parameter
+     if( 'evtype' in self.gtdiffrsp.keys() ):
+     
+       # Use INDEF so the evtype is guessed from the event file
+       
+       self.gtdiffrsp['evtype']         = 'INDEF'
+       
+       self.gtdiffrsp['evclsmin']       = 'INDEF'
+       self.gtdiffrsp['evclass']        = 'INDEF'
+     pass
+     
      self.gtdiffrsp['clobber']      = 'yes'
      try:
        self.gtdiffrsp.run()
@@ -1514,11 +1692,18 @@ class LATData(LLEData):
      outfile                        = "%s_spec_%5.3f_%5.3f.rsp" %(self.rootName,self.tmin-self.trigTime,self.tmax-self.trigTime)
      self.gtrspgen['outfile']       = outfile
      self.gtrspgen['irfs']          = self.irf
+     
+     #This try/except is to preserve compatibility with the
+     #old science tools, which didn't have the evtype parameter
+     if( 'evtype' in self.gtrspgen.keys() ):
+       self.gtrspgen['evtype']         = self.evtype
+     pass
+     
      self.gtrspgen['thetacut']      = thetacut
      self.gtrspgen['dcostheta']     = dcostheta
      self.gtrspgen['ebinalg']       = 'LOG'
-     self.gtrspgen['emin']          = 30.0
-     self.gtrspgen['emax']          = 200000.0
+     self.gtrspgen['emin']          = 70.0
+     self.gtrspgen['emax']          = 100000.0
      self.gtrspgen['enumbins']      = numbins
      try:
        self.gtrspgen.run()
@@ -1562,6 +1747,20 @@ class LATData(LLEData):
      self.gtbkg['srcmdl']           = xmlmodel
      name                           = _getParamFromXML(xmlmodel,'OBJECT')
      self.gtbkg['target']           = name
+     
+     #This is to preserve compatibility with the
+     #old science tools, which didn't have the evtype parameter
+     if( 'evtype' in self.gtbkg.keys() ):
+       
+       #This kludge is to avoid a bug in gtbkg, which does
+       #not accept evtype='indef' for p7 data
+       if( self.irf.find("P7") >= 0 ):
+         self.gtbkg['evtype']       = 3
+       else:
+         self.gtbkg['evtype']       = self.evtype
+       
+     pass
+     
      try:
        self.gtbkg.run()
      except:
@@ -1574,9 +1773,10 @@ class LATData(LLEData):
      
      if(numbins==None):
        #Make a PHA1 file
-       #10 bins for each decade in energy
+           
        ndecades                       = numpy.log10(self.emax)-numpy.log10(self.emin)
        numbins                        = int(numpy.ceil(ndecades*10.0))
+     
      pass
      
      phafile                          = self.binByEnergy(numbins)
@@ -1586,8 +1786,11 @@ class LATData(LLEData):
      return phafile,rspfile,bakfile
   pass
   
-  def makeTSmap(self,xmlmodel,sourceName,binsz=0.7,side=None,outfile=None,tsltcube=None,tsexpomap=None):
+  def makeTSmap(self,xmlmodel,sourceName,binsz=0.7,
+                side=None,outfile=None,tsltcube=None,tsexpomap=None):
+     
      self.getCuts()
+     
      if(tsltcube==None or tsltcube==''):
        self.makeLivetimeCube()
      else:
@@ -1605,6 +1808,11 @@ class LATData(LLEData):
      #We have to produce a version of the xmlmodel without the source
      tempModel                      = "__temp__xml_tsmap.xml"
      removePointSource(xmlmodel,tempModel,sourceName)
+     
+     # We also need to put an absolute path for the templates
+     
+     convertTemplatesToAbsolutePath(tempModel)
+     
      self.gttsmap['srcmdl']         = tempModel
      self.gttsmap['statistic']      = "UNBINNED"
      self.gttsmap['optimizer']      = optimizer
@@ -1647,14 +1855,21 @@ class LATData(LLEData):
   pass
   
   def doBinnedLikelihoodAnalysis(self,xmlmodel,tsmin=20,**kwargs):
+     
      expomap                        = None
      ltcube                         = None
+     emin = None
+     emax = None
+     
      for k,v in kwargs.iteritems():
        if(k=='expomap'):
          expomap                    = v
        elif(k=='ltcube'):
          ltcube                     = v
-       pass
+       elif(k=='emin' and v is not None):
+         emin = float(v)
+       elif(k=='emax' and v is not None):
+         emax = float(v)
      pass
      self.getCuts()
      if(ltcube==None or ltcube==''):
@@ -1686,16 +1901,28 @@ class LATData(LLEData):
                                                   expCube=self.livetimeCube,
                                                   binnedExpMap=self.binnedExpoMap,
                                                   irfs=self.irf)
-     self.like1                     = BinnedAnalysis.BinnedAnalysis(self.obs,xmlmodel,optimizer='NEWMINUIT')
+     self.like1                     = BinnedAnalysis.BinnedAnalysis(self.obs,xmlmodel,optimizer='Minuit')
      
-     return self._doLikelihood(xmlmodel,tsmin)
+     if emin is None:
+         
+         emin = self.emin
+     
+     if emax is None:
+         
+         emax = self.emax
+     
+     return self._doLikelihood(xmlmodel,tsmin, emin, emax)
   
   pass
   
   def doUnbinnedLikelihoodAnalysis(self,xmlmodel,tsmin=20,**kwargs):
+    
      expomap                        = None
      ltcube                         = None
      dogtdiffrsp                    = True
+     emin = None
+     emax = None
+     
      for k,v in kwargs.iteritems():
        if(k=='expomap'):
          expomap                    = v
@@ -1703,7 +1930,10 @@ class LATData(LLEData):
          ltcube                     = v
        elif(k=='dogtdiffrsp'):
          dogtdiffrsp                = bool(v)
-       pass
+       elif(k=='emin' and v is not None):
+         emin = float(v)
+       elif(k=='emax' and v is not None):
+         emax = float(v)
      pass
      self.getCuts()
      if(ltcube==None or ltcube==''):
@@ -1733,12 +1963,20 @@ class LATData(LLEData):
      self.obs                       = UnbinnedAnalysis.UnbinnedObs(self.eventFile,self.ft2File,
                                                   expMap=self.exposureMap,
                                                   expCube=self.livetimeCube,irfs=self.irf)
-     self.like1                     = UnbinnedAnalysis.UnbinnedAnalysis(self.obs,xmlmodel,optimizer='NEWMINUIT')
+     self.like1                     = UnbinnedAnalysis.UnbinnedAnalysis(self.obs,xmlmodel,optimizer='Minuit')
      
-     return self._doLikelihood(xmlmodel,tsmin)
+     if emin is None:
+         
+         emin = self.emin
+     
+     if emax is None:
+         
+         emax = self.emax
+     
+     return self._doLikelihood(xmlmodel,tsmin, emin, emax)
   pass
    
-  def _doLikelihood(self,xmlmodel,tsmin):
+  def _doLikelihood(self,xmlmodel,tsmin, emin, emax):
      
      outfilelike                    = "%s_likeRes.xml" %(self.rootName)
      
@@ -1816,6 +2054,31 @@ class LATData(LLEData):
      #like1.ftol                     = 1e-10
      print("\nLikelihood settings:\n")
      print(self.like1)
+     
+     # Check that we have at least a number of photons equal to the number of parameters
+     
+     n_events = self.like1.total_nobs()
+     
+     n_free_params = self.like1.logLike.getNumFreeParams()
+          
+     if n_free_params >= n_events:
+              
+         # More parameters than events!
+                  
+         print("You have more free parameters than events! Fixing everything except the normalizations")
+         
+         norm_parameters = []
+         
+         for src_name in self.like1.sourceNames():
+             
+             for par in self.like1.freePars(src_name):
+                 
+                 if par.getName() != self.like1.normPar(src_name).getName():
+                     
+                     self.like1[src_name].src.spectrum().parameter(par.getName()).setFree(0)
+         
+         self.like1.syncSrcParams()
+     
      print("\nPerforming likelihood fit...")
      try:
        logL                         = self.like1.fit(verbosity=1,covar=True)
@@ -1866,7 +2129,9 @@ class LATData(LLEData):
        pass
      pass
      
-     printer                        = LikelihoodComponent.LikelihoodResultsPrinter(self.like1,self.emin,self.emax)
+     
+     
+     printer                        = LikelihoodComponent.LikelihoodResultsPrinter(self.like1,emin,emax)
      detectedSources                = printer.niceXMLprint(outfilelike,tsmin,phIndex_beforeFit)
      print("\nLog(likelihood) = %s" %(logL))
      
@@ -1878,7 +2143,7 @@ class LATData(LLEData):
   
   def optimizeSourcePosition(self,xmlmodel,sourceName='GRB'):
     self.getCuts()
-    
+        
     #Create a temporary xml file, otherwise gtfindsrc will overwrite the original one
     tmpxml                      = "__temp__xmlmodel.xml"
     try:
@@ -1896,7 +2161,7 @@ class LATData(LLEData):
     self.gtfindsrc['expmap']        = self.exposureMap
     self.gtfindsrc['srcmdl']        = tmpxml
     self.gtfindsrc['target']        = sourceName
-    self.gtfindsrc['optimizer']     = 'NEWMINUIT'
+    self.gtfindsrc['optimizer']     = 'Minuit'
     self.gtfindsrc['ftol']          = 1E-10
     self.gtfindsrc['reopt']         = 'yes'
     self.gtfindsrc['atol']          = 1E-3
@@ -1907,9 +2172,15 @@ class LATData(LLEData):
     stdin, stdout                   = self.gtfindsrc.runWithOutput()
     ra,dec,err                      = None,None,None
     for line in stdout.readlines():
+      
+      #print line
+      
       if(line.find("Best fit position:")>=0):
+                
         ra,dec                      = line.split(":")[1].replace(" ","").split(",")
+      
       elif(line.find("Error circle radius:")>=0):
+                
         err                         = line.split(":")[1].replace(" ","")
       pass
     pass
@@ -1920,9 +2191,136 @@ class LATData(LLEData):
       os.remove(tmpxml)
     except:
       pass
-    return float(ra),float(dec),float(err)
+     
+    # In some weird cases, gtfindsrc returns R.A., Dec pairs outside of the ranges
+    # 0 < RA < 360, -90 < Dec < 90. It happens because gtfindsrc makes steps starting from
+    # the center position, so for example if you start from R.A. close to zero it 
+    # could go negative. Fix that
+    
+    ra = float(ra)
+    dec = float(dec)
+    err = float(err)
+    
+    if ra < 0:
+        
+        ra = ra + 360
+    
+    if ra > 360:
+        
+        ra = ra - 360
+    
+    if dec < -90:
+        
+        dec = -90 + (abs(dec) - 90)
+    
+    if dec > 90:
+        
+        dec = 90 - (abs(dec) - 90)
+    
+    return ra, dec, err
   pass
   
+  def makeSimulation(self, gtlikexml, evroot='sim', seed=None, exclude=None):
+    
+    self.getCuts()
+    
+    # First transform the xmlfile from the gtlike to the
+    # gtobssim format
+    
+    obssimxml = '__obssim.xml'
+    
+    source_list = convertXML(gtlikexml, obssimxml, self.emin, self.emax)
+    
+    if exclude is not None:
+        
+        print("Excluding source %s... "%(exclude))
+        
+        source_list = filter(lambda x:x!=exclude, source_list)
+    
+    # Now write the source_list.txt file
+    
+    source_list_file = "__source_list.txt"
+    
+    with open(source_list_file, "w+") as f:
+        
+        f.write("\n".join(source_list))
+    
+    # Fix the XML for the $($SIMDIR) error (should be $(SIMDIR))
+    
+    with open(obssimxml) as f:
+        
+        lines = f.readlines()
+        
+        newlines = map(lambda x:x.replace("$($SIMDIR)","$(SIMDIR)"), lines)
+    
+    with open(obssimxml,"w+") as f:
+        
+        f.write("".join(newlines))
+    
+    self.gtobssim['infile'] = obssimxml
+    self.gtobssim['srclist'] = source_list_file
+    self.gtobssim['scfile'] = self.ft2File
+    self.gtobssim['evroot'] = evroot
+    self.gtobssim['simtime'] = self.tmax - self.tmin
+    self.gtobssim['tstart'] = self.tmin
+    self.gtobssim['use_ac'] = 'yes'
+    self.gtobssim['ra'] = self.ra
+    self.gtobssim['dec'] = self.dec
+    self.gtobssim['radius'] = self.rad
+    self.gtobssim['emin'] = 10
+    self.gtobssim['emax'] = self.emax
+    self.gtobssim['edisp'] = 'yes'
+    self.gtobssim['irfs'] = self.irf
+    self.gtobssim['maxrows'] = 10000000000
+    self.gtobssim['seed'] = random.randint(1000,1000000) if seed is None else seed
+    
+    # Define env. variable SIMDIR
+    
+    os.environ['SIMDIR'] = os.getcwd()
+    
+    # I need to run it from the shell because otherwise it 
+    # will use the default value for the
+    # evtype keyword, and will generate P7 events! (WTF)
+  
+    cmdLine = self.gtobssim.command()
+  
+    cmdLine = cmdLine.replace("time -p ","")
+    cmdLine = cmdLine.replace('evtype="none"',"")
+  
+    print("\n%s" %(cmdLine))
+    print subprocess.check_output(cmdLine,shell=True)
+
+    
+    # Here we assume that gtobssim produced only one file
+    
+    # Find file
+    
+    sim_event_file = glob.glob("%s_events_0*.fits" % evroot)
+    
+    assert len(sim_event_file)==1, "Zero or more than 1 file produced by gtobssim"
+    
+    sim_event_file = sim_event_file[0]
+    
+    # Fix some keywords
+    
+    with pyfits.open(sim_event_file,"update") as f:
+      
+        f[0].header.set("PROC_VER","302")
+    
+    # Now reproduce the same cuts used by the event file
+    
+    sim_event_class = LATData(sim_event_file, self.rspFile, self.ft2File)
+    
+    irf = self.irf.replace("_V6","").replace("P8R2","P8")
+    
+    sim_event_class.performStandardCut(self.ra, self.dec, self.rad, irf,
+                                       self.tstart, self.tstop,
+                                       self.emin, self.emax, self.zmax,
+                                       self.thetamax,
+                                       True,strategy=self.strategy)
+    
+    return sim_event_class
+    
 pass
 
 class Simulation(object):
