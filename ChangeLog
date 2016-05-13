@@ -1,5 +1,14 @@
 ------------------------------------------------------------
 User: giacomov  Fri May 13 14:07:43 PDT 2016
+pyBurstAnalysisGUI/python/GtBurst/commands
+
+Modified Files:
+	gtbuildxmlmodel.py gtdolike.py 
+Log Message:
+Synch with github
+    *
+------------------------------------------------------------
+User: giacomov  Fri May 13 14:07:43 PDT 2016
 pyBurstAnalysisGUI/python/GtBurst
 
 Modified Files:
