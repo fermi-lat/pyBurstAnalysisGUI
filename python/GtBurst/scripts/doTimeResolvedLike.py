@@ -10,6 +10,9 @@ import os, subprocess, glob, shutil
 import numpy,pyfits
 import collections
 
+import xml.etree.ElementTree as ET
+
+
 def printCommand(cmdname,targs):
   commandLine = cmdname
   
@@ -64,6 +67,10 @@ parser.add_argument("--spectralfiles",help="Produce spectral files to be used in
 parser.add_argument("--liketype",help="Likelihood type (binned or unbinned)",type=str,default="unbinned",choices=['binned','unbinned'])
 parser.add_argument("--optimizeposition",help="Optimize position with gtfindsrc?",type=str,default="no",choices=['yes','no'])
 parser.add_argument("--datarepository",help="Directory where data are stored",default=configuration.get('dataRepository'))
+parser.add_argument("--ltcube",help="Pre-computed livetime cube",default='',type=str)
+parser.add_argument('--ulphindex',help="Photon index for upper limits",default=-2,type=float)
+parser.add_argument('--flemin',help="Lower bound energy for flux/upper limit computation",default=None)
+parser.add_argument('--flemax',help="Upper bound energy for flux/upper limit computation",default=None)
 
 #Main code
 if __name__=="__main__":
@@ -191,6 +198,35 @@ if __name__=="__main__":
     printCommand("gtbuildxmlmodel",targs)
     _,xmlmodel                   = gtbuildxmlmodel.run(**targs)
     
+    # Now if the user has specified a specific photon index for upper limits,
+    # change the photon index in the XML file
+    
+    # Save parameters in comments (ET will strip them out)
+    
+    pars_in_comments = {}
+    
+    for key in ['OBJECT','RA','DEC','IRF']:
+        
+        pars_in_comments[key] = dataHandling._getParamFromXML(xmlmodel,key)
+    
+    # Now change the photon index in the XML file
+        
+    tree = ET.parse(xmlmodel)
+    root = tree.getroot()
+    index = root.findall("./source[@name='%s']/spectrum/parameter[@name='Index']" % 'GRB')[0]
+    
+    if args.ulphindex==-1.0:
+        
+        args.ulphindex += 0.01
+    
+    index.set('value', str(args.ulphindex))
+    
+    tree.write(xmlmodel)
+    
+    # Add the parameters in comments back
+    
+    dataHandling._writeParamIntoXML(xmlmodel,**pars_in_comments)
+    
     targs                        = {}
     targs['spectralfiles']       = args.spectralfiles
     targs['xmlmodel']            = xmlmodel
@@ -202,6 +238,19 @@ if __name__=="__main__":
     targs['optimizeposition']    = 'no'
     targs['ft2file']             = dataset['ft2file']
     targs['skymap']              = skymap
+    targs['flemin']              = args.flemin
+    targs['flemax']              = args.flemax
+    
+    if args.ltcube!='':
+      
+      if not os.path.exists(args.ltcube):
+           
+           raise IOError("Livetime cube %s does not exists!" %(args.ltcube))
+      
+      targs['ltcube']              = args.ltcube
+    
+    pass 
+    
     printCommand("gtdolike.py",targs)
     (_, outfilelike, _, grb_TS, 
      _, bestra, _, bestdec, 
@@ -222,6 +271,13 @@ if __name__=="__main__":
     
     os.chdir(initialWorkdir)
   pass
-  writeSourceListToFile(results,args.outfile)
+  
+  try:
+  
+      writeSourceListToFile(results,args.outfile)
+  
+  except IOError:
+      
+      print("Looks like the analysis has failed. No output file produced!")
 pass
 

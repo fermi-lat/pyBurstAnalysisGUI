@@ -10,9 +10,9 @@ from GtBurst import dataHandling
 from GtBurst.GtBurstException import GtBurstException
 
 if(bkge.active):
-  possibleParticleModels = ['isotr with pow spectrum', 'isotr template', 'none', 'bkge']
+  possibleParticleModels = ['isotr template', 'isotr with pow spectrum',  'none', 'bkge']
 else:
-  possibleParticleModels = ['isotr with pow spectrum', 'isotr template', 'none']
+  possibleParticleModels = ['isotr template', 'isotr with pow spectrum', 'none']
 ################ Command definition #############################
 executableName                = "gtbuildxmlmodel"
 version                       = "1.0.0"
@@ -37,6 +37,16 @@ thisCommand.addParameter("source_model",'''Spectral model for the new source (GR
                                            commandDefiner.MANDATORY,
                                          'PowerLaw2',
                                          possiblevalues=LikelihoodComponent.availableSourceSpectra.keys())
+thisCommand.addParameter("fgl_mode",
+'''"fast" = include FGL sources in or around ROI giving at least 1 photons in this
+time interval if at their normal flux (use only for GRBs and SFs).
+This will turn in a big speed improvement in the likelihood
+analysis.\n
+"complete" = include all FGL sources in or around ROI''',
+                                           commandDefiner.OPTIONAL,
+                                         'fast',
+                                         possiblevalues=['fast','complete'])
+
 
 thisCommand.addParameter("ft2file","Spacecraft file (FT2)",commandDefiner.OPTIONAL,partype=commandDefiner.DATASETFILE,extension="fits")
 thisCommand.addParameter("xmlmodel","Name for the output file for the XML model",commandDefiner.MANDATORY,partype=commandDefiner.OUTPUTFILE,extension="xml")
@@ -46,11 +56,11 @@ thisCommand.addParameter("verbose","Verbose output (possible values: 'yes' or 'n
 GUIdescription                = "You have to choose which model include in the likelihood analysis."
 GUIdescription               += " See http://fermi.gsfc.nasa.gov/ssc/data/analysis/scitools/source_models.html for the list"
 GUIdescription               += " of available spectral model for the source_model parameter."
-GUIdescription               += "TIP Use 'PowerLaw2' for normal GRB analysis. For TRANSIENT class data you should use "
-GUIdescription               += "'isotr with pow spectrum' for the particle background and 'template (fixed norm.)' for "
-GUIdescription               += "the Galactic component. For SOURCE class data you should use "
-GUIdescription               += "'isotr template' for the particle background and 'template' for the Galactic component."
-GUIdescription               += " The latter indeed include already the residual particle contamination in SOURCE data."
+GUIdescription               += "TIP Use 'PowerLaw2' for normal GRB analysis. Normally you should use "
+GUIdescription               += "'isotr template' for the particle background and 'template' for "
+GUIdescription               += "the Galactic component. If the source is very faint, you might want to use "
+GUIdescription               += "'template (fixed norm.)' for the Galactic component to reduce the number"
+GUIdescription               += " of parameters in the likelihood fit."
 
 thisCommand.setGUIdescription(GUIdescription)
 
@@ -99,6 +109,7 @@ def run(**kwargs):
     xmlmodel                    = thisCommand.getParValue('xmlmodel')
     triggername                 = thisCommand.getParValue('triggername')
     ft2file                     = thisCommand.getParValue('ft2file')
+    fglmode                     = thisCommand.getParValue('fgl_mode')
     clobber                     = _yesOrNoToBool(thisCommand.getParValue('clobber'))
     verbose                     = _yesOrNoToBool(thisCommand.getParValue('verbose'))
   except KeyError as err:
@@ -161,6 +172,14 @@ def run(**kwargs):
   xml                          = LikelihoodComponent.LikelihoodModel()
   xml.addSources(*modelsToUse)
   xml.writeXML(xmlmodel)
+  
+  if(fglmode=='complete'):
+    
+    #Use a very large delta T so that 
+    #all FGL sources are included in the
+    #xml model
+    deltat                     = 1e12
+  
   xml.add2FGLsources(ra,dec,float(roi)+8.0,xmlmodel,deltat)
     
   

@@ -57,8 +57,8 @@ class EventsCounter(object):
     self.tstops               = numpy.array(cspectstops)
     self.counts               = numpy.array(map(lambda x:numpy.sum(x),cspeccounts))
     #Place zeros where QUALITY is > 0 (bad data)
-    badDataMask               = (f["SPECTRUM"].data.field('QUALITY')>0)
-    self.counts[badDataMask]  *= 0 
+    self.goodDataMask         = (f["SPECTRUM"].data.field('QUALITY')==0)
+    self.counts[~self.goodDataMask]  = 0 
     f.close()
   pass
   
@@ -79,7 +79,7 @@ class EventsCounter(object):
         raise RuntimeError("Tstart and tstop out of boundaries")
       
       #Select all interesting intervals
-      thisMask                = (self.tstops >= tstart) & (self.tstarts <= tstop)
+      thisMask                = (self.tstops >= tstart) & (self.tstarts <= tstop) & self.goodDataMask
       
       #Compute the weight for each interval: the weight will be 1 for intervals
       #completely contained between tstart and tstop, and < 1 for the first and
@@ -89,6 +89,7 @@ class EventsCounter(object):
       weight                  = []
       for i in thisMask.nonzero()[0]:
         weight.append((min(tstop,self.tstops[i])-max(tstart,self.tstarts[i]))/(self.tstops[i]-self.tstarts[i]))
+      
       if(len(weight)==0):
         nEvents               = 0
       else:  
