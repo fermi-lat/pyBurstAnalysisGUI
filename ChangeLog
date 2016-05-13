@@ -1,4 +1,16 @@
 ------------------------------------------------------------
+User: giacomov  Fri May 13 14:07:43 PDT 2016
+pyBurstAnalysisGUI/python/GtBurst
+
+Modified Files:
+	Configuration.py ConsoleText.py GtBurstException.py IRFS.py 
+	LikelihoodComponent.py RSPweight.py TriggerSelector.py 
+	angularDistance.py dataHandling.py statMethods.py sunpos.py 
+	updater.py version.py xmlModelGUI.py 
+Log Message:
+Synch with github
+    *
+------------------------------------------------------------
 User: giacomov  Fri May 13 14:07:42 PDT 2016
 pyBurstAnalysisGUI/python
 
