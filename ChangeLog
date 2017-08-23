@@ -1,5 +1,15 @@
 ------------------------------------------------------------
 User: giacomov  Wed Aug 23 10:19:39 PDT 2017
+pyBurstAnalysisGUI/python/GtBurst
+
+Modified Files:
+	LikelihoodComponent.py cutout.py dataHandling.py 
+	downloadTransientData.py version.py 
+Log Message:
+Synch with git
+    *
+------------------------------------------------------------
+User: giacomov  Wed Aug 23 10:19:39 PDT 2017
 pyBurstAnalysisGUI/python
 
 Modified Files:
