@@ -4,7 +4,8 @@
 
 import numpy
 import os,sys
-import pyfits
+from GtBurst.my_fits_io import pyfits
+
 import math
 from GtApp import GtApp
 import scipy.optimize
@@ -211,7 +212,7 @@ class LogLikelihood(object):
     derivs                    = numpy.zeros(Nfree)
     
     #Set the parameters, if a new set has been provided
-    if(parameters!=None):
+    if(parameters is not None):
       self.model.setParams(parameters)
     pass
     

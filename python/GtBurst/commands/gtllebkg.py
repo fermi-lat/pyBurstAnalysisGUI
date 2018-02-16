@@ -2,7 +2,8 @@
 
 import sys
 import os
-import pyfits
+from GtBurst.my_fits_io import pyfits
+
 from GtBurst import commandDefiner
 
 ################ Command definition #############################

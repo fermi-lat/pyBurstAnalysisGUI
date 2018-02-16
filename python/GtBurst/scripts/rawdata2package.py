@@ -7,13 +7,8 @@ from GtBurst.dataHandling import _makeDatasetsOutOfLATdata
 import sys
 import os, shutil
 
-try:
-    
-    from astropy.io.fits import pyfits
+from GtBurst.my_fits_io import pyfits
 
-except:
-    
-    import pyfits
 
 if __name__=="__main__":
     

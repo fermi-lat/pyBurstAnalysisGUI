@@ -8,7 +8,9 @@ from GtBurst import dataHandling
 from GtBurst.commands.gtllebin import gtllebin
 from GtBurst.GtBurstException import *
 import numpy
-import pyfits
+
+from GtBurst.my_fits_io import pyfits
+
 from GtBurst import html2text
 
 #Set a global timeout of 10 seconds for all web connections
@@ -221,7 +223,7 @@ class DownloadTransientData(dataCollector):
     regexpr                     = re.compile("wget (.*.fits)")
     
     #Build the window for the progress
-    if(self.parent==None):
+    if(self.parent is None):
       #No graphical output
       root                 = None
     else:
@@ -239,7 +241,7 @@ class DownloadTransientData(dataCollector):
     links                       = None
     fakeName                    = "__temp__query__result.html"
     while(time.time() <= startTime+timeout):
-      if(root!=None):
+      if(root is not None):
         if(estimatedTimeForTheQuery==0):
           m1.set(1)
         else:
@@ -250,12 +252,12 @@ class DownloadTransientData(dataCollector):
         (filename, header)        = urllib.urlretrieve(httpAddress,fakeName)
       except socket.timeout:
         urllib.urlcleanup()
-        if(root!=None):
+        if(root is not None):
           root.destroy()
         raise GtBurstException(11,"Time out when connecting to the server. Check your internet connection, or that you can access https://fermi.gsfc.nasa.gov, then retry")
       except:
         urllib.urlcleanup()
-        if(root!=None):
+        if(root is not None):
           root.destroy()
         raise GtBurstException(1,"Problems with the download. Check your connection or that you can access https://fermi.gsfc.nasa.gov, then retry.")
       pass
@@ -274,11 +276,11 @@ class DownloadTransientData(dataCollector):
       time.sleep(refreshTime)
     pass
     
-    if(root!=None):
+    if(root is not None):
       root.destroy()
     
     #Download the files
-    #if(links!=None):
+    #if(links is not None):
     #  for link in links:
     #    print("Downloading %s..." %(link))
     #    urllib.urlretrieve(link,link.split("/")[-1])
@@ -288,7 +290,7 @@ class DownloadTransientData(dataCollector):
     #pass    
     remotePath                = "%s/%s/queries/" %(self.dataRepository,self.instrument)
     
-    if(links!=None):
+    if(links is not None):
       filenames                 = map(lambda x:x.split('/')[-1],links)    
       try:
         self.downloadDirectoryWithFTP(remotePath,filenames=filenames)

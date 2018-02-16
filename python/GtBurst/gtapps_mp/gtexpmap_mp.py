@@ -5,7 +5,9 @@ import numpy as np
 import tempfile
 import os
 import subprocess
-import pyfits
+
+from GtBurst.my_fits_io import pyfits
+
 
 from gt_apps import expMap
 

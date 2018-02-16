@@ -2,7 +2,9 @@
 
 from multiprocessing import Pool
 import numpy as np
-import pyfits
+
+from GtBurst.my_fits_io import pyfits
+
 import tempfile
 import os
 import subprocess

@@ -7,7 +7,8 @@ import numpy as np
 import re
 from matplotlib.widgets import SpanSelector
 from matplotlib.patches import Rectangle
-import pyfits
+
+from GtBurst.my_fits_io import pyfits
 
 from GtApp import GtApp
 

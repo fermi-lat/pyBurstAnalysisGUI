@@ -1,7 +1,10 @@
 #! /usr/bin/env python
 
 import sys
-import os, pyfits, numpy
+import os
+from GtBurst.my_fits_io import pyfits
+
+import numpy
 from GtBurst import commandDefiner
 from GtBurst import xmlModelGUI
 
@@ -78,7 +81,7 @@ def run(**kwargs):
   
   xml                         = xmlModelGUI.xmlModelGUI(xmlmodel,tkwindow)
   
-  if(irf!=None):
+  if(irf is not None):
     dataHandling._writeParamIntoXML(xmlmodel,IRF=irf,OBJECT=name,RA=ra,DEC=dec)
   pass
     

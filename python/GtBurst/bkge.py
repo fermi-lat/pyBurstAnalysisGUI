@@ -1,4 +1,5 @@
-import pyfits
+from GtBurst.my_fits_io import pyfits
+
 import os
 
 from GtBurst.GtBurstException import GtBurstException

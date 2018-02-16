@@ -4,6 +4,9 @@ import sys
 import os
 from GtBurst import commandDefiner
 
+from GtBurst.my_fits_io import pyfits
+
+
 ################ Command definition #############################
 executableName                = "gtllebin"
 version                       = "1.1.0"
@@ -101,7 +104,7 @@ def run(**kwargs):
 
   # if you input a cspec file it will clone the time binning:
   if cspec_in is not None:
-    import pyfits
+
     tmpFile=pyfits.open(cspec_in)
     message('=> Copying the binning from: %s' % cspec_in)
     _SPECTRUM=tmpFile['SPECTRUM'].data

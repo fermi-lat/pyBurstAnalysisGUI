@@ -7,7 +7,8 @@ import numpy as np
 import re
 from matplotlib.widgets import SpanSelector
 from matplotlib.patches import Rectangle
-import pyfits
+from GtBurst.my_fits_io import pyfits
+
 
 from GtApp import GtApp
 
@@ -125,8 +126,8 @@ def run(**kwargs):
     timeBounds                    = []
     for i,tt in enumerate(userBounds):
       m                           = re.search('([-,+]?[0-9]+(\.[0-9]+)?)-([-,+]?[0-9]+(\.[0-9]+)?)', tt)
-      if(m!=None):
-        if(m.group(1)!=None and m.group(3)!=None):
+      if(m is not None):
+        if(m.group(1) is not None and m.group(3) is not None):
           timeBounds.append(m.group(1))
           timeBounds.append(m.group(3))
         else:

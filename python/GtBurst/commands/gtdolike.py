@@ -5,7 +5,9 @@ import os
 from GtBurst import commandDefiner
 from GtBurst.GtBurstException import GtBurstException
 
-import pyfits, numpy,math
+from GtBurst.my_fits_io import pyfits
+
+import numpy,math
 import re
 
 ################ Command definition #############################
@@ -28,6 +30,7 @@ thisCommand.addParameter("optimizeposition","Optimize position?",commandDefiner.
 thisCommand.addParameter("showmodelimage","Show an image representing the best fit likelihood model?",commandDefiner.OPTIONAL,"yes",possiblevalues=['yes','no'])
 thisCommand.addParameter("spectralfiles","Produce spectral files for XSPEC?",commandDefiner.OPTIONAL,"no",possiblevalues=['no','yes'])
 thisCommand.addParameter("liketype","Likelihood type",commandDefiner.OPTIONAL,"unbinned",possiblevalues=['unbinned','binned'])
+thisCommand.addParameter("clul","Upper bound confidence level", commandDefiner.OPTIONAL, 0.95)
 #thisCommand.addParameter("irf","Data class (TRANSIENT or SOURCE)",commandDefiner.MANDATORY,'TRANSIENT',possiblevalues=['TRANSIENT','SOURCE'])
 thisCommand.addParameter("clobber","Overwrite output file? (possible values: 'yes' or 'no')",commandDefiner.OPTIONAL,"yes")
 thisCommand.addParameter("verbose","Verbose output (possible values: 'yes' or 'no')",commandDefiner.OPTIONAL,"yes")
@@ -93,6 +96,7 @@ def run(**kwargs):
     verbose                     = _yesOrNoToBool(thisCommand.getParValue('verbose'))
     flemin                      = thisCommand.getParValue('flemin')
     flemax                      = thisCommand.getParValue('flemax')
+    clul                        = float(thisCommand.getParValue('clul'))
     
     figure                      = thisCommand.getParValue('figure')
   except KeyError as err:
@@ -103,13 +107,15 @@ def run(**kwargs):
     return
   pass
   
+  assert clul < 1.0, "The confidence level for the upper limit (clul) must be < 1"
+  
   from GtBurst import dataHandling
   from GtBurst.angularDistance import getAngularDistance
   
   LATdata                     = dataHandling.LATData(eventfile,rspfile,ft2file)
   try:
     if(liketype=='unbinned'):
-      outfilelike, sources        = LATdata.doUnbinnedLikelihoodAnalysis(xmlmodel,tsmin,expomap=expomap,ltcube=ltcube,emin=flemin,emax=flemax)
+      outfilelike, sources        = LATdata.doUnbinnedLikelihoodAnalysis(xmlmodel,tsmin,expomap=expomap,ltcube=ltcube,emin=flemin,emax=flemax, clul=clul)
     else:
       #Generation of spectral files and optimization of the position is
       #not supported yet for binned analysis
@@ -124,7 +130,7 @@ def run(**kwargs):
         print("\nWARNING: you specified optimize=yes, but position optimization is not supported for binned analysis\n") 
         optimize                    = 'no'
       
-      outfilelike, sources        = LATdata.doBinnedLikelihoodAnalysis(xmlmodel,tsmin,expomap=expomap,ltcube=ltcube,emin=flemin,emax=flemax)
+      outfilelike, sources        = LATdata.doBinnedLikelihoodAnalysis(xmlmodel,tsmin,expomap=expomap,ltcube=ltcube,emin=flemin,emax=flemax, clul=clul)
   except GtBurstException as gt:
     raise gt
   except:
@@ -145,7 +151,7 @@ def run(**kwargs):
     grb_TS                      = -1
   pass
   
-  if(irf==None):
+  if(irf is None):
     print("\n\nWARNING: could not read IRF from XML file. Be sure you know what you are doing...")
   else:
     dataHandling._writeParamIntoXML(outfilelike,IRF=irf,OBJECT=name,RA=ra,DEC=dec)
@@ -184,7 +190,7 @@ def run(**kwargs):
     pass
   pass
   
-  if(figure!=None and skymap!=None and showmodelimage=='yes'):
+  if(figure is not None and skymap is not None and showmodelimage=='yes'):
     
     #Now produce the binned exposure map (needed in order to display the fitted model as an image)
     modelmapfile              = LATdata.makeModelSkyMap(outfilelike) 
@@ -270,7 +276,7 @@ def run(**kwargs):
     figure.savefig("likelihood_results.png")
   pass
   
-  if(figure!=None):
+  if(figure is not None):
         
     #Assume we have an X server running
     #Now display the results

@@ -5,7 +5,10 @@ import os
 from GtBurst import commandDefiner
 from GtBurst import IRFS
 from GtBurst.GtBurstException import GtBurstException
-import pyfits, numpy
+
+from GtBurst.my_fits_io import pyfits
+
+import numpy
 
 ################ Command definition #############################
 executableName                = "gtdocountsmap"
@@ -143,8 +146,8 @@ def run(**kwargs):
   
   displ                       = None
     
-  if(figure!=None):     
-    if(lastDisplay!=None):
+  if(figure is not None):     
+    if(lastDisplay is not None):
       lastDisplay.unbind()
     pass
     from GtBurst.InteractiveFt1Display import InteractiveFt1Display

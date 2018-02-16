@@ -9,13 +9,18 @@ import re
 import shutil
 import subprocess
 import time
+import numpy
 import xml.etree.ElementTree as ET
 from contextlib import contextmanager
 
 import BinnedAnalysis
 import UnbinnedAnalysis
-import pywcs
+from GtBurst.wcs_wrap import pywcs
 import scipy.optimize
+
+from GtBurst.my_fits_io import pyfits
+
+
 from GtBurst import IRFS
 from GtBurst import LikelihoodComponent
 from GtBurst import angularDistance
@@ -24,6 +29,7 @@ from GtBurst.Configuration import Configuration
 from GtBurst.GtBurstException import GtBurstException
 from GtBurst.commands.gtllebin import gtllebin
 from GtBurst.statMethods import *
+
 
 # Use a backend which does not require a running X server,
 # so commands will be able to run in batch mode
@@ -148,6 +154,21 @@ def convertXML(gtlikexml, obssimxml, emin, emax):
 
 pass
 
+
+def create_from_columns(*args, **kwargs):
+    
+    # Wrapper so that we can use both the new interface
+    # (using from_columns) and the old one (using new_table)
+    
+    try:
+        
+        table = pyfits.BinTableHDU.from_columns(*args, **kwargs)
+    
+    except AttributeError:
+        
+        table = pyfits.new_table(*args, **kwargs)
+    
+    return table
 
 def getLATdataFromDirectory(directory):
     cspecFiles = glob.glob(os.path.join(os.path.abspath(directory), "gll_cspec_tr_*.pha"))
@@ -445,7 +466,7 @@ def _getLatestVersion(filename):
     fileList = glob.glob(os.path.join(directory, "%s_v*.%s" % (rootName, extension)))
     # Get the versions
     matches = map(lambda x: re.search(regExp, x), fileList)
-    matches = filter(lambda x: x != None, matches)
+    matches = filter(lambda x: x  is not None, matches)
 
     if (len(matches) == 0):
         raise RuntimeError("No version found for file of type %s. Does the directory contain data?" % (
@@ -571,9 +592,9 @@ def _makeDatasetsOutOfLATdata(ft1, ft2, grbName, tstart, tstop,
     tstart = float(tstart) + int(float(tstart) < 231292801.000) * triggerTime
     tstop = float(tstop) + int(float(tstop) < 231292801.000) * triggerTime
 
-    if (cspecstart == None):
+    if (cspecstart is None):
         cspecstart = tstart
-    if (cspecstop == None):
+    if (cspecstop is None):
         cspecstop = tstop
 
     cspecstart = float(cspecstart) + int(float(cspecstart) < 231292801.000) * triggerTime
@@ -589,10 +610,10 @@ def _makeDatasetsOutOfLATdata(ft1, ft2, grbName, tstart, tstop,
     emins_column = pyfits.Column(name='E_MIN', format='E', array=emins)
     emaxs_column = pyfits.Column(name='E_MAX', format='E', array=emaxs)
     cols = pyfits.ColDefs([emins_column, emaxs_column])
-    tbhdu = pyfits.new_table(cols)
+    tbhdu =  create_from_columns(cols)
     tbhdu.header.set('EXTNAME', 'EBOUNDS')
     hdu = pyfits.PrimaryHDU(None)
-    fakematrixhdu = pyfits.new_table(pyfits.ColDefs([pyfits.Column(name="FAKE", format='E')]))
+    fakematrixhdu = create_from_columns(pyfits.ColDefs([pyfits.Column(name="FAKE", format='E')]))
     fakematrixhdu.header.set('EXTNAME', "SPECRESP MATRIX")
     eboundsFilename = os.path.join(localRepository, "gll_cspec_tr_bn%s_v00.rsp" % (grbName))
     thdulist = pyfits.HDUList([hdu, tbhdu, fakematrixhdu])
@@ -792,7 +813,7 @@ class LLEData(object):
         # Get informations
         self.__readHeader()
 
-        if (root == None):
+        if (root is None):
             self.rootName = ".".join(os.path.basename(self.eventFile).split(".")[0:-1])
         else:
             self.rootName = str(root)
@@ -1898,7 +1919,7 @@ class LATData(LLEData):
     def doSpectralFiles(self, xmlmodel, numbins=None):
         self.getCuts()
 
-        if (numbins == None):
+        if (numbins is None):
             # Make a PHA1 file
 
             ndecades = numpy.log10(self.emax) - numpy.log10(self.emin)
@@ -1919,12 +1940,12 @@ class LATData(LLEData):
 
         self.getCuts()
 
-        if (tsltcube == None or tsltcube == ''):
+        if (tsltcube is None or tsltcube == ''):
             self.makeLivetimeCube()
         else:
             self.livetimeCube = tsltcube
 
-        if (tsexpomap == None or tsexpomap == ''):
+        if (tsexpomap is None or tsexpomap == ''):
             self.makeExposureMap()
         else:
             self.exposureMap = tsexpomap
@@ -1948,11 +1969,11 @@ class LATData(LLEData):
         self.gttsmap['evfile'] = self.eventFile
         self.gttsmap['scfile'] = self.ft2File
         self.gttsmap['expmap'] = self.exposureMap
-        if (outfile == None):
+        if (outfile is None):
             outfile = "%s_tsmap.fit" % (self.rootName)
         self.gttsmap['outfile'] = outfile
 
-        if (side == None):
+        if (side is None):
             self.gttsmap['nxpix'] = int(math.ceil(2 * float(self.rad) / float(binsz)))
             self.gttsmap['nypix'] = int(math.ceil(2 * float(self.rad) / float(binsz)))
         else:
@@ -1989,6 +2010,7 @@ class LATData(LLEData):
         ltcube = None
         emin = None
         emax = None
+        clul = 0.95
 
         for k, v in kwargs.iteritems():
             if (k == 'expomap'):
@@ -1999,9 +2021,11 @@ class LATData(LLEData):
                 emin = float(v)
             elif (k == 'emax' and v is not None):
                 emax = float(v)
+            elif(k == 'clul' and v is not None):
+                clul = float(v)
         pass
         self.getCuts()
-        if (ltcube == None or ltcube == ''):
+        if (ltcube is None or ltcube == ''):
             self.makeLivetimeCube()
         else:
             if (os.path.exists(ltcube)):
@@ -2012,7 +2036,7 @@ class LATData(LLEData):
 
         self.doSkyCube()
 
-        if (expomap == None or expomap == ''):
+        if (expomap is None or expomap == ''):
             self.makeBinnedExposureMap()
         else:
             if (os.path.exists(expomap)):
@@ -2038,7 +2062,7 @@ class LATData(LLEData):
         if emax is None:
             emax = self.emax
 
-        return self._doLikelihood(xmlmodel, tsmin, emin, emax)
+        return self._doLikelihood(xmlmodel, tsmin, emin, emax, clul)
 
     pass
 
@@ -2049,6 +2073,7 @@ class LATData(LLEData):
         dogtdiffrsp = True
         emin = None
         emax = None
+        clul = 0.95
 
         for k, v in kwargs.iteritems():
             if (k == 'expomap'):
@@ -2061,9 +2086,11 @@ class LATData(LLEData):
                 emin = float(v)
             elif (k == 'emax' and v is not None):
                 emax = float(v)
+            elif(k == 'clul' and v is not None):
+                clul = float(v)
         pass
         self.getCuts()
-        if (ltcube == None or ltcube == ''):
+        if (ltcube is None or ltcube == ''):
             self.makeLivetimeCube()
         else:
             if (os.path.exists(ltcube)):
@@ -2072,7 +2099,7 @@ class LATData(LLEData):
                 raise ValueError("The provided livetime cube (%s) does not exist." % (ltcube))
         pass
 
-        if (expomap == None or expomap == ''):
+        if (expomap is None or expomap == ''):
             self.makeExposureMap()
         else:
             if (os.path.exists(expomap)):
@@ -2098,18 +2125,18 @@ class LATData(LLEData):
         if emax is None:
             emax = self.emax
 
-        return self._doLikelihood(xmlmodel, tsmin, emin, emax)
+        return self._doLikelihood(xmlmodel, tsmin, emin, emax, clul)
 
     pass
 
-    def _doLikelihood(self, xmlmodel, tsmin, emin, emax):
+    def _doLikelihood(self, xmlmodel, tsmin, emin, emax, clul=0.95):
 
         outfilelike = "%s_likeRes.xml" % (self.rootName)
         
         sysErr = None
         statErr = None
         
-        if False:
+        if True:
         
             # Add a Gaussian prior for the GalacticTemplate component (it should be either the
             # isotropic template for Source class or the BKGE)
@@ -2124,8 +2151,8 @@ class LATData(LLEData):
     
             if (len(gal) == 0):
     
-                # No isotropic template
-                print("\nNo isotropic template found in the XML file!")
+                # No Galactic template
+                print("\nNo Galactic template found in the XML file!")
     
             else:
     
@@ -2144,7 +2171,7 @@ class LATData(LLEData):
     
                 else:
     
-                    total_error = 0.1
+                    total_error = 0.15
     
                     print("\nApplying a Gaussian prior with sigma %s on the normalization of the Galactic Template" % (
                     total_error))
@@ -2164,7 +2191,7 @@ class LATData(LLEData):
                 grb_name = s
         pass
 
-        if (grb_name != None):
+        if (grb_name  is not None):
             try:
                 phIndex_beforeFit = self.like1[grb_name]['Spectrum'].getParam("Index").value()
             except:
@@ -2211,7 +2238,7 @@ class LATData(LLEData):
         self.like1.writeXml(outfilelike)
 
         # Now add the errors for the isotropic template, which are removed by writeXml
-        if (sysErr != None and statErr != None):
+        if (sysErr  is not None and statErr  is not None):
             tree = ET.parse(outfilelike)
             root = tree.getroot()
             for source in root.findall('source'):
@@ -2230,7 +2257,7 @@ class LATData(LLEData):
             print("Could not produce likelihood plots")
         pass
 
-        if (grb_name != None):
+        if (grb_name  is not None):
             try:
                 self.like1.plotSource(grb_name, 'red')
             except:
@@ -2253,7 +2280,7 @@ class LATData(LLEData):
         pass
 
         printer = LikelihoodComponent.LikelihoodResultsPrinter(self.like1, emin, emax)
-        detectedSources = printer.niceXMLprint(outfilelike, tsmin, phIndex_beforeFit)
+        detectedSources = printer.niceXMLprint(outfilelike, tsmin, phIndex_beforeFit, clul)
         print("\nLog(likelihood) = %s" % (logL))
 
         self.logL = logL
@@ -2306,7 +2333,7 @@ class LATData(LLEData):
                 err = line.split(":")[1].replace(" ", "")
             pass
         pass
-        if (ra == None or dec == None or err == None):
+        if (ra is None or dec is None or err is None):
             raise GtBurstException(207, "gtfindsrc execution failed. Were the source detected in the likelihood step?")
         pass
         try:
@@ -2740,7 +2767,7 @@ class CspecBackground(object):
         mask = None
         for interval in timeIntervals:
             thisMask = (time >= interval.tstart) & (endtime <= interval.tstop)
-            if (mask == None):
+            if (mask is None):
                 mask = thisMask
             else:
                 mask = (mask | thisMask)
@@ -2779,7 +2806,7 @@ class CspecBackground(object):
         pass
         from matplotlib import pyplot as plt
         # Create figure
-        if (lcFigure == None):
+        if (lcFigure is None):
             lcFigure = plt.figure()
             lcFigure.subplots_adjust(left=0.15, right=0.85, top=0.95, bottom=0.1)
             lcFigure.subplots_adjust(hspace=0)
@@ -3355,7 +3382,7 @@ class Spectra(object):
                                     spectrumType=spectrumType, chanType=chanType,
                                     poisserr=poisserr)
             for j, chan in enumerate(channels[i]):
-                if (stat_err != None):
+                if (stat_err  is not None):
                     thisStatErr = stat_err[i][j]
                     thisSysErr = sys_err[i][j]
                 else:
@@ -3387,7 +3414,7 @@ class Spectra(object):
     Set the Poisson flag to True or to False. If used without arguments,
     take the value of the flag from the first loaded spectrum.
     '''
-        if (value == None):
+        if (value is None):
             # Use the value for the first spectrum
             self.poisserr = self.spectra[0].poisserr
         else:
@@ -3485,7 +3512,7 @@ class Spectra(object):
         vectFormatD = "%sD" % (Nchan)
         vectFormatI = "%sI" % (Nchan)
 
-        if (trigTime != None):
+        if (trigTime  is not None):
             # use trigTime as reference for TSTART
             tstartCol = pyfits.Column(name='TSTART', format='D',
                                       array=numpy.array(self.tstart), unit="s", bzero=trigTime)
@@ -3545,7 +3572,7 @@ class Spectra(object):
                                       backfileCol, respfileCol, ancrfileCol])
         pass
 
-        newTable = pyfits.new_table(coldefs)
+        newTable = create_from_columns(coldefs)
 
         # Add the keywords required by the OGIP standard:
         # Set POISSERR=F because our errors are NOT poissonian!
@@ -3587,7 +3614,7 @@ class Spectra(object):
         pass
         f.close()
 
-        if (self.ebounds != None):
+        if (self.ebounds  is not None):
             pyfits.append(filename, self.ebounds.data, header=self.ebounds.header)
         pass
 
@@ -3595,7 +3622,7 @@ class Spectra(object):
 
     def _writeCSPEC(self, filename, **kwargs):
 
-        if (self.ebounds == None):
+        if (self.ebounds is None):
             print(
             "\n\nWARNING: no EBOUNDS loaded for the current Spectra. The produced CSPEC file will not be readable by Rmfit.")
             print("\n\n")
@@ -3654,7 +3681,7 @@ class Spectra(object):
                                       exposureCol, qualityCol, timeCol, endtimeCol])
         pass
 
-        newTable = pyfits.new_table(coldefs)
+        newTable = create_from_columns(coldefs)
 
         # Add the keywords required by the OGIP standard:
         # Set POISSERR=F because our errors are NOT poissonian!
@@ -3699,7 +3726,7 @@ class Spectra(object):
             primaryExt.header.set(key, value)
         pass
 
-        if (self.ebounds != None):
+        if (self.ebounds  is not None):
             hduList = pyfits.HDUList([primaryExt, self.ebounds, newTable])
             # pyfits.append(filename,self.ebounds.data,header=self.ebounds.header)
         else:
@@ -3796,7 +3823,7 @@ def findMaximumTSmap(tsmap, tsexpomap):
     idxs = numpy.unravel_index(image.argmax(), image.shape)
     # R.A., Dec of the maximum (the +1 is due to the FORTRAN Vs C convention
     ra, dec = wcs.wcs_pix2sky(idxs[1] + 1, idxs[0] + 1, 1)
-    ra, dec = ra[0], dec[0]
+    ra, dec = numpy.array(ra, ndmin=1)[0], numpy.array(dec, ndmin=1)[0]
 
     # Now check that the value in the exposure map for this ra,dec is not too small,
     # nor that this Ra,Dec is at the margin of an excluded zones

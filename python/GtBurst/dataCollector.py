@@ -1,7 +1,11 @@
 #This is a mother class to get GBM and LLE data files (lle, pha and rsp)
 #Author: giacomov@slac.stanford.edu
 
-import os,sys,glob,pyfits,string,errno,shutil
+import os,sys,glob,string,errno,shutil
+
+from GtBurst.my_fits_io import pyfits
+
+
 from GtBurst.GtBurstException import GtBurstException
 import ftplib, socket
 import time
@@ -103,7 +107,7 @@ class dataCollector(object):
       raise GtBurstException(5,"The remote directory %s is not accessible. This kind of data is probably not available for trigger %s, or the server is offline." %(serverAddress+directory,self.trigName))      
     pass
     
-    if(filenames==None):
+    if(filenames is None):
       filenames                 = []
       ftp.retrlines('NLST', filenames.append)
     pass
@@ -111,7 +115,7 @@ class dataCollector(object):
     maxTrials                 = 10
     
     #Build the window for the progress
-    if(self.parent==None):
+    if(self.parent is None):
       #Do not use any graphical output
       root                 = None
       m1                   = None
@@ -133,11 +137,11 @@ class dataCollector(object):
     pass
     
     for i,filename in enumerate(filenames):
-      if(namefilter!=None and filename.find(namefilter)<0):
+      if(namefilter is not None and filename.find(namefilter)<0):
         #Filename does not match, do not download it
         continue
       
-      if(root!=None):
+      if(root is not None):
         m2.set((float(i))/len(filenames))
       skip                    = False
       if(not self.getCSPEC):
@@ -161,7 +165,7 @@ class dataCollector(object):
       else:
         print("Retrieving %s ..." %(filename)),
       
-      if(root!=None):
+      if(root is not None):
         l['text']               = "Downloading %s..." % filename
       
       done                      = False
@@ -207,7 +211,7 @@ class dataCollector(object):
     
     ftp.close()
     print("\nDownload files done!")
-    if(root!=None):
+    if(root is not None):
       m2.set(1.0)
       root.destroy()
     pass

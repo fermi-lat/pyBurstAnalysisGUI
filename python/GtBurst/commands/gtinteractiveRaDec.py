@@ -3,7 +3,9 @@
 import sys
 import os
 from GtBurst import commandDefiner
-import pyfits, numpy
+from GtBurst.my_fits_io import pyfits
+
+import numpy
 
 ################ Command definition #############################
 executableName                = "gtinteractiveRaDec"

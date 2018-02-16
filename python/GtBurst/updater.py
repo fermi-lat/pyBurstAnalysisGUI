@@ -2,7 +2,6 @@
 
 import urllib, os
 from GtBurst.GtBurstException import GtBurstException
-from GtBurst import getDataPath
 import GtBurst
 import md5
 
@@ -11,6 +10,26 @@ import socket
 socket.setdefaulttimeout(60)
 
 remoteUrl = 'https://raw.githubusercontent.com/giacomov/gtburst/master/'
+
+# Depending on whether this is a conda installation or not, we need to figure
+# out the path
+# updater.py is in GtBurst/updater.py
+
+python_path = os.path.sep.join(os.path.abspath(__file__).split(os.path.sep)[:-2])
+
+if os.environ.get("CONDA_PREFIX", None) is not None:
+    
+    # Conda installation
+    data_path = os.path.join(os.environ.get("INST_DIR"), "data", "pyBurstAnalysisGUI")
+
+else:
+    
+    data_path = os.path.abspath(os.path.join(python_path, "..", "data"))
+
+#print("Probed:")
+#print("python path: %s" % python_path)
+#print("data path: %s" % data_path)
+
 
 def update(debug=False):
   
@@ -70,13 +89,33 @@ def update(debug=False):
     raise GtBurstException(1,"Download was redirected. This happens usually when you are behind a proxy." +
                              " If you are behind a proxy, make sure to log in and " +
                              "that executables from the command line can reach the internet directly.")
-   
+  
+  # First check if we need to update the updater script itself
+  
+  self_path = os.path.abspath(__file__)
+  updater_line = filter(lambda x:x.find("GtBurst/updater.py") >= 0, files)[0]
+  
+  remote_self_md5 = updater_line.split()[0]
+  local_self_md5 = md5.md5(open(self_path, 'rb').read()).hexdigest()
+  
+  if remote_self_md5 != local_self_md5:
+      
+      # Need to update the updater
+      downloadFile(updater_line.split()[-1].replace('*',''), self_path)
+      
+      print("Bootstrapping new updater...")
+      
+      # Execute the new copy of myself :-)
+      os.system("python %s" % self_path)
+      
+      print("done")
+      
+      return 999
+  
   #Get the path of the gtburst installation
   path                      = GtBurst.__file__
   installationPath          = os.path.join(os.path.sep.join(path.split(os.path.sep)[0:-3]))
-  
-  dataPath                  = getDataPath.getDataPath()
-  
+    
   nUpdates                  = 0
   for ff in files:
     atoms                     = ff.split()
@@ -95,12 +134,12 @@ def update(debug=False):
       if(pathname.find("data")==0):
         
         #This is a data file
-        localPath             = os.path.join(dataPath,pathnameThisSys.replace("data%s" % (os.path.sep),""))
+        localPath             = os.path.join(data_path, pathnameThisSys.replace("data%s" % (os.path.sep),""))
       
       else:
       
         #This is some other file
-        localPath             = os.path.join(installationPath,pathnameThisSys)
+        localPath             = os.path.join(python_path, pathnameThisSys.replace("python%s" % (os.path.sep), ""))
       
       pass
       
@@ -143,3 +182,6 @@ def downloadFile(remotepathname,localpathname):
     raise GtBurstException(1,"Problems with the download. Check your connection, and that you can reach %s, then retry" %(remoteUrl))
   pass
   
+if __name__ == "__main__":
+    
+    update()

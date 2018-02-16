@@ -3,7 +3,9 @@
 from GtBurst import dataHandling
 from GtBurst import bkge
 import sys, copy
-import os, pyfits, numpy
+from GtBurst.my_fits_io import pyfits
+
+import os, numpy
 from GtBurst import commandDefiner
 from GtBurst import LikelihoodComponent
 from GtBurst import dataHandling
@@ -44,8 +46,8 @@ This will turn in a big speed improvement in the likelihood
 analysis.\n
 "complete" = include all FGL sources in or around ROI''',
                                            commandDefiner.OPTIONAL,
-                                         'fast',
-                                         possiblevalues=['fast','complete'])
+                                         'complete',
+                                         possiblevalues=['complete','fast'])
 
 
 thisCommand.addParameter("ft2file","Spacecraft file (FT2)",commandDefiner.OPTIONAL,partype=commandDefiner.DATASETFILE,extension="fits")
@@ -159,7 +161,7 @@ def run(**kwargs):
   modelsToUse                   = [LikelihoodComponent.PointSource(ra,dec,triggername,sourcemodel)]
   if(particlemodel!='none'):
     if(particlemodel=='bkge'):
-      if(ft2file==None or ft2file==''):
+      if(ft2file is None or ft2file==''):
         raise ValueError("If you want to use the BKGE, you have to provide an FT2 file!")
       
       modelsToUse.append(LikelihoodComponent.BKGETemplate(filteredeventfile,

@@ -5,7 +5,8 @@ import warnings
 import tempfile
 import shutil
 
-import pyfits
+from GtBurst.my_fits_io import pyfits
+
 import numpy as np
 
 from .logger import logger

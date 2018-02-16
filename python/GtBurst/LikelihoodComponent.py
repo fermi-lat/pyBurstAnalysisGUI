@@ -35,7 +35,7 @@ def findGalacticTemplate(irfname, ra, dec, rad, cutout_name=None):
     irf = IRFS.IRFS[irfname]
         
     templ = findTemplate(irf.galacticTemplate)
-    if (templ == None):
+    if (templ  is None):
         raise GtBurstException.GtBurstException(61,
                                                 "You don't have a Galactic template for IRF %s. Cannot continue." % (
                                                 irfname))
@@ -69,7 +69,7 @@ def findIsotropicTemplate(irfname):
         templ = findTemplate(irf.isotropicTemplate)
     pass
 
-    if (templ == None):
+    if (templ  is None):
         raise GtBurstException.GtBurstException(61,
                                                 "You don't have an Isotropic template for IRF %s. Cannot continue." % (
                                                 irfname))
@@ -86,22 +86,22 @@ def findTemplate(options):
     foundTemplate = None
     envvar = os.environ.get("FERMI_DIR")
     publicTools = True
-    if (envvar == None):
+    if (envvar  is None):
         # This is for versions of ST internal to the collaboration
         envvar = os.environ.get("GLAST_EXT")
         publicTools = False
-        if (envvar == None):
+        if (envvar  is None):
             raise RuntimeError(
                 "Fermi Science tools are not properly configured. No FERMI_DIR nor GLAST_EXT variables are set. Cannot continue.")
         pass
     pass
 
-    if (os.environ.get('GTBURST_TEMPLATE_PATH') == None):
+    if (os.environ.get('GTBURST_TEMPLATE_PATH')  is None):
         # This is normally the case
         if (publicTools):
             path = os.path.abspath(os.path.expanduser(os.path.join(envvar, 'refdata', 'fermi', 'galdiffuse')))
         else:
-            if (os.environ.get('DIFFUSE_VER') == None):
+            if (os.environ.get('DIFFUSE_VER')  is None):
                 ver = 'v2r0'
             else:
                 ver = os.environ.get('DIFFUSE_VER')
@@ -173,7 +173,7 @@ def IsotropicTemplateFunc(irf):
 
     spectrum = '''
    <spectrum file="%s" type="FileFunction">
-      <parameter free="1" max="1.5" min="0.5" name="Normalization" scale="1" value="1" />
+      <parameter free="1" max="10.0" min="0.1" name="Normalization" scale="1" value="1" />
    </spectrum>
     ''' % (findIsotropicTemplate(irf))
 
@@ -599,7 +599,7 @@ class LikelihoodResultsPrinter(object):
 
     pass
 
-    def niceXMLprint(self, inputxmlmodel, tsmin=20, phIndexForUL=-2.05):
+    def niceXMLprint(self, inputxmlmodel, tsmin=20, phIndexForUL=-2.05, clul=0.95):
         tree = ET.parse(inputxmlmodel)
         root = tree.getroot()
 
@@ -670,15 +670,21 @@ class LikelihoodResultsPrinter(object):
                     # Upper limit for point sources not in the 2FGL (i.e., the GRB)
                     # Fixing the photon index to -2
                     import UpperLimits
-
+                    
+                    emin_erg = self.emin * MeVtoErg
+                    emax_erg = self.emax * MeVtoErg
+                    
                     if (phIndexForUL != -2):
+                    
                         index = phIndexForUL
                         conv = (1. + index) / (2.0 + index) * (
-                        pow(self.emax, index + 2) - pow(self.emin, index + 2)) / (
-                               pow(self.emax, index + 1) - pow(self.emin, index + 1))
+                        pow(emax_erg, index + 2) - pow(emin_erg, index + 2)) / (
+                               pow(emax_erg, index + 1) - pow(emin_erg, index + 1))
                     else:
+                    
                         index = -2.0
-                        conv = (self.emin) * (self.emax) / (self.emax - self.emin) * numpy.log(self.emax / self.emin)
+                        conv = (emin_erg) * (emax_erg) / (emax_erg - emin_erg) * numpy.log(emax_erg / emin_erg)
+                    
                     self.likelihoodObj[sourceName].src.spectrum().parameter('Index').setValue(index)
                     self.likelihoodObj[sourceName].src.spectrum().parameter('Index').setFree(0)
 
@@ -687,9 +693,9 @@ class LikelihoodResultsPrinter(object):
                     self.likelihoodObj.fit()
 
                     ulc = UpperLimits.UpperLimits(self.likelihoodObj)
-                    ul, integr = ulc[sourceName].bayesianUL(emin=self.emin, emax=self.emax, cl=0.95)
+                    ul, integr = ulc[sourceName].bayesianUL(emin=self.emin, emax=self.emax, cl=clul)
                     ule = ul * conv
-                    flux = "< %8.3g" % (ule * MeVtoErg)
+                    flux = "< %8.3g" % (ule)
                     fluxError = 'n.a.'
                     phflux = "< %8.3g" % (ul)
                     phfluxError = 'n.a.'
@@ -762,8 +768,8 @@ class LikelihoodResultsPrinter(object):
             append("*** plus %s FGL sources with TS<1 (not printed to save space)" % (nNonPrinted))
         append(
             "*** All fluxes and upper limits have been computed in the %s - %s energy range." % (self.emin, self.emax))
-        append("*** Upper limits (if any) are computed assuming a photon index of %3.1f, with the 95 %s c.l." % (
-        phIndexForUL, '%'))
+        append("*** Upper limits (if any) are computed assuming a photon index of %3.1f, with the %s %s c.l." % (
+        phIndexForUL, clul * 100, '%'))
 
         print("\n".join(resultsStrings))
 

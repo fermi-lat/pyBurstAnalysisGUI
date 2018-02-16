@@ -3,7 +3,9 @@
 from multiprocessing import Pool
 import os
 import subprocess
-import pyfits
+
+from GtBurst.my_fits_io import pyfits
+
 import sys
 import pickle
 import argparse

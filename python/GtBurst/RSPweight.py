@@ -1,8 +1,11 @@
-import pyfits
+from GtBurst.my_fits_io import pyfits
+
 import sys
 import os, glob
 import shlex, subprocess, shutil
 import numpy
+
+from GtBurst.dataHandling import create_from_columns
 
 #The RSP2 matrix for the GBM are computed by interpolating a grid of
 #responses containing Montecarlo-generated rsp for different position of
@@ -524,7 +527,7 @@ def fixMatrixHDU(matrixHDU):
                                  col.start,col.dim,matrixHDU.data.field(col.name)))
   pass
 
-  newtable                    = pyfits.new_table(newcols,header=matrixHDU.header)
+  newtable                    = create_from_columns(newcols,header=matrixHDU.header)
   return newtable
 pass
 
