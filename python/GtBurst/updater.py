@@ -106,8 +106,7 @@ def update(debug=False):
       print("Bootstrapping new updater...")
       
       # Execute the new copy of myself :-)
-      # But first clean up the old *.pyc
-      os.remove(self_path+"c")
+      import pdb;pdb.set_trace()
       subprocess.check_call("python %s" % self_path, shell=True)
       
       print("done")
