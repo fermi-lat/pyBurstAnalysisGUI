@@ -106,8 +106,12 @@ def update(debug=False):
       print("Bootstrapping new updater...")
       
       # Execute the new copy of myself :-)
+      
       # But first clean up the old *.pyc
-      os.remove(os.path.splitext(self_path)[0]+".pyc")
+      pycfile = os.path.splitext(self_path)[0]+".pyc"
+      if os.path.exists(pycfile):
+          os.remove(pycfile)
+          
       subprocess.check_call("python %s" % self_path, shell=True)
       
       print("done")
