@@ -109,10 +109,11 @@ def update(debug=False):
       
       # But first clean up the old *.pyc
       pycfile = os.path.splitext(self_path)[0]+".pyc"
+      pyfile = os.path.splitext(self_path)[0]+".py"
       if os.path.exists(pycfile):
           os.remove(pycfile)
           
-      subprocess.check_call("python %s" % self_path, shell=True)
+      subprocess.check_call("python %s" % pyfile, shell=True)
       
       print("done")
       
