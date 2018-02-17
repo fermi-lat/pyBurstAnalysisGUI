@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import urllib, os
+import urllib, os, subprocess
 from GtBurst.GtBurstException import GtBurstException
 import GtBurst
 import md5
@@ -106,7 +106,7 @@ def update(debug=False):
       print("Bootstrapping new updater...")
       
       # Execute the new copy of myself :-)
-      os.system("python %s" % self_path)
+      subprocess.check_call("python %s" % self_path, shell=True)
       
       print("done")
       
