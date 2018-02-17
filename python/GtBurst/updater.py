@@ -97,9 +97,7 @@ def update(debug=False):
   
   remote_self_md5 = updater_line.split()[0]
   local_self_md5 = md5.md5(open(self_path, 'rb').read()).hexdigest()
-  
-  import pdb;pdb.set_trace()
-  
+    
   if remote_self_md5 != local_self_md5:
       
       # Need to update the updater
