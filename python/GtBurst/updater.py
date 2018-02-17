@@ -92,7 +92,7 @@ def update(debug=False):
   
   # First check if we need to update the updater script itself
   
-  self_path = os.path.abspath(__file__)
+  self_path = os.path.splitext(os.path.abspath(__file__))[0]+".py"
   updater_line = filter(lambda x:x.find("GtBurst/updater.py") >= 0, files)[0]
   
   remote_self_md5 = updater_line.split()[0]
@@ -109,11 +109,11 @@ def update(debug=False):
       
       # But first clean up the old *.pyc
       pycfile = os.path.splitext(self_path)[0]+".pyc"
-      pyfile = os.path.splitext(self_path)[0]+".py"
+
       if os.path.exists(pycfile):
           os.remove(pycfile)
           
-      subprocess.check_call("python %s" % pyfile, shell=True)
+      subprocess.check_call("python %s" % self_path, shell=True)
       
       print("done")
       
