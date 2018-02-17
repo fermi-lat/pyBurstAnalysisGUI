@@ -103,7 +103,7 @@ def update(debug=False):
       # Need to update the updater
       downloadFile(updater_line.split()[-1].replace('*',''), self_path)
       
-      print("Bootstrapping new updater...")
+      print("Bootstrapping and running new updater...")
       
       # Execute the new copy of myself :-)
       # But first clean up the old *.pyc
