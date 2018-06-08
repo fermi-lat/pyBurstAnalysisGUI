@@ -793,16 +793,31 @@ class LLEData(object):
         if (not _fileExists(ft2File)):
             # If these are GBM data files, it's ok!
             # open tteFile
-            f = pyfits.open(self.eventFile)
-            instrument = f[0].header['INSTRUME']
+            # We open in "update" mode because we need to change two keywords
+            # from double floating point to single-precision floating point,
+            # to avoid a bug in gtbin (see issue #1 on github of the evtbin package)
+            
+            with pyfits.open(self.eventFile, mode='update') as f:
+            
+                instrument = f[0].header['INSTRUME']
+                
+                if 'EVENTS' in f:
+                    
+                    # a TTE file
+                    # update deadtime keywords to workaround the gtbin bug
+                    # (see above)
+                    
+                    for key in ['EVT_DEAD', 'EVTDEDHI', 'MJDREFF']:
+                    
+                        if key in f['EVENTS'].header:
+                    
+                            f['EVENTS'].header.set(key, numpy.float32(f['EVENTS'].header[key]))
+            
             if (instrument.upper().find('GBM') >= 0):
                 self.isGBM = True
             else:
-                f.close()
                 raise IOError("File %s does not exist!" % (ft2File))
-            pass
-            f.close()
-        pass
+
 
         if (self.isGBM):
             self.ft2File = 'None'
