@@ -40,7 +40,7 @@ bad741125b99eac68c867864b43b1abb *python/GtBurst/commands/gtllebkgGUI.py
 e8b7102dc2ff59aa5d8b65cccf257b39 *python/GtBurst/commands/gtllesrcbindef.py
 aa0b472f87836e81f88e0c9d6bc44644 *python/GtBurst/commands/__init__.py
 3576f01d94460704cac9f5acfd4ffdfe *python/GtBurst/commands/gtdosimulation.py
-739ca60c0db134f3bab21dfb30e3c647 *python/GtBurst/version.py
+f27c07eac5f23920cb8a36b225e82dfe *python/GtBurst/version.py
 30a8fa18fc8cde59cd514ac1b81d6a6a *python/GtBurst/getGBMfiles.py
 7cd416aee21cd748be0b1b4def884759 *python/GtBurst/dataHandling.py
 f163cb15a10d6fc518c40e0405db1f5c *python/GtBurst/IRFS.py
@@ -94,12 +94,12 @@ e55a353347274a6a765c3aca2f39153d *python/GtBurst/aplpy/my_aplpy.py
 888968e94a3794302b98b6ea5c0a5ccc *python/GtBurst/aplpy/labels.py
 3f3514be397a14630069320195f0640b *python/GtBurst/aplpy/angle_util.py
 74660f405a4e12452584bc7e28836a1d *python/GtBurst/aplpy/slicer.py
-dbafebdcb69b0d87d4d49703370bd42e *python/GtBurst/aplpy/__init__.py
+655d93b1cc12c60d919de8fa342b3976 *python/GtBurst/aplpy/__init__.py
 c5bdd00cd620fece0642f9e99d487ae3 *python/GtBurst/EntryPoint.py
 5b46a42075462845f0c84b2865fe0486 *python/GtBurst/LikelihoodComponent.py
 42d39b87255d5cee75c6e24881091262 *python/GtBurst/Configuration.py
 4c8ae3392072f374a7b0d205e0b72e08 *python/GtBurst/scripts/applyBayesianBlocks.py
-91c29594bc843156c707e612b9ea49d7 *python/GtBurst/scripts/doTimeResolvedLike.py
+8f2dd71b482c76a68777a7da2d31ab4a *python/GtBurst/scripts/doTimeResolvedLike.py
 fc9a726a45d107f1610e33fd3ce8cd6b *python/GtBurst/scripts/rawdata2package.py
 7266d06354ce909e2933e8de88b5b0e8 *python/GtBurst/angularDistance.py
 3b44ab95d5ddf473bb3a6796d620e353 *python/GtBurst/InteractiveFt1Display.py
