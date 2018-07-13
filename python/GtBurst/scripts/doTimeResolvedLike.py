@@ -16,6 +16,189 @@ import collections
 
 import xml.etree.ElementTree as ET
 
+import re
+import copy
+from operator import itemgetter, attrgetter
+import numpy as np
+
+def clean_intervals(tstarts, tstops, gti_starts, gti_stops):
+    
+    gtis = []
+    
+    for t1, t2 in zip(gti_starts, gti_stops):
+        
+        gtis.append(Interval(t1, t2, True))
+    
+    ints = []
+    
+    for t1, t2 in zip(tstarts, tstops):
+        
+        ints.append(Interval(t1, t2, True))
+    
+    cleaned_ints = []
+    
+    for interval in ints:
+        
+        for gti in gtis:
+            
+            if interval.overlaps_with(gti):
+                
+                intersect = interval.intersect(gti)
+                
+                cleaned_ints.append(intersect)
+    
+    new_starts = map(lambda x:x.start, cleaned_ints)
+    new_stops = map(lambda x:x.stop, cleaned_ints)
+    
+    return new_starts, new_stops
+
+
+class IntervalsDoNotOverlap(RuntimeError):
+    pass
+
+
+class IntervalsNotContiguous(RuntimeError):
+    pass
+
+
+class Interval(object):
+    def __init__(self, start, stop, swap_if_inverted=False):
+
+        self._start = float(start)
+        self._stop = float(stop)
+
+        # Note that this allows to have intervals of zero duration
+
+        if self._stop < self._start:
+
+            if swap_if_inverted:
+
+                self._start = stop
+                self._stop = start
+
+            else:
+
+                raise RuntimeError("Invalid time interval! TSTART must be before TSTOP and TSTOP-TSTART >0. "
+                                   "Got tstart = %s and tstop = %s" % (start, stop))
+
+    @property
+    def start(self):
+        return self._start
+
+    @property
+    def stop(self):
+        return self._stop
+
+    @classmethod
+    def new(cls, *args, **kwargs):
+
+        return cls(*args, **kwargs)
+
+    def _get_width(self):
+
+        return self._stop - self._start
+
+    @property
+    def mid_point(self):
+
+        return (self._start + self._stop) / 2.0
+
+    def __repr__(self):
+
+        return " interval %s - %s (width: %s)" % (self.start, self.stop, self._get_width())
+
+    def intersect(self, interval):
+        """
+        Returns a new time interval corresponding to the intersection between this interval and the provided one.
+
+        :param interval: a TimeInterval instance
+        :type interval: Interval
+        :return: new interval covering the intersection
+        :raise IntervalsDoNotOverlap : if the intervals do not overlap
+        """
+
+        if not self.overlaps_with(interval):
+            raise IntervalsDoNotOverlap("Current interval does not overlap with provided interval")
+
+        new_start = max(self._start, interval.start)
+        new_stop = min(self._stop, interval.stop)
+
+        return self.new(new_start, new_stop)
+
+    def merge(self, interval):
+        """
+        Returns a new interval corresponding to the merge of the current and the provided time interval. The intervals
+        must overlap.
+
+        :param interval: a TimeInterval instance
+         :type interval : Interval
+        :return: a new TimeInterval instance
+        """
+
+        if self.overlaps_with(interval):
+
+            new_start = min(self._start, interval.start)
+            new_stop = max(self._stop, interval.stop)
+
+            return self.new(new_start, new_stop)
+
+        else:
+
+            raise IntervalsDoNotOverlap("Could not merge non-overlapping intervals!")
+
+    def overlaps_with(self, interval):
+        """
+        Returns whether the current time interval and the provided one overlap or not
+
+        :param interval: a TimeInterval instance
+        :type interval: Interval
+        :return: True or False
+        """
+
+        if interval.start == self._start or interval.stop == self._stop:
+
+            return True
+
+        elif interval.start > self._start and interval.start < self._stop:
+
+            return True
+
+        elif interval.stop > self._start and interval.stop < self._stop:
+
+            return True
+
+        elif interval.start < self._start and interval.stop > self._stop:
+
+            return True
+
+        else:
+
+            return False
+
+    def to_string(self):
+        """
+        returns a string representation of the time interval that is like the
+        argument of many interval reading funcitons
+
+        :return:
+        """
+
+        return "%f-%f" % (self.start, self.stop)
+
+    def __eq__(self, other):
+
+        if not isinstance(other, Interval):
+
+            # This is needed for things like comparisons to None or other objects.
+            # Of course if the other object is not even a TimeInterval, the two things
+            # cannot be equal
+
+            return False
+
+        else:
+
+            return self.start == other.start and self.stop == other.stop
+
 
 def printCommand(cmdname,targs):
   commandLine = cmdname
@@ -94,11 +277,11 @@ if __name__=="__main__":
   #Determine time intervals
   tstarts                     = numpy.array(map(lambda x:float(x.replace('\\',"")),args.tstarts.split(",")))
   tstops                      = numpy.array(map(lambda x:float(x.replace('\\',"")),args.tstops.split(",")))
-  print("\nMaking likelihood analysis on the following intervals:")
+  print("\nRequested intervals:")
   print("------------------------------------------------------")
   for t1,t2 in zip(tstarts,tstops):
     print("%-20s - %s" %(t1,t2))
-  pass
+  
   
   #Check if data exists, otherwise download them
   try:
@@ -140,27 +323,69 @@ if __name__=="__main__":
   print("%-20s %s" %('Dec.',dec))
   print("%-20s %s" %('Radius',args.roi))
   
+  # Fix the requested time intervals according to the GTIs
+  
+  # First select between the first time and the last time, using the Zenith cut and strategy 
+  # I am going to use
+  #Select data
+  t1 = min(tstarts)
+  t2 = max(tstops)
+  
+  targs                        = {}
+  targs['rad']                 = args.roi
+  targs['eventfile']           = dataset['eventfile']
+  targs['zmax']                = args.zmax
+  targs['thetamax']            = args.thetamax
+  targs['emin']                = args.emin
+  targs['emax']                = args.emax
+  targs['skymap']              = '%s_LAT_skymap_%s-%s.fit' %(args.triggername,t1,t2)
+  targs['rspfile']             = dataset['rspfile']
+  targs['strategy']            = args.strategy
+  targs['ft2file']             = dataset['ft2file']
+  targs['tstart']              = t1
+  targs['tstop']               = t2
+  targs['ra']                  = args.ra
+  targs['dec']                 = args.dec
+  targs['irf']                 = args.irf
+  targs['allowEmpty']          = 'no'
+  
+  printCommand("gtdocountsmap.py",targs)
+  try:
+    _, skymap, _, filteredeventfile, _, _, _, _ = gtdocountsmap.run(**targs)
+  except:
+    raise RuntimeError("Cannot select global time interval")
+      
+  # Now read GTIs
+  gtis = pyfits.getdata(filteredeventfile, 'GTI')
+  trigger_time = dataHandling.getTriggerTime(filteredeventfile)
+  
+  tstarts, tstops = clean_intervals(tstarts, tstops, 
+                                    gtis.field("START") - trigger_time, 
+                                    gtis.field("STOP") - trigger_time)
+  
   results                        = []
   initialWorkdir                 = os.getcwd()
+  
+  print("\nAfter intersecting with GTI these are the intervals:")
+  print("------------------------------------------------------")
+  for t1,t2 in zip(tstarts, tstops):
+    print("%-20s - %s" %(t1,t2))
   
   for i,t1,t2 in zip(range(1,len(tstarts)+1),tstarts,tstops):
     print("\nInterval # %s (%s-%s):" %(i,t1,t2))
     print("-----------------------\n")
-    if(args.irf.lower().find('auto')>=0):
-      if(t2-t1 <= 100.0):
-        irf                      = 'p7rep_transient'
-        particle_model           = 'bkge'        
-      else:
-        irf                      = 'p7rep_source'
-        particle_model           = 'isotr template'
-      pass
-    else:
-      particle_model             = args.particle_model
-      irf                        = args.irf
-    pass
+    
+    particle_model             = args.particle_model
+    irf                        = args.irf
     
     #Create a work dir and move there
     dirname                      = os.path.abspath("interval%s-%s" %(t1,t2))
+    
+    if os.path.exists(dirname):
+        
+        print("%s already exists, skipping" % dirname)
+        
+        continue
     
     try:
       os.makedirs(dirname)
