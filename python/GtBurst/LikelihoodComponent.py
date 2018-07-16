@@ -82,25 +82,36 @@ pass
 
 
 def findTemplate(options):
+
     templates = options.replace(" ", "").split(",")
     foundTemplate = None
     envvar = os.environ.get("FERMI_DIR")
     publicTools = True
+    
     if (envvar  is None):
-        # This is for versions of ST internal to the collaboration
-        envvar = os.environ.get("GLAST_EXT")
-        publicTools = False
-        if (envvar  is None):
-            raise RuntimeError(
-                "Fermi Science tools are not properly configured. No FERMI_DIR nor GLAST_EXT variables are set. Cannot continue.")
-        pass
-    pass
+        
+        # Try the conda version
+        envvar = os.environ.get("INST_DIR")
+        
+        if envvar is None: 
+        
+            # This is for versions of ST internal to the collaboration
+            envvar = os.environ.get("GLAST_EXT")
+            publicTools = False
+            
+            if (envvar  is None):
+                raise RuntimeError("Fermi Science tools are not properly configured. "
+                                   "No FERMI_DIR, INST_DIR nor GLAST_EXT variables are set. Cannot continue.")
 
-    if (os.environ.get('GTBURST_TEMPLATE_PATH')  is None):
-        # This is normally the case
+    if (os.environ.get('GTBURST_TEMPLATE_PATH') is None):
+    
+        # This is normally the case (public and Conda science tools)
         if (publicTools):
+       
             path = os.path.abspath(os.path.expanduser(os.path.join(envvar, 'refdata', 'fermi', 'galdiffuse')))
+       
         else:
+        
             if (os.environ.get('DIFFUSE_VER')  is None):
                 ver = 'v2r0'
             else:
