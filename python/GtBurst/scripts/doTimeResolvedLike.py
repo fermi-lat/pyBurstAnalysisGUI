@@ -11,7 +11,16 @@ from GtBurst.commands import gtdolike
 from GtBurst import dataHandling
 from GtBurst.fast_ts_map import FastTSMap
 import os, subprocess, glob, shutil
-import numpy,pyfits
+import numpy
+
+try:
+    
+    import astropy.io.fits as pyfits
+
+except ImportError:
+    
+    import pyfits
+
 import collections
 
 import xml.etree.ElementTree as ET
