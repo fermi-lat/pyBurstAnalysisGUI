@@ -2239,7 +2239,15 @@ class LATData(LLEData):
                 for par in self.like1.freePars(src_name):
 
                     if par.getName() != self.like1.normPar(src_name).getName():
-                        self.like1[src_name].src.spectrum().parameter(par.getName()).setFree(0)
+                        
+                        # Old version of ST wants 0 as False, new version wants False
+                        try:
+                        
+                            self.like1[src_name].src.spectrum().parameter(par.getName()).setFree(0)
+                        
+                        except TypeError:
+                        
+                            self.like1[src_name].src.spectrum().parameter(par.getName()).setFree(False)
 
             self.like1.syncSrcParams()
 
