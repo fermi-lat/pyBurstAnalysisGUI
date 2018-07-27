@@ -2,10 +2,10 @@
 # astropy.io.fits
 
 try:
-    
-    import pywcs
-    import pyfits
+
+    import astropy.io.fits as pyfits
 
 except:
     
-    import astropy.io.fits as pyfits
+    import pywcs
+    import pyfits
