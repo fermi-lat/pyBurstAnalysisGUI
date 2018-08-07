@@ -1,7 +1,15 @@
 import warnings
 
 import matplotlib.axes as maxes
-from mpl_toolkits.axes_grid import make_axes_locatable
+
+try:
+    
+    from mpl_toolkits.axes_grid1 import make_axes_locatable
+    
+except ImportError:
+    # Old matplotlib
+    from mpl_toolkits.axes_grid import make_axes_locatable
+
 from matplotlib.font_manager import FontProperties
 
 from .decorators import auto_refresh, fixdocstring

@@ -1,7 +1,15 @@
 import warnings
 
-from mpl_toolkits.axes_grid.anchored_artists \
-    import AnchoredEllipse, AnchoredSizeBar
+try:
+
+    from mpl_toolkits.axes_grid1.anchored_artists \
+        import AnchoredEllipse, AnchoredSizeBar
+
+except ImportError:
+
+    # Old matplotlib
+    from mpl_toolkits.axes_grid.anchored_artists \
+        import AnchoredEllipse, AnchoredSizeBar
 
 import numpy as np
 from matplotlib.patches import FancyArrowPatch

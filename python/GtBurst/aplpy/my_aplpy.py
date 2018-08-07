@@ -12,7 +12,14 @@ if version.LooseVersion(matplotlib.__version__) < version.LooseVersion('0.99.0')
     raise Exception("matplotlib 0.99.0 or later is required for APLpy")
 
 import matplotlib.pyplot as mpl
-import mpl_toolkits.axes_grid.parasite_axes as mpltk
+
+try:
+    
+    import mpl_toolkits.axes_grid1.parasite_axes as mpltk
+    
+except ImportError:
+
+    import mpl_toolkits.axes_grid.parasite_axes as mpltk
 
 try:
 
@@ -246,17 +253,34 @@ class FITSFigure(Layers, Regions, Deprecated):
             self._ax1 = mpltk.HostAxes(self._figure, subplot, adjustable='datalim')
         else:
             self._ax1 = mpltk.SubplotHost(self._figure, 1, 1, 1)
-
-        self._ax1.toggle_axisline(False)
-
+        
+        try:
+        
+            self._ax1.toggle_axisline(False)
+        
+        except AttributeError:
+            
+            # New versions do not have toggle_axisline, but it's not needed
+            # anymore
+            pass
+        
         self._figure.add_axes(self._ax1)
 
         # Create second axis instance
         self._ax2 = self._ax1.twin()
         self._ax2.set_frame_on(False)
-
-        self._ax2.toggle_axisline(False)
-
+        
+        
+        try:
+             
+             self._ax2.toggle_axisline(False)
+        
+        except AttributeError:
+             
+            # New versions do not have toggle_axisline, but it's not needed
+            # anymore
+            pass
+        
         # Turn off autoscaling
         self._ax1.set_autoscale_on(False)
         self._ax2.set_autoscale_on(False)

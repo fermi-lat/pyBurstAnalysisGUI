@@ -3,7 +3,14 @@
 import urllib, os, subprocess
 from GtBurst.GtBurstException import GtBurstException
 import GtBurst
-import md5
+
+try:
+    # Getting around deprecation warning
+    import hashlib as md5
+
+except ImportError:
+
+    import md5
 
 #Set a global timeout of 10 seconds for all web connections
 import socket

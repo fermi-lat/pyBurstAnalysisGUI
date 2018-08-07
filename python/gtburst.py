@@ -35,7 +35,20 @@ import matplotlib.pyplot as plt
 
 plt.ion()
 sys.stderr.write(".")
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
+try:
+    
+    # Getting around deprecation warning
+    
+    from matplotlib.backends.backend_tkagg import NavigationToolbar2Tk as NavigationToolbar2TkAgg
+
+except ImportError:
+
+    # Old matplotlib?
+    
+    from matplotlib.backends.backend_tkagg import NavigationToolbar2TkAgg
+
 from matplotlib.figure import Figure
 from matplotlib import image
 from tkSimpleDialog import askfloat
@@ -720,8 +733,15 @@ class GUI(object):
 
         self.canvas.get_tk_widget().pack()
         self.figureFrame.grid(row=0, column=1, rowspan=2, sticky='nsew')
-        self.canvas.show()
-
+        
+        try:
+            
+            self.canvas.draw()
+        
+        except:
+        
+            self.canvas.show()
+        
         # Set up the form for the dataset
         colWidth = 20
 
@@ -1555,8 +1575,8 @@ class GUI(object):
         configureWindow.bottomtext.insert(END, "\n\n")
         configureWindow.bottomtext.image_create(END, image=self.lightbulb)
         configureWindow.bottomtext.insert(END,
-                                          "If you want to restore the original configuration, simply remove the file:\n        %s\n\n" % (
-                                          self.configuration.configurationFile))
+                                          "These values can be changed also by setting the environment "
+                                          "variables GTBURST_DATA, GTBURST_FTP, GTBURST_NCPUS")
         configureWindow.bottomtext.config(state="disabled")
 
         # Read and write a configuration file
@@ -1589,13 +1609,15 @@ class GUI(object):
     pass
 
     def saveConfiguration(self, entries, window):
+        
         for key in entries.keys():
+        
             self.configuration.set(key, entries[key].get())
-        pass
-        self.configuration.save()
-        showinfo("Configuration saved!",
-                 "Configuration saved! If you want to restore the default configuration\nsimply remove the file\n%s" % (
-                 self.configuration.configurationFile), parent=window)
+
+        showinfo("NOTE",
+                 "The configuration will be active for this session only. If you want "
+                 "to override the defaults for all future sessions, set the environment "
+                 "variables GTBURST_DATA, GTBURST_FTP and GTBURST_NCPUS", parent=window)
         window.destroy()
 
     pass
