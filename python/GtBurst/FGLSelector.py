@@ -14,7 +14,14 @@ txtfile = os.path.join(getDataPath(), '3fgl_extendedData.txt')
 if(not os.path.exists(txtfile)):
   raise RuntimeError("You do not have the 3fgl_extendedData.txt file in your data directory!")
 
-data = numpy.recfromtxt(txtfile,delimiter=';',names=True, encoding=None)
+try:
+
+    data = numpy.recfromtxt(txtfile,delimiter=';',names=True, encoding=None)
+
+except TypeError:
+    
+    # Old numpy
+    data = numpy.recfromtxt(txtfile,delimiter=';',names=True)
 
 #Keys in the 3fgl_extendedData are: 'Source_name', 'Variability_index',
 #                                   'ASSOC1','ASSOC2','ASSOC_TEV','CLASS1','Flags'
