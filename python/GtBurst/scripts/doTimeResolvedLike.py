@@ -270,6 +270,8 @@ parser.add_argument('--flemin',help="Lower bound energy for flux/upper limit com
 parser.add_argument('--flemax',help="Upper bound energy for flux/upper limit computation",default=None)
 parser.add_argument('--fgl_mode',help="Set 'complete' to use all FGL sources, set 'fast' to use only bright sources",default='fast')
 parser.add_argument("--tsmap_spec", help="A TS map specification of the type half_size,n_side. For example: '--tsmap_spec 0.5,8' makes a TS map 1 deg x 1 deg with 64 points", default=None)
+parser.add_argument("--filter_GTI", help="Automatically divide time intervals crossing GTIs", default=False, action='store_true')
+
 
 #Main code
 if __name__=="__main__":
@@ -363,22 +365,24 @@ if __name__=="__main__":
     _, skymap, _, filteredeventfile, _, _, _, _ = gtdocountsmap.run(**targs)
   except:
     raise RuntimeError("Cannot select global time interval")
-      
+    
   # Now read GTIs
-  gtis = pyfits.getdata(filteredeventfile, 'GTI')
-  trigger_time = dataHandling.getTriggerTime(filteredeventfile)
+  if args.filter_GTI:
   
-  tstarts, tstops = clean_intervals(tstarts, tstops, 
-                                    gtis.field("START") - trigger_time, 
-                                    gtis.field("STOP") - trigger_time)
+      gtis = pyfits.getdata(filteredeventfile, 'GTI')
+      trigger_time = dataHandling.getTriggerTime(filteredeventfile)
+  
+      tstarts, tstops = clean_intervals(tstarts, tstops, 
+                                        gtis.field("START") - trigger_time, 
+                                        gtis.field("STOP") - trigger_time)
+      
+      print("\nAfter intersecting with GTI these are the intervals:")
+      print("------------------------------------------------------")
+      for t1,t2 in zip(tstarts, tstops):
+        print("%-20s - %s" %(t1,t2))
   
   results                        = []
   initialWorkdir                 = os.getcwd()
-  
-  print("\nAfter intersecting with GTI these are the intervals:")
-  print("------------------------------------------------------")
-  for t1,t2 in zip(tstarts, tstops):
-    print("%-20s - %s" %(t1,t2))
   
   for i,t1,t2 in zip(range(1,len(tstarts)+1),tstarts,tstops):
     print("\nInterval # %s (%s-%s):" %(i,t1,t2))
