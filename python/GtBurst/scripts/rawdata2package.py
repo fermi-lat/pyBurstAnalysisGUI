@@ -26,9 +26,14 @@ if __name__=="__main__":
     ra = sys.argv[5]
     dec = sys.argv[6]
     
+    # Remove the "bn" part from the name, if present
+    if triggername.find("bn")==0:
+        
+        triggername = triggername[2:]
+    
     # Rename ft1 and ft2
-    new_ft1 = 'gll_ft1_tr_bn%s_v00.fit' % triggername
-    new_ft2 = 'gll_ft2_tr_bn%s_v00.fit' % triggername
+    new_ft1 = 'gll_ft1_tr_bn%s_v00.fit' % triggername.replace("bn", "")
+    new_ft2 = 'gll_ft2_tr_bn%s_v00.fit' % triggername.replace("bn", "")
     
     shutil.copy(ft1, new_ft1)
     shutil.copy(ft2, new_ft2)
