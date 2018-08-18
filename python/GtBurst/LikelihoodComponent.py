@@ -697,8 +697,15 @@ class LikelihoodResultsPrinter(object):
                         conv = (emin_erg) * (emax_erg) / (emax_erg - emin_erg) * numpy.log(emax_erg / emin_erg)
                     
                     self.likelihoodObj[sourceName].src.spectrum().parameter('Index').setValue(index)
-                    self.likelihoodObj[sourceName].src.spectrum().parameter('Index').setFree(0)
-
+                    
+                    try:
+                    
+                        self.likelihoodObj[sourceName].src.spectrum().parameter('Index').setFree(0)
+                    
+                    except TypeError:
+                        
+                        self.likelihoodObj[sourceName].src.spectrum().parameter('Index').setFree(False)
+                    
                     # New for ST-10-01-01: we have to do the fit again otherwise the photon index will not really be fixed.
 
                     self.likelihoodObj.fit()
