@@ -333,42 +333,41 @@ if __name__=="__main__":
   print("%-20s %s" %('R.A.',ra))
   print("%-20s %s" %('Dec.',dec))
   print("%-20s %s" %('Radius',args.roi))
-  
-  # Fix the requested time intervals according to the GTIs
-  
-  # First select between the first time and the last time, using the Zenith cut and strategy 
-  # I am going to use
-  #Select data
-  t1 = min(tstarts)
-  t2 = max(tstops)
-  
-  targs                        = {}
-  targs['rad']                 = args.roi
-  targs['eventfile']           = dataset['eventfile']
-  targs['zmax']                = args.zmax
-  targs['thetamax']            = args.thetamax
-  targs['emin']                = args.emin
-  targs['emax']                = args.emax
-  targs['skymap']              = '%s_LAT_skymap_%s-%s.fit' %(args.triggername,t1,t2)
-  targs['rspfile']             = dataset['rspfile']
-  targs['strategy']            = args.strategy
-  targs['ft2file']             = dataset['ft2file']
-  targs['tstart']              = t1
-  targs['tstop']               = t2
-  targs['ra']                  = args.ra
-  targs['dec']                 = args.dec
-  targs['irf']                 = args.irf
-  targs['allowEmpty']          = 'no'
-  
-  printCommand("gtdocountsmap.py",targs)
-  try:
-    _, skymap, _, filteredeventfile, _, _, _, _ = gtdocountsmap.run(**targs)
-  except:
-    raise RuntimeError("Cannot select global time interval")
     
-  # Now read GTIs
   if args.filter_GTI:
-  
+      
+      # Fix the requested time intervals according to the GTIs
+      
+      # First select between the first time and the last time, using the Zenith cut and strategy 
+      # I am going to use
+      #Select data
+      t1 = min(tstarts)
+      t2 = max(tstops)
+      
+      targs                        = {}
+      targs['rad']                 = args.roi
+      targs['eventfile']           = dataset['eventfile']
+      targs['zmax']                = args.zmax
+      targs['thetamax']            = args.thetamax
+      targs['emin']                = args.emin
+      targs['emax']                = args.emax
+      targs['skymap']              = '%s_LAT_skymap_%s-%s.fit' %(args.triggername,t1,t2)
+      targs['rspfile']             = dataset['rspfile']
+      targs['strategy']            = args.strategy
+      targs['ft2file']             = dataset['ft2file']
+      targs['tstart']              = t1
+      targs['tstop']               = t2
+      targs['ra']                  = args.ra
+      targs['dec']                 = args.dec
+      targs['irf']                 = args.irf
+      targs['allowEmpty']          = 'no'
+      
+      printCommand("gtdocountsmap.py",targs)
+      try:
+        _, skymap, _, filteredeventfile, _, _, _, _ = gtdocountsmap.run(**targs)
+      except:
+        raise RuntimeError("Cannot select global time interval")
+      
       gtis = pyfits.getdata(filteredeventfile, 'GTI')
       trigger_time = dataHandling.getTriggerTime(filteredeventfile)
   
