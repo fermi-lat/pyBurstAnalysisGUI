@@ -1,5 +1,17 @@
 import numpy as np
-import emcee
+
+try:
+
+    import emcee
+
+except ImportError:
+
+    has_emcee = False
+
+else:
+
+    has_emcee = True
+
 import os
 import xml.etree.ElementTree as ET
 import matplotlib.pyplot as plt
@@ -8,6 +20,10 @@ import matplotlib.pyplot as plt
 class LikelihoodProfiler(object):
 
     def __init__(self, likelihood_object, best_fit_xml):
+
+        if not has_emcee:
+
+            raise ImportError("In order to use the likelihood profiler you need to have emcee installed")
 
         self._like = likelihood_object
         self._best_fit_xml = os.path.expandvars(os.path.expanduser(best_fit_xml))
