@@ -40,7 +40,7 @@ bad741125b99eac68c867864b43b1abb *python/GtBurst/commands/gtllebkgGUI.py
 e8b7102dc2ff59aa5d8b65cccf257b39 *python/GtBurst/commands/gtllesrcbindef.py
 aa0b472f87836e81f88e0c9d6bc44644 *python/GtBurst/commands/__init__.py
 3576f01d94460704cac9f5acfd4ffdfe *python/GtBurst/commands/gtdosimulation.py
-c71d2ad2e27f464865cf566053f78350 *python/GtBurst/version.py
+a0dd79f373d45c73e5b3b91c17ee8015 *python/GtBurst/version.py
 30a8fa18fc8cde59cd514ac1b81d6a6a *python/GtBurst/getGBMfiles.py
 d7d65ff44703e2bc96f99a221e7366b0 *python/GtBurst/dataHandling.py
 f163cb15a10d6fc518c40e0405db1f5c *python/GtBurst/IRFS.py
@@ -66,7 +66,7 @@ cef48ff8a4236cd2d9ceb5ecd897ebde *python/GtBurst/bkge.py
 626131de137389433988bbc763f4e3eb *python/GtBurst/commandDefiner.py
 f18c137e3a6cd73fc8fef1d6d8b34f83 *python/GtBurst/TransientSource.py
 aa0b472f87836e81f88e0c9d6bc44644 *python/GtBurst/tasks/__init__.py
-0d153d280c854a362393e5f68dfe6e93 *python/GtBurst/likelihood_profile_writer.py
+94572aeb6410ac929c2bc23d1476e890 *python/GtBurst/likelihood_profile_writer.py
 a8a68c4fa267c8cfe3653e51840d92c9 *python/GtBurst/downloadCallback.py
 93ae44353d8c922ca3fb243bbfa7ac6c *python/GtBurst/fontDefinitions.py
 57fad2f026cb50f5b948dcfd2efa6a9b *python/GtBurst/aplpy/contour_util.py
@@ -101,7 +101,7 @@ c5bdd00cd620fece0642f9e99d487ae3 *python/GtBurst/EntryPoint.py
 07b667aa19b44ac17e3ae89bf73dd678 *python/GtBurst/Configuration.py
 4c8ae3392072f374a7b0d205e0b72e08 *python/GtBurst/scripts/applyBayesianBlocks.py
 62b0437ec0dfaa6b6ee1c22eb6615764 *python/GtBurst/scripts/doTimeResolvedLike.py
-1b60beb69968af0627c15ce1c705a5e4 *python/GtBurst/scripts/like_profile_fit.py
+1ab00227de6dc64ffcb6bb2325120862 *python/GtBurst/scripts/like_profile_fit.py
 686cfabaa9dc5610ccdfb9a995e91b68 *python/GtBurst/scripts/rawdata2package.py
 7266d06354ce909e2933e8de88b5b0e8 *python/GtBurst/angularDistance.py
 3b44ab95d5ddf473bb3a6796d620e353 *python/GtBurst/InteractiveFt1Display.py
