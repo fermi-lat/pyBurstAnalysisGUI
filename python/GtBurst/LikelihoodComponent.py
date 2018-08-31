@@ -265,8 +265,8 @@ class PointSource(GenericSource):
 
         if (spectrumFunction.lower() == 'powerlaw2'):
             # Some pre-defined values for GRBs
-            self.source.spectrum.Integral.max = 1e5
-            self.source.spectrum.Integral.min = 1e-6
+            self.source.spectrum.Integral.max = 1000.0
+            self.source.spectrum.Integral.min = 1e-5
             self.source.spectrum.Integral.scale = 1e-03
             self.source.spectrum.Integral.value = 0.01
 
