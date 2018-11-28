@@ -40,10 +40,10 @@ bad741125b99eac68c867864b43b1abb *python/GtBurst/commands/gtllebkgGUI.py
 e8b7102dc2ff59aa5d8b65cccf257b39 *python/GtBurst/commands/gtllesrcbindef.py
 aa0b472f87836e81f88e0c9d6bc44644 *python/GtBurst/commands/__init__.py
 3576f01d94460704cac9f5acfd4ffdfe *python/GtBurst/commands/gtdosimulation.py
-136a379bf1ec247aaeafbd93e0a054db *python/GtBurst/version.py
+3c933c10602325c5120dd0f0106152b1 *python/GtBurst/version.py
 30a8fa18fc8cde59cd514ac1b81d6a6a *python/GtBurst/getGBMfiles.py
 d7d65ff44703e2bc96f99a221e7366b0 *python/GtBurst/dataHandling.py
-f163cb15a10d6fc518c40e0405db1f5c *python/GtBurst/IRFS.py
+8918fd50ab04b990774291d30cf7c5e7 *python/GtBurst/IRFS.py
 3ccefe02c3ccb188875514155122f74b *python/GtBurst/my_fits_io.py
 9dfe6af4eaa036b61f4f41e56baade1c *python/GtBurst/dataCollector.py
 9c335fcf1be2e26f498702a742aca5d0 *python/GtBurst/cutout.py
@@ -100,7 +100,7 @@ c5bdd00cd620fece0642f9e99d487ae3 *python/GtBurst/EntryPoint.py
 76634de2a556fc161e6a374e2e77e121 *python/GtBurst/LikelihoodComponent.py
 07b667aa19b44ac17e3ae89bf73dd678 *python/GtBurst/Configuration.py
 4c8ae3392072f374a7b0d205e0b72e08 *python/GtBurst/scripts/applyBayesianBlocks.py
-62b0437ec0dfaa6b6ee1c22eb6615764 *python/GtBurst/scripts/doTimeResolvedLike.py
+620a667958033e434b51651d5a02534f *python/GtBurst/scripts/doTimeResolvedLike.py
 09bb4152e9f5be0b140b1221ea76b3d8 *python/GtBurst/scripts/like_profile_fit.py
 686cfabaa9dc5610ccdfb9a995e91b68 *python/GtBurst/scripts/rawdata2package.py
 7266d06354ce909e2933e8de88b5b0e8 *python/GtBurst/angularDistance.py
