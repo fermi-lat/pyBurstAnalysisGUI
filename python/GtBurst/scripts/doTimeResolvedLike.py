@@ -236,130 +236,131 @@ def writeSourceListToFile(sources, outfile):
 pass
 
 
-def get_likelihood_profile(like, norm):
-    # Get the current settings of the parameter so we can restore it later
-    old_scale = float(norm.attrib['scale'])
-    old_value = float(norm.attrib['value'])
-    old_min = norm.attrib['min']
-    old_max = norm.attrib['max']
-
-    # Temporarily set the scale to 1.0 so we can modify boundaries and so on without incurring in errors
-    like['GRB'].src.spectrum().parameter(norm.attrib['name']).setScale(1.0)
-
-    best_fit_value = float(old_value) * old_scale
-
-    min_value = best_fit_value / 100.0
-    max_value = best_fit_value * 100.0
-
-    min_log_value = np.log10(min_value)
-    max_log_value = np.log10(max_value)
-
-    # Make sure we are at the best fit
-
-    l0 = like.fit(verbosity=0, covar=False)
-
-    # Store best fit parameters
-    best_fit_values = []
-
-    for parameter in like.model.params:
-
-        best_fit_values.append(parameter.getValue())
-
-    def lnprob(log_norm):
-
-        if log_norm < min_log_value or log_norm > max_log_value:
-
-            # Outside of boundaries
-
-            return -np.inf
-
-        else:
-
-            # Restore best fit parameters first
-            for i, parameter in enumerate(like.model.params):
-
-                if parameter.getName() == norm.attrib['name']:
-
-                    # This will be set below
-                    continue
-
-                parameter.setValue(best_fit_values[i])
-
-            like['GRB'].src.spectrum().parameter(norm.attrib['name']).setFree(True)
-
-            like['GRB'].src.spectrum().parameter(norm.attrib['name']).setValue(float(10**log_norm))
-
-            like['GRB'].src.spectrum().parameter(norm.attrib['name']).setFree(False)
-
-            like.syncSrcParams()
-
-            log_like = -like.fit(verbosity=0, covar=False)
-
-            like['GRB'].src.spectrum().parameter(norm.attrib['name']).setFree(True)
-
-            return log_like
-
-    # Make sure we start from the best fit, and with the appropriate boundaries
-
-    # Temporarily make the boundaries very large, so the next assignment will not fail
-    like['GRB'].src.spectrum().parameter(norm.attrib['name']).setBounds(0.0,
-                                                                        1e9)
-
-    like['GRB'].src.spectrum().parameter(norm.attrib['name']).setValue(best_fit_value)
-
-    # Restore the boundaries
-    like['GRB'].src.spectrum().parameter(norm.attrib['name']).setBounds(min_value,
-                                                                        max_value)
-
-    n_walkers = 30
-
-    # Start all the walkers close to the best fit value
-    p0 = [[best_fit_value + np.random.uniform(-best_fit_value / 50.0, best_fit_value / 50.0)] for i in range(n_walkers)]
-
-    sampler = emcee.EnsembleSampler(n_walkers, 1, lnprob)
-
-    _ = sampler.run_mcmc(np.log10(p0), 100)
-
-    log_norm_values = sampler.flatchain
-    log_like_values = sampler.flatlnprobability
-
-    # Remove infinite values
-    idx = np.isfinite(log_like_values)
-    log_like_values = log_like_values[idx]
-    norm_values = 10**log_norm_values[idx].flatten()
-
-    # Now do a sampling from the minimum to the maximum with 1000 steps (to make sure that we cover also far away
-    # from the minimum)
-    grid = np.logspace(np.log10(min_value), np.log10(max_value), 1000)[1:-1]
-
-    grid_log_like_values = map(lnprob, np.log10(grid))
-
-    log_like_values = np.append(log_like_values, grid_log_like_values)
-    norm_values = np.append(norm_values, grid)
-
-    print("Minimum of -log(like): %s" % (log_like_values.max() * -1))
-    print("Maximum of -log(like): %s" % (log_like_values.min() * -1))
-
-    # Now sort by value
-    idx = np.argsort(norm_values)
-    log_like_values = log_like_values[idx]
-    norm_values = norm_values[idx]
-
-    # Make unique, in the very unlikely scenario where the emcee run and the regular grid provided
-    # some duplicated values
-    norm_values_u, idx = np.unique(norm_values, return_index=True)
-    log_like_values_u = log_like_values[idx]
-
-    # Restore parameter to its original state
-
-    like['GRB'].src.spectrum().parameter(norm.attrib['name']).setFree(True)
-    like['GRB'].src.spectrum().parameter(norm.attrib['name']).setBounds(0, 1e9)
-    like['GRB'].src.spectrum().parameter(norm.attrib['name']).setScale(old_scale)
-    like['GRB'].src.spectrum().parameter(norm.attrib['name']).setValue(old_value)
-    like['GRB'].src.spectrum().parameter(norm.attrib['name']).setBounds(float(old_min), float(old_max))
-
-
-    return -log_like_values_u, norm_values_u
+# def get_likelihood_profile(like, norm):
+#
+#     # Get the current settings of the parameter so we can restore it later
+#     old_scale = float(norm.attrib['scale'])
+#     old_value = float(norm.attrib['value'])
+#     old_min = norm.attrib['min']
+#     old_max = norm.attrib['max']
+#
+#     # Temporarily set the scale to 1.0 so we can modify boundaries and so on without incurring in errors
+#     like['GRB'].src.spectrum().parameter(norm.attrib['name']).setScale(1.0)
+#
+#     best_fit_value = float(old_value) * old_scale
+#
+#     min_value = best_fit_value / 100.0
+#     max_value = best_fit_value * 100.0
+#
+#     min_log_value = np.log10(min_value)
+#     max_log_value = np.log10(max_value)
+#
+#     # Make sure we are at the best fit
+#
+#     l0 = like.fit(verbosity=0, covar=False)
+#
+#     # Store best fit parameters
+#     best_fit_values = []
+#
+#     for parameter in like.model.params:
+#
+#         best_fit_values.append(parameter.getValue())
+#
+#     def lnprob(log_norm):
+#
+#         if log_norm < min_log_value or log_norm > max_log_value:
+#
+#             # Outside of boundaries
+#
+#             return -np.inf
+#
+#         else:
+#
+#             # Restore best fit parameters first
+#             for i, parameter in enumerate(like.model.params):
+#
+#                 if parameter.getName() == norm.attrib['name']:
+#
+#                     # This will be set below
+#                     continue
+#
+#                 parameter.setValue(best_fit_values[i])
+#
+#             like['GRB'].src.spectrum().parameter(norm.attrib['name']).setFree(True)
+#
+#             like['GRB'].src.spectrum().parameter(norm.attrib['name']).setValue(float(10**log_norm))
+#
+#             like['GRB'].src.spectrum().parameter(norm.attrib['name']).setFree(False)
+#
+#             like.syncSrcParams()
+#
+#             log_like = -like.fit(verbosity=0, covar=False)
+#
+#             like['GRB'].src.spectrum().parameter(norm.attrib['name']).setFree(True)
+#
+#             return log_like
+#
+#     # Make sure we start from the best fit, and with the appropriate boundaries
+#
+#     # Temporarily make the boundaries very large, so the next assignment will not fail
+#     like['GRB'].src.spectrum().parameter(norm.attrib['name']).setBounds(0.0,
+#                                                                         1e9)
+#
+#     like['GRB'].src.spectrum().parameter(norm.attrib['name']).setValue(best_fit_value)
+#
+#     # Restore the boundaries
+#     like['GRB'].src.spectrum().parameter(norm.attrib['name']).setBounds(min_value,
+#                                                                         max_value)
+#
+#     n_walkers = 30
+#
+#     # Start all the walkers close to the best fit value
+#     p0 = [[best_fit_value + np.random.uniform(-best_fit_value / 50.0, best_fit_value / 50.0)] for i in range(n_walkers)]
+#
+#     sampler = emcee.EnsembleSampler(n_walkers, 1, lnprob)
+#
+#     _ = sampler.run_mcmc(np.log10(p0), 100)
+#
+#     log_norm_values = sampler.flatchain
+#     log_like_values = sampler.flatlnprobability
+#
+#     # Remove infinite values
+#     idx = np.isfinite(log_like_values)
+#     log_like_values = log_like_values[idx]
+#     norm_values = 10**log_norm_values[idx].flatten()
+#
+#     # Now do a sampling from the minimum to the maximum with 1000 steps (to make sure that we cover also far away
+#     # from the minimum)
+#     grid = np.logspace(np.log10(min_value), np.log10(max_value), 1000)[1:-1]
+#
+#     grid_log_like_values = map(lnprob, np.log10(grid))
+#
+#     log_like_values = np.append(log_like_values, grid_log_like_values)
+#     norm_values = np.append(norm_values, grid)
+#
+#     print("Minimum of -log(like): %s" % (log_like_values.max() * -1))
+#     print("Maximum of -log(like): %s" % (log_like_values.min() * -1))
+#
+#     # Now sort by value
+#     idx = np.argsort(norm_values)
+#     log_like_values = log_like_values[idx]
+#     norm_values = norm_values[idx]
+#
+#     # Make unique, in the very unlikely scenario where the emcee run and the regular grid provided
+#     # some duplicated values
+#     norm_values_u, idx = np.unique(norm_values, return_index=True)
+#     log_like_values_u = log_like_values[idx]
+#
+#     # Restore parameter to its original state
+#
+#     like['GRB'].src.spectrum().parameter(norm.attrib['name']).setFree(True)
+#     like['GRB'].src.spectrum().parameter(norm.attrib['name']).setBounds(0, 1e9)
+#     like['GRB'].src.spectrum().parameter(norm.attrib['name']).setScale(old_scale)
+#     like['GRB'].src.spectrum().parameter(norm.attrib['name']).setValue(old_value)
+#     like['GRB'].src.spectrum().parameter(norm.attrib['name']).setBounds(float(old_min), float(old_max))
+#
+#
+#     return -log_like_values_u, norm_values_u
 
 # Main code
 if __name__ == "__main__":
@@ -806,7 +807,7 @@ if __name__ == "__main__":
 
             lpw = LikelihoodProfiler(like, xml_res)
 
-            if grb.TS < 25.0:
+            if grb.TS < args.tsmin:
 
                 print("\nForcing index to -2.0 and sampling\n")
 
