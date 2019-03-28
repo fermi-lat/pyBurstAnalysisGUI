@@ -3,6 +3,7 @@ import os
 
 class IRF(object):
   def __init__(self,shortname,name,reprocVer,evclass,galacticTemplate='',isotropicTemplate=''):
+
     self.shortname            = shortname
     self.name                 = name
     self.reprocessingVersion  = reprocVer
@@ -149,7 +150,7 @@ IRFS['P7REP_ULTRACLEAN']  = IRF('P7REP_ULTRACLEAN','P7REP_ULTRACLEAN_V15','202,2
 
 
 #Pass 8 final (?)
-galactic='template_4years_P8_V2_scaled.fits, gll_iem_v06.fits'
+galactic='template_4years_P8_V2_scaled.fits, gll_iem_v07.fits'
 
 IRFS['P8R2_TRANSIENT100E']    = IRF('P8R2_TRANSIENT100E' ,'P8R2_TRANSIENT100E_V6' ,'302',     2, galactic, 'isotropic_transient_r020_4years_P8V4_rev3.txt, iso_P8R2_TRANSIENT020_V6_v06.txt') # YOU SHOULD USE THE BKGE FOR THIS 
 IRFS['P8R2_TRANSIENT100']     = IRF('P8R2_TRANSIENT100' ,'P8R2_TRANSIENT100_V6'  ,'302',     4, galactic, 'isotropic_transient_r020_4years_P8V4_rev3.txt, iso_P8R2_TRANSIENT020_V6_v06.txt') # YOU SHOULD USE THE BKGE FOR THIS 
@@ -164,7 +165,7 @@ IRFS['P8R2_ULTRACLEANVETO']   = IRF('P8R2_ULTRACLEANVETO','P8R2_ULTRACLEANVETO_V
 IRFS['P8R2_TRANSIENT100S']    = IRF('P8R2_TRANSIENT100S' ,'P8R2_TRANSIENT100S_V6' ,'302', 32768, galactic, 'isotropic_transient_r020_4years_P8V4_rev3.txt, iso_P8R2_TRANSIENT0100S_V6_v06.txt') # YOU SHOULD USE THE BKGE FOR THIS 
 IRFS['P8R2_TRANSIENT015S']    = IRF('P8R2_TRANSIENT015S' ,'P8R2_TRANSIENT015S_V6' ,'302', 65536, galactic, 'isotropic_transient_r020_4years_P8V4_rev3.txt, iso_P8R2_TRANSIENT015S_V6_v06.txt')
 
-IRFS['P8_TRANSIENT100E']    = IRF('P8_TRANSIENT100E' ,  'P8R3_TRANSIENT100E_V2' , '305',     2, galactic, 'iso_P8R3_TRANSIENT020_V2.txt') # YOU SHOULD USE THE BKGE FOR THIS 
+IRFS['P8_TRANSIENT100E']    = IRF('P8_TRANSIENT100E' ,  'P8R3_TRANSIENT100E_V2' , '305',     2, galactic, 'iso_P8R3_TRANSIENT020_V2.txt') # YOU SHOULD USE THE BKGE FOR THIS
 IRFS['P8_TRANSIENT100']     = IRF('P8_TRANSIENT100' ,   'P8R3_TRANSIENT100_V2'  , '305',     4, galactic, 'iso_P8R3_TRANSIENT020_V2.txt') # YOU SHOULD USE THE BKGE FOR THIS 
 IRFS['P8_TRANSIENT020E']    = IRF('P8_TRANSIENT020E' ,  'P8R3_TRANSIENT020E_V2' , '305',     8, galactic, 'iso_P8R3_TRANSIENT020E_V2.txt')
 IRFS['P8_TRANSIENT020']     = IRF('P8_TRANSIENT020' ,   'P8R3_TRANSIENT020_V2'  , '305',    16, galactic, 'iso_P8R3_TRANSIENT020_V2.txt')
