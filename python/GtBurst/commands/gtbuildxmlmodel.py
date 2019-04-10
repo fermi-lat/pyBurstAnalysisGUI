@@ -182,7 +182,7 @@ def run(**kwargs):
     #xml model
     deltat                     = 1e12
   
-  xml.add2FGLsources(ra,dec,float(roi)+8.0,xmlmodel,deltat)
+  xml.addFGLsources(ra,dec,float(roi)+8.0,xmlmodel,deltat)
     
   
   dataHandling._writeParamIntoXML(xmlmodel,IRF=irf,OBJECT=triggername,RA=ra,DEC=dec)
