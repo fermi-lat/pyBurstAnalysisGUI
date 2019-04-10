@@ -27,7 +27,7 @@ thisCommand.addParameter("xmlmodel","XML model",commandDefiner.MANDATORY,partype
 thisCommand.addParameter("skymap","Name for the sky map (needed only if you want to plot your results)",commandDefiner.OPTIONAL,partype=commandDefiner.INPUTFILE,extension="fit")
 thisCommand.addParameter("tsmin","Minimum TS to consider a source detected",commandDefiner.OPTIONAL,20)
 thisCommand.addParameter("optimizeposition","Optimize position?",commandDefiner.OPTIONAL,"yes",possiblevalues=['no','yes'])
-thisCommand.addParameter("showmodelimage","Show an image representing the best fit likelihood model?",commandDefiner.OPTIONAL,"yes",possiblevalues=['yes','no'])
+thisCommand.addParameter("showmodelimage","Show an image representing the best fit likelihood model?",commandDefiner.OPTIONAL,"no",possiblevalues=['yes','no'])
 thisCommand.addParameter("spectralfiles","Produce spectral files for XSPEC?",commandDefiner.OPTIONAL,"no",possiblevalues=['no','yes'])
 thisCommand.addParameter("liketype","Likelihood type",commandDefiner.OPTIONAL,"unbinned",possiblevalues=['unbinned','binned'])
 thisCommand.addParameter("clul","Upper bound confidence level", commandDefiner.OPTIONAL, 0.95)
@@ -205,7 +205,7 @@ def run(**kwargs):
       if(src.type=='PointSource'):
         if(src.TS > 4):
           detectedSources.append(src)
-          if(src.name.find('3FGL')<0):
+          if(src.name.find('FGL')<0):
             #GRB
             grbFlux           = src.flux
         pass
@@ -235,7 +235,7 @@ def run(**kwargs):
     #Renormalize the modelmapfile to the flux of the grb
     f                              = pyfits.open(modelmapfile,'update')
     f[0].data                      = f[0].data/numpy.max(f[0].data)*nEvents/telapsed
-    print(numpy.max(f[0].data))
+    #print(numpy.max(f[0].data))
     f.close()
     
     img                      = aplpy.FITSFigure(modelmapfile,convention='calabretta',

@@ -168,9 +168,10 @@ class Grid(object):
         else:
             xspacing = self.x_grid_spacing
 
+
         if xspacing is None:
-            warnings.warn("Could not determine x tick spacing - grid cannot be drawn")
-            return
+            warnings.warn("Could not determine x tick spacing - set default to 30 degrees")
+            xspacing = 30.
 
         if self._wcs.xaxis_coord_type in ['longitude', 'latitude']:
             xspacing = xspacing.todegrees()
@@ -185,8 +186,8 @@ class Grid(object):
             yspacing = self.y_grid_spacing
 
         if yspacing is None:
-            warnings.warn("Could not determine y tick spacing - grid cannot be drawn")
-            return
+            warnings.warn("Could not determine y tick spacing - set default to 30 degrees")
+            xspacing = 30.
 
         if self._wcs.yaxis_coord_type in ['longitude', 'latitude']:
             yspacing = yspacing.todegrees()
