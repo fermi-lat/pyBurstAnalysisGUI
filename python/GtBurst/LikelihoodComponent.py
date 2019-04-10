@@ -422,7 +422,7 @@ class BKGETemplate(TemplateFile):
 pass
 
 
-# This is actually now the 3FGL
+# This is actually now the 4FGL
 class catalog_2FGL(object):
     def __init__(self, xmlfile):
         self.tree = ET.parse(xmlfile)
@@ -448,14 +448,14 @@ class catalog_2FGL(object):
 
                 except TypeError:
 
-                    # This is not a 3FGL source, so it has no Flux1000 attribute. Keep it
+                    # This is not a FGL source, so it has no Flux1000 attribute. Keep it
 
                     continue
 
                 if npred < 0.1:
                     root.remove(source)
                     continue
-
+            #print ("DEBUG: Source %s, type: %s, spacial model type: %s\n" % (source.get('name'),source.get('type'),spatialModel.get('type')))
             if (source.get('type') == 'PointSource'):
                 # Get coordinates of this point source
                 coords = {}
@@ -495,7 +495,7 @@ class catalog_2FGL(object):
 
                 except TypeError:
 
-                    # This is not a 3FGL source, keep it and continue
+                    # This is not a FGL source, keep it and continue
 
                     continue
 
@@ -512,16 +512,22 @@ class catalog_2FGL(object):
                     pass
                     # Now correct the name of the FITS template so that the likelihood
                     # will find it
-                    spatialModel = source.findall('spatialModel')[0]
-                    filename = spatialModel.get('file')
-                    templatesPath = os.path.join(os.path.join(getDataPath(), 'templates'))
-                    newFilename = os.path.abspath(os.path.join(templatesPath, filename))
-                    spatialModel.set('file', '%s' % newFilename)
+                    #spatialModel = source.findall('spatialModel')[0]
+                    print spatialModel.get('type'),spatialModel.get('type') == 'SpatialMap'
+                    if spatialModel.get('type') == 'SpatialMap':
+                        filename      = spatialModel.get('file').replace('$(LATEXTDIR)/Templates/','')
+                        templatesPath = os.path.join(os.path.join(getDataPath(), 'templates'))
+                        newFilename   = os.path.abspath(os.path.join(templatesPath, filename))
+                        spatialModel.set('file', '%s' % newFilename)
+                        print("Keeping diffuse source %s (%4.2f deg away) using template %s..." % (
+                            source.get('name'), float(thisDist), newFilename))
+                    #for gaussian and radial, I just use the spatial model, since all the parameters are determined and fixed:
+                    print("Keeping diffuse source %s (%4.2f deg away) using spatial model %s..." % (
+                        source.get('name'), float(thisDist), spatialModel.get('type')))
+
                     srcs += 1
-                    print("Keeping diffuse source %s (%4.2f deg away) using template %s..." % (
-                    source.get('name'), float(thisDist), newFilename))
             else:
-                print("WTF")
+                print("Source type not recognized.")
                 raise
         pass
         print("Kept %s point sources from the FGL catalog" % (srcs))
@@ -559,12 +565,12 @@ class LikelihoodModel(object):
 
     pass
 
-    def add2FGLsources(self, ra, dec, radius, filename, exposure):
+    def addFGLsources(self, ra, dec, radius, filename, exposure):
         # Add all point sources in the 2FGL catalog with an angular distance less than 'radius'
         # from the given Ra,DEC\
         dataPath = getDataPath()
-        fgl = catalog_2FGL(os.path.join(dataPath, 'gll_psc_v16.xml'))
-        tmpname = '__3fgl_sources.xml'
+        fgl = catalog_2FGL(os.path.join(dataPath, 'gll_psc_v17.xml'))
+        tmpname = '__fgl_sources.xml'
         fgl.getXmlForSourcesInTheROI(float(ra), float(dec), radius, tmpname, exposure)
         # Now merge the two trees
         tree = ET.parse(filename)
@@ -659,7 +665,7 @@ class LikelihoodResultsPrinter(object):
             # energy flux
             MeVtoErg = 1.60217646E-6
             upperLimitComputed = False
-            if (math.ceil(TS) >= tsmin or sourceName.find('3FGL') >= 0 or source.get('type') != 'PointSource'):
+            if (math.ceil(TS) >= tsmin or sourceName.find('FGL') >= 0 or source.get('type') != 'PointSource'):
                 flux = '%10.3g' % (self.likelihoodObj.energyFlux(sourceName, self.emin, self.emax) * MeVtoErg)
                 try:
                     fluxError = '%10.3g' % (
@@ -695,7 +701,7 @@ class LikelihoodResultsPrinter(object):
                     
                         index = -2.0
                         conv = (emin_erg) * (emax_erg) / (emax_erg - emin_erg) * numpy.log(emax_erg / emin_erg)
-                    
+                    #print 'DEBUG:This is the value of the Index:',index,'for the source',sourceName
                     self.likelihoodObj[sourceName].src.spectrum().parameter('Index').setValue(index)
                     
                     try:
@@ -738,7 +744,7 @@ class LikelihoodResultsPrinter(object):
                 thisDec = 0
             pass
 
-            if (sourceName.find('3FGL') >= 0 and TS < 1):
+            if (sourceName.find('FGL') >= 0 and TS < 1):
                 # Do not print non-detected 2FGL sources
                 listOfSources.append(SourceStruct(sourceName, sourceType, thisRa, thisDec, flux, fluxError, 0, 0, TS))
                 nNonPrinted += 1
