@@ -67,23 +67,26 @@ class dataCollector(object):
   
   def downloadDirectoryWithFTP(self,address,filenames=None,namefilter=None):
     #Connect to the server
-    if(address.find("ftp://")==0):
+    if(address.find("ftps://")==0):
       serverAddress           = address.split("/")[2]
       directory               = "/"+"/".join(address.split("/")[3:])
     else:
       serverAddress           = address.split("/")[0]
       directory               = "/"+"/".join(address.split("/")[1:])
     pass
+    #print('**************> downloadDirectoryWithFTP (serverAddress):',serverAddress)
+    #print('**************> downloadDirectoryWithFTP       (address):',address)
 
     #Open FTP session
     try:
-      ftp                       = ftplib.FTP(serverAddress,"anonymous",'','',timeout=60)
+      ftp                       = ftplib.FTP_TLS(serverAddress,"anonymous",'','',timeout=60)
     except socket.error as socketerror:
       raise GtBurstException(11,"Error when connecting: %s" % os.strerror(socketerror.errno))
     
-    print("Loggin in to %s..." % serverAddress),
+    #print("Loggin in to %s..." % serverAddress),
     try:
       ftp.login()
+      ftp.prot_p()
     except:
       #Maybe we are already logged in
       try:
@@ -197,9 +200,10 @@ class dataCollector(object):
             ftp.close()
           except:
             pass
-          ftp                 = ftplib.FTP(serverAddress,"anonymous",'','',timeout=60)
+          ftp                 = ftplib.FTP_TLS(serverAddress,"anonymous",'','',timeout=60)
           try:
             ftp.login()
+            ftp.prot_p()
           except:
             pass
           ftp.cwd(directory)
@@ -219,15 +223,16 @@ class dataCollector(object):
   
   def getFTP(self,errorCode=None,namefilter=None):
     #Path in the repository is [year]/bn[grbname]/current
-    
+
     #Get the year
     year                      = "20%s" %(self.grbName[0:2])
     #trigger number
     triggerNumber             = "bn%s" %(self.grbName)
     
     remotePath                = "%s/%s/triggers/%s/%s/current" %(self.dataRepository,self.instrument,year,triggerNumber)
-        
+    #print("getFTP.remotePath=",remotePath)
     self.downloadDirectoryWithFTP(remotePath,None,namefilter)
+
   pass
     
 pass

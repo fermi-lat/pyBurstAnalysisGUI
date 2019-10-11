@@ -295,11 +295,16 @@ class DownloadTransientData(dataCollector):
       try:
         self.downloadDirectoryWithFTP(remotePath,filenames=filenames)
       except Exception as e:
-        #Try with "wget", if the system has it
+          #Try with "wget", if the system has it
         for ff in filenames:
           try:
+            print('Trying with curl...')
             self.makeLocalDir()
-            dataHandling.runShellCommand("wget %s%s -P %s" %("https://fermi.gsfc.nasa.gov/FTP/fermi/data/lat/queries/",ff,self.localRepository),True)
+            cwd=os.getcwd()
+            os.chdir(r"%s" % self.localRepository)
+            #dataHandling.runShellCommand("curl -LO %s%s -o %s/." %("https://fermi.gsfc.nasa.gov/FTP/fermi/data/lat/queries/",ff,self.localRepository),True)
+            dataHandling.runShellCommand("curl -LO %s%s " %("https://fermi.gsfc.nasa.gov/FTP/fermi/data/lat/queries/",ff),True)
+            os.chdir(r"%s" % cwd)
           except:
             raise e
           pass
