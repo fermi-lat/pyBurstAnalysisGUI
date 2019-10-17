@@ -6,7 +6,7 @@
 626131de137389433988bbc763f4e3eb python/GtBurst/commandDefiner.py
 aa0b472f87836e81f88e0c9d6bc44644 python/GtBurst/tasks/__init__.py
 3b44ab95d5ddf473bb3a6796d620e353 python/GtBurst/InteractiveFt1Display.py
-51a48c98ac2d4f17d695cf04a18d1022 python/GtBurst/version.py
+26aa8772be0ca34b56d7a4c41c393819 python/GtBurst/version.py
 b992149300add69c0e2d726af5786eb2 python/GtBurst/lleProgressBar.py
 95df53bc5ef48567d19d313971d1d5c9 python/GtBurst/Treeview.py
 85549e8d98a778475a74603f2913155d python/GtBurst/AutoHideScrollbar.py
@@ -16,7 +16,7 @@ b992149300add69c0e2d726af5786eb2 python/GtBurst/lleProgressBar.py
 30a8fa18fc8cde59cd514ac1b81d6a6a python/GtBurst/getGBMfiles.py
 0ff802d083ca7bcb0779bffe4cff6a14 python/GtBurst/GtBurstException.py
 83ca0b6a850a4e5297d0b8ab9336d918 python/GtBurst/fast_ts_map.py
-32d05d49b77198712f1d36e8dca1b660 python/GtBurst/TriggerSelector.py
+04a1fac491d929b14295e6a053b08fdc python/GtBurst/TriggerSelector.py
 9c335fcf1be2e26f498702a742aca5d0 python/GtBurst/cutout.py
 94572aeb6410ac929c2bc23d1476e890 python/GtBurst/likelihood_profile_writer.py
 8f728fda3ff4ff75c36291cc708046bc python/GtBurst/FuncFactory.py
