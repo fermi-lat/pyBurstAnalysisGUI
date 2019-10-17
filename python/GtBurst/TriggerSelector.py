@@ -113,7 +113,8 @@ class TriggerSelector(object):
           #'|bn080714086 |2008-07-14 02:04:12.053|GRB         |',
           #'|bn080714425 |2008-07-14 10:12:01.838|GRB         |',
           #'|bn080714745 |2008-07-14 17:52:54.023|GRB         |',
-          url = "http://heasarc.gsfc.nasa.gov/cgi-bin/W3Browse/w3query.pl?tablehead=name%3dBATCHRETRIEVALCATALOG%5f2%2e0+fermigtrig&Action=Query&Coordinates=%27Equatorial%3a+R%2eA%2e+Dec%27&Equinox=2000&Radius=60&NR=&GIFsize=0&Fields=&varon=trigger%5fname&varon=trigger%5ftime&varon=trigger%5ftype&varon=ra&varon=dec&varon=error_radius&varon=localization_source&sortvar=trigger%5fname&ResultMax=1000000&displaymode=BatchDisplay'"
+          url = "https://heasarc.gsfc.nasa.gov/db-perl/W3Browse/w3table.pl?tablehead=name%3dBATCHRETRIEVALCATALOG%5f2%2e0+fermigtrig&Action=Query&Coordinates=%27Equatorial%3a+R%2eA%2e+Dec%27&Equinox=2000&Radius=60&NR=&GIFsize=0&Fields=&varon=trigger%5fname&varon=trigger%5ftime&varon=trigger%5ftype&varon=ra&varon=dec&varon=error_radius&varon=localization_source&sortvar=trigger%5fname&ResultMax=1000000&displaymode=BatchDisplay" \
+                #"https://heasarc.gsfc.nasa.gov/cgi-bin/W3Browse/w3query.pl?tablehead=name%3dBATCHRETRIEVALCATALOG%5f2%2e0+fermigtrig&Action=Query&Coordinates=%27Equatorial%3a+R%2eA%2e+Dec%27&Equinox=2000&Radius=60&NR=&GIFsize=0&Fields=&varon=trigger%5fname&varon=trigger%5ftime&varon=trigger%5ftype&varon=ra&varon=dec&varon=error_radius&varon=localization_source&sortvar=trigger%5fname&ResultMax=1000000&displaymode=BatchDisplay'"
           if(self.parent is not None):
             window                = Toplevel(self.parent)
             window.transient(self.parent)        
@@ -154,16 +155,19 @@ class TriggerSelector(object):
         self.data             = map(lambda x:x.strip().split("|")[1:-1],text.split("\n")[3:-2])
         #Convert RA, Dec from hh mm ss to decimal, and the trigger time from ISO UTC to MET
         for i in range(len(self.data)):
-          triggerDate         = self.data[i][1].strip()
-          self.data[i][1]     = "%12.3f" % date2met(triggerDate.replace("T"," "))
-          ra                  = self.data[i][3].strip().replace(' ',':') #RA in HH:DD:MM.SSS format
-          self.data[i][3]     = " %5.3f" % convHMS(ra)
-          dec                 = self.data[i][4].strip().replace(' ',':')
-          self.data[i][4]     = " %5.3f" % convDMS(dec)
+            #print(self.data[i])
+            triggerDate         = self.data[i][1].strip()
+            self.data[i][1]     = "%12.3f" % date2met(triggerDate.replace("T"," "))
+            self.data[i][3]     = " %5.3f" % float(self.data[i][3])
+            self.data[i][4]     = " %5.3f" % float(self.data[i][4])
+            #ra                  = self.data[i][3].strip().replace(' ',':') #RA in HH:DD:MM.SSS format
+            #self.data[i][3]     = " %5.3f" % convHMS(ra)
+            #dec                 = self.data[i][4].strip().replace(' ',':')
+            #self.data[i][4]     = " %5.3f" % convDMS(dec)
         #Remove all spaces
         self.data             = map(lambda x:map(lambda y:y.replace(" ",''),x),self.data)
         if(self.parent is not None):
-          window.destroy()
+            window.destroy()
     pass
     
     def _setup_widgets(self, useFilter=True):
