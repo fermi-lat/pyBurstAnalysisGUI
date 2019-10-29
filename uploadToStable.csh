@@ -11,8 +11,8 @@ git commit -m "Increased patch number to $patchNumber" python/GtBurst/version.py
 echo "Generating file list with MD5s..."
 
 #Now generate the list of files with their MD5, and upload it
-find python -type f -name '*.py' -exec md5sum -b {} + >! __file_list
-find data -type f ! -name '.*' -exec md5sum -b {} + >> __file_list
+find python -type f -name '*.py' -exec /sbin/md5 -r {} + >! __file_list
+find data -type f ! -name '.*' -exec /sbin/md5 -r {} + >> __file_list
 
 echo "Commiting the file list..."
 git commit -m "Release of patch $patchNumber" __file_list

@@ -157,13 +157,17 @@ class TriggerSelector(object):
         for i in range(len(self.data)):
             #print(self.data[i])
             triggerDate         = self.data[i][1].strip()
-            self.data[i][1]     = "%12.3f" % date2met(triggerDate.replace("T"," "))
-            self.data[i][3]     = " %5.3f" % float(self.data[i][3])
-            self.data[i][4]     = " %5.3f" % float(self.data[i][4])
-            #ra                  = self.data[i][3].strip().replace(' ',':') #RA in HH:DD:MM.SSS format
-            #self.data[i][3]     = " %5.3f" % convHMS(ra)
-            #dec                 = self.data[i][4].strip().replace(' ',':')
-            #self.data[i][4]     = " %5.3f" % convDMS(dec)
+            try:
+                self.data[i][1]     = "%12.3f" % date2met(triggerDate.replace("T"," "))
+                self.data[i][3]     = " %5.3f" % float(self.data[i][3])
+                self.data[i][4]     = " %5.3f" % float(self.data[i][4])
+            except:
+                ra                  = self.data[i][3].strip().replace(' ',':') #RA in HH:DD:MM.SSS format
+                self.data[i][3]     = " %5.3f" % convHMS(ra)
+                dec                 = self.data[i][4].strip().replace(' ',':')
+                self.data[i][4]     = " %5.3f" % convDMS(dec)
+                pass
+            
         #Remove all spaces
         self.data             = map(lambda x:map(lambda y:y.replace(" ",''),x),self.data)
         if(self.parent is not None):
