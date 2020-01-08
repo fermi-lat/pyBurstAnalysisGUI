@@ -17,7 +17,7 @@ sys.stderr.write(".")
 matplotlib.use('TkAgg')
 matplotlib.rcParams['font.size'] = 8
 
-from Tkinter import *
+from tkinter import *
 
 sys.stderr.write(".")
 import os, re
@@ -51,11 +51,11 @@ except ImportError:
 
 from matplotlib.figure import Figure
 from matplotlib import image
-from tkSimpleDialog import askfloat
+from tkinter.simpledialog import askfloat
 from GtBurst import fancyFileDialogs
 # from tkFileDialog import askopenfilename
 # from tkFileDialog import askdirectory
-from tkMessageBox import showerror, showinfo, askyesno
+from tkinter.messagebox import showerror, showinfo, askyesno
 
 sys.stderr.write(".")
 
