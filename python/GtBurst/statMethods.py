@@ -423,7 +423,7 @@ def computeCovarianceMatrix(grad,par,full_output=False,
             delta_f           = (g_up - g_dn)[i]
             
             converged,new_step = revised_step(delta_f,di,i)
-            #print 'Parameter %d -- Iteration %d -- Step size: %.2e -- delta: %.2e'%(i,j,di,delta_f)
+            #print ('Parameter %d -- Iteration %d -- Step size: %.2e -- delta: %.2e'%(i,j,di,delta_f))
             
             if converged: 
               break
@@ -434,11 +434,11 @@ def computeCovarianceMatrix(grad,par,full_output=False,
         hess[i,:] = (g_up - g_dn) / (2*di)  # central difference
         
         if not converged:
-            print 'Warning: step size for parameter %d (%.2g) did not result in convergence.'%(i,di)
+            print ('Warning: step size for parameter %d (%.2g) did not result in convergence.'%(i,di))
     try:
         cov = numpy.linalg.inv(hess)
     except:
-        print 'Error inverting hessian.'
+        print ('Error inverting hessian.')
         raise Exception('Error inverting hessian')
     if full_output:
         return cov,hess,step_size,iters,min_flags,max_flags
