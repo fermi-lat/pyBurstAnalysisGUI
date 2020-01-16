@@ -53,7 +53,7 @@ class dataCollector(object):
     try:
       os.makedirs(self.localRepository)
       message                  = "just created"
-    except OSError, e:
+    except OSError as e:
       if e.errno != errno.EEXIST:
         #Couldn't create the directory
         raise

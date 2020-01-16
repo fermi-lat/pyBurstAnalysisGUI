@@ -347,7 +347,7 @@ class CommandPipeline(object):
           self.canvas.draw()
           success           = False
         except:            
-          print map(lambda x:x[0],traceback.extract_stack())
+          print (map(lambda x:x[0],traceback.extract_stack()))
           filename, line, dummy, dummy = traceback.extract_stack().pop()
           
           filename                     = os.path.basename( filename )
