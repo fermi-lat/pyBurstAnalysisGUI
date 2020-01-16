@@ -139,7 +139,7 @@ def launchJobs(SQ):
     command = ("python %s runLike %s %s"
                % (this_arg,subdir, tpl_file))
     sys.stdout.write("partition %s: " % subdir)
-    print command
+    print (command)
     sys.stdout.flush()
     subprocess.call(command.split())
     
@@ -281,7 +281,7 @@ def gttsmap_mp(pars,num_queues,savetmp):
     
     tsmap.merge_results()
     if not savetmp:
-        print "Deleting temporary files."
+        print ("Deleting temporary files.")
         tsmap.remove_tempfiles()
 
 

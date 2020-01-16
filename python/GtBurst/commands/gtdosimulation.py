@@ -90,7 +90,7 @@ def run(**kwargs):
     verbose                     = _yesOrNoToBool(thisCommand.getParValue('verbose'))
   except KeyError as err:
     print("\n\nERROR: Parameter %s not found or incorrect! \n\n" %(err.args[0]))    
-    print thisCommand.getHelp()
+    print (thisCommand.getHelp())
     return
   
   from GtBurst import dataHandling

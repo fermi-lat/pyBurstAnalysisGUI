@@ -23,7 +23,7 @@ def diffrsp(times):
     name of the created event file which can be combined with other
     files and/or deleted later.'''
 
-    print "Starting calculation on interval {} to {}".format(times[0],times[1])
+    print ("Starting calculation on interval {} to {}".format(times[0],times[1]))
 
     osfilehandle,outfilename = tempfile.mkstemp(suffix=".fits")
     filter['rad'] = "INDEF"
@@ -49,7 +49,7 @@ def diffrsp(times):
     diffResps['irfs'] = times[5]
     diffResps['chatter'] = 0
     diffResps.run(print_command=False)
-    print "Completed calculation of interval {} to {}".format(times[0],times[1])
+    print ("Completed calculation of interval {} to {}".format(times[0],times[1]))
     return outfilename
 
 def eventsum(filenames, Outfile, SaveTemp):
@@ -85,10 +85,10 @@ def eventsum(filenames, Outfile, SaveTemp):
         filter.run(print_command=False)
 
     if SaveTemp:
-        print "Did not delete the following temporary files:"
-        print filenames
+        print ("Did not delete the following temporary files:")
+        print (filenames)
     else:
-        print "Deleting temporary files..."
+        print ("Deleting temporary files...")
         for filename in filenames:
             os.remove(filename)
 
@@ -99,7 +99,7 @@ def gtdiffrsp_mp(bins, SCFile, EVFile, OutFile, SaveTemp, SrcModel,IRF):
     and splits the time into chunks.  It then submits jobs based upon
     those start and stop times.'''
 
-    print "Opening event file to determine break points..."
+    print ("Opening event file to determine break points...")
     hdulist = pyfits.open(EVFile)
     tstart = hdulist[0].header['TSTART']
     tstop = hdulist[0].header['TSTOP']
@@ -114,9 +114,9 @@ def gtdiffrsp_mp(bins, SCFile, EVFile, OutFile, SaveTemp, SrcModel,IRF):
     pool = Pool(processes=bins)      
     times = np.array([starts,stops,scfiles,evfiles,srcmdls,irfs])
 
-    print "Spawning {} jobs...".format(bins)
+    print ("Spawning {} jobs...".format(bins))
     tempfilenames = pool.map(diffrsp,times.transpose())
-    print "Combining temporary files..."
+    print ("Combining temporary files...")
     eventsum(tempfilenames, OutFile, SaveTemp)
 
 def cli():

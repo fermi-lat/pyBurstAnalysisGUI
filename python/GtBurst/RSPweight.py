@@ -433,8 +433,8 @@ def RSPweight(**kwargs):
         
         out, err                             = _callSubprocess(cmdline)
         
-        print out
-        print err
+        print (out)
+        print (err)
       pass
       #clean up
       os.remove(asciiFilename)

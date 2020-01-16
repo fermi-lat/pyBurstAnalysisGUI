@@ -513,7 +513,7 @@ class catalog_2FGL(object):
                     # Now correct the name of the FITS template so that the likelihood
                     # will find it
                     #spatialModel = source.findall('spatialModel')[0]
-                    print spatialModel.get('type'),spatialModel.get('type') == 'SpatialMap'
+                    print (spatialModel.get('type'),spatialModel.get('type') == 'SpatialMap')
                     if spatialModel.get('type') == 'SpatialMap':
                         filename      = spatialModel.get('file').replace('$(LATEXTDIR)/Templates/','')
                         templatesPath = os.path.join(os.path.join(getDataPath(), 'templates'))

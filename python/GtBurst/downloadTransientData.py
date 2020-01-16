@@ -182,7 +182,7 @@ class DownloadTransientData(dataCollector):
                                                   x.find("+") < 0 and
                                                   x.find("Skip navigation")<0,text)
     text                        = filter(lambda x:len(x.replace(" ",""))>1,text)
-    print "\n".join(text)
+    print("\n".join(text))
     print("\n\n")
     os.remove(temporaryFileName)
     if(" ".join(text).find("down due to maintenance")>=0):
