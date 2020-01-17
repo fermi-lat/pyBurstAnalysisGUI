@@ -350,11 +350,11 @@ def runShellCommand(string, echo=False):
     try:
         retcode = subprocess.call(string, shell=True)
         if retcode < 0:
-            print >> sys.stderr, "Child was terminated by signal", -retcode
+            print ("Child was terminated by signal", -retcode, file=sys.stderr)
         else:
             pass
-    except OSError, e:
-        print >> sys.stderr, "Execution failed:", e
+    except OSError as e:
+        print ("Execution failed:", e, file=sys.stderr)
 
 
 pass
@@ -365,7 +365,7 @@ def date2met(*kargs):
 
     if not isinstance(datestring, str):
         if not isinstance(datestring,
-                          float): print "date2met: Single argument needs to be a string of the format 2008-05-16 00:00:00 or 2008/05/16 00:00:00"
+                          float): print ("date2met: Single argument needs to be a string of the format 2008-05-16 00:00:00 or 2008/05/16 00:00:00")
         raise ValueError
 
     sep = '-'
@@ -1166,7 +1166,7 @@ class my_gtltcube(multiprocessScienceTools):
                                       self['scfile'],
                                       self['evfile'],
                                       self['outfile'])
-        print cmdline
+        print (cmdline)
         process = subprocess.Popen(cmdline.split(),
                                    shell=False, stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT)
@@ -1175,7 +1175,7 @@ class my_gtltcube(multiprocessScienceTools):
             out = process.stdout.readline()
             if out == '' and process.poll() is not None:
                 break
-            print out
+            print (out)
         # gtltcube_mp(self.ncpus,
         #            self['scfile'],
         #            self['evfile'],
@@ -1204,7 +1204,7 @@ class my_gtdiffrsp(multiprocessScienceTools):
                                                                  self['scfile'],
                                                                  self['srcmdl'],
                                                                  self['irfs'])
-        print cmdline
+        print (cmdline)
         process = subprocess.Popen(cmdline.split(),
                                    shell=False, stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT)
@@ -1213,7 +1213,7 @@ class my_gtdiffrsp(multiprocessScienceTools):
             out = process.stdout.readline()
             if out == '' and process.poll() is not None:
                 break
-            print out
+            print (out)
         # gtdiffrsp_mp(self.ncpus, self['scfile'], self['evfile'], '__gtdiffrsp_result.fits', False, self['srcmdl'], self['irfs'])
         print("\n")
         shutil.copyfile("__gtdiffrsp_result.fits", "%s" % (self['evfile']))
@@ -1255,7 +1255,7 @@ class my_gttsmap(multiprocessScienceTools):
         exepath = os.path.join(os.path.dirname(__file__), 'gtapps_mp', 'gttsmap_mp.py')
         cmdline = exepath + " %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s %s" % tuple([pars[k] for k in
                                                                                               'nxpix nypix jobs evfile scfile expmap expcube srcmdl irfs optimizer ftol toltype binsz coordsys xref yref proj outfile'.split()])
-        print cmdline
+        print (cmdline)
         process = subprocess.Popen(cmdline.split(),
                                    shell=False, stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT)
@@ -1264,7 +1264,7 @@ class my_gttsmap(multiprocessScienceTools):
             out = process.stdout.readline()
             if out == '' and process.poll() is not None:
                 break
-            print out
+            print (out)
         print("\n")
 
     pass
@@ -1320,7 +1320,7 @@ class my_gtexpmap(multiprocessScienceTools):
                                                            self['expcube'],
                                                            self['irfs'], self['srcrad'], self['nenergies'],
                                                            self['outfile'])
-        print cmdline
+        print (cmdline)
         process = subprocess.Popen(cmdline.split(),
                                    shell=False, stdout=subprocess.PIPE,
                                    stderr=subprocess.STDOUT)
@@ -1329,7 +1329,7 @@ class my_gtexpmap(multiprocessScienceTools):
             out = process.stdout.readline()
             if out == '' and process.poll() is not None:
                 break
-            print out
+            print (out)
         print("\n")
 
     pass
@@ -2186,7 +2186,7 @@ class LATData(LLEData):
                     total_error))
                 idx = like.par_index("GalacticTemplate", "Value")
                 like[idx].addGaussianPrior(1.0, total_error)
-                print like[idx].getPriorParams()
+                print (like[idx].getPriorParams())
 
         # Find the name of the GRB
 
@@ -2453,7 +2453,7 @@ class LATData(LLEData):
         cmdLine = cmdLine.replace('evtype="none"', "")
 
         print("\n%s" % (cmdLine))
-        print subprocess.check_output(cmdLine, shell=True)
+        print (subprocess.check_output(cmdLine, shell=True))
 
         # Here we assume that gtobssim produced only one file
 
@@ -2499,7 +2499,7 @@ class Simulation(object):
     # -------------------------------------------------- #
 
     def doSimulation(self, infile, srclist, evroot, simtime, tstart, seed):
-        print 'I am now ready to simulate a GRB!'
+        print ('I am now ready to simulate a GRB!')
         os.environ['SIMDIR'] = '$PWD'
         self.gtobssim['infile'] = infile
         self.gtobssim['srclist'] = srclist
@@ -2811,8 +2811,8 @@ class CspecBackground(object):
             print("\nChannel %s: " % (chanNumber))
             thisPolynomial, cstat = self._fitChannel(chanNumber, filteredData, optimalPolGrade)
             print(thisPolynomial)
-            print '{0:>20} {1:>6.2f} for {2:<5} d.o.f.'.format("logLikelihood = ", cstat,
-                                                               len(filteredData) - optimalPolGrade)
+            print ('{0:>20} {1:>6.2f} for {2:<5} d.o.f.'.format("logLikelihood = ", cstat,
+                                                               len(filteredData) - optimalPolGrade))
             polynomials.append(thisPolynomial)
         pass
         self.polynomials = polynomials
