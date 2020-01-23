@@ -289,5 +289,5 @@ class TriggerSelector(object):
         
 if __name__ == "__main__":
     a                         = TriggerSelector()
-    print a.triggerName
+    print (a.triggerName)
     

@@ -20,10 +20,10 @@ def expmap(square):
     srcrad and nenergies.  This function creates a temporary file for
     the output and returns that file's name.'''
 
-    print "Starting calculation of region {},{} to {},{}".format(square[0][0][0],
+    print ("Starting calculation of region {},{} to {},{}".format(square[0][0][0],
                                                                  square[0][1][0],
                                                                  square[0][0][1],
-                                                                 square[0][1][1])
+                                                                 square[0][1][1]))
     osfilehandle,outfilename = tempfile.mkstemp(suffix=".fits")
     expMap['nlongmin'] = "{:,.0f}".format(float(square[0][0][0]))
     expMap['nlongmax'] = "{:,.0f}".format(float(square[0][0][1]))
@@ -41,10 +41,10 @@ def expmap(square):
     expMap['submap'] = "yes"
     expMap['chatter'] = 0
     expMap.run(print_command=False)
-    print "Completed calculation of region {},{} to {},{}".format(square[0][0][0],
+    print ("Completed calculation of region {},{} to {},{}".format(square[0][0][0],
                                                                   square[0][1][0],
                                                                   square[0][0][1],
-                                                                  square[0][1][1])
+                                                                  square[0][1][1]))
                 
     return outfilename
 
@@ -67,10 +67,10 @@ def expsum(filenames, Outfile, SaveTemp):
         for expmap_file in expmap_files: expmap_file.close()
         
     if SaveTemp:
-        print "Did not delete the following temporary files:"
-        print filenames
+        print ("Did not delete the following temporary files:")
+        print (filenames)
     else:
-        print "Deleting temporary files..."
+        print ("Deleting temporary files...")
         for filename in filenames:
             os.remove(filename)
 
@@ -84,7 +84,7 @@ def gtexpmap_mp(nlong, nlat, xbins, ybins, SCFile, EVFile, ExpCube,
     bins = xbins*ybins
 
     if np.mod(nlong,xbins) or np.mod(nlat,ybins):
-        print "The number of x and y bins must fit evenly into the number of long or lat points."
+        print ("The number of x and y bins must fit evenly into the number of long or lat points.")
         return
 
     stepx = nlong/xbins
@@ -99,9 +99,9 @@ def gtexpmap_mp(nlong, nlat, xbins, ybins, SCFile, EVFile, ExpCube,
     SQ = [(row, SCFile,EVFile,ExpCube,nlong,nlat,IRF,srcrad,nenergy) for row in pairs]    
 
     pool = Pool(processes=bins)      
-    print "Spawning {} jobs...".format(bins)
+    print ("Spawning {} jobs...".format(bins))
     filenames = pool.map(expmap,SQ)
-    print "Combining temporary files..."
+    print ("Combining temporary files...")
     expsum(filenames, OutFile, SaveTemp)
 
 def cli():

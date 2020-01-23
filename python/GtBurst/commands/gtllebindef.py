@@ -82,7 +82,7 @@ def run(**kwargs):
     print("\n\nERROR: Parameter %s not found or incorrect! \n\n" %(err.args[0]))
     
     #Print help
-    print thisCommand.getHelp()
+    print (thisCommand.getHelp())
     return
   pass
   
