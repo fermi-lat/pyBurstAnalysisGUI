@@ -5,7 +5,7 @@ import subprocess
 import sys
 import threading
 import re
-from Tkinter import *
+from tkinter import *
 from time import localtime, strftime
 import getpass
 from GtBurst.HyperlinkManager import HyperlinkManager
@@ -30,11 +30,11 @@ class StderrRedirector(IORedirector):
         self.text_area.write(str,True)
             
 class ConsoleText(Text):
-    '''A Tkinter Text widget that provides a scrolling display of console
+    '''A tkinter Text widget that provides a scrolling display of console
     stderr and stdout.'''
     
     def __init__(self, master=None, cnf={}, **kw):
-        '''See the __init__ for Tkinter.Text for most of this stuff.'''
+        '''See the __init__ for tkinter.Text for most of this stuff.'''
 
         Text.__init__(self, master, cnf, **kw)
         
@@ -87,7 +87,7 @@ class ConsoleText(Text):
     
     
     def write(self,val,is_stderr=False):
-        #Fun Fact:  The way Tkinter Text objects work is that if they're disabled,
+        #Fun Fact:  The way tkinter Text objects work is that if they're disabled,
         #you can't write into them AT ALL (via the GUI or programatically).  Since we want them
         #disabled for the user, we have to set them to NORMAL (a.k.a. ENABLED), write to them,
         #then set their state back to DISABLED.

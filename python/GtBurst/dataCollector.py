@@ -10,7 +10,7 @@ from GtBurst.GtBurstException import GtBurstException
 import ftplib, socket
 import time
 try:
-  from Tkinter import *
+  from tkinter import *
 except:
   #Silently accept when tkinter import fail (no X server?)
   pass

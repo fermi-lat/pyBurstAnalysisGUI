@@ -1,11 +1,11 @@
-from Tkinter import *
+from tkinter import *
 
 class AutoHideScrollbar(Scrollbar):
     # a scrollbar that hides itself if it's not needed.  only
     # works if you use the grid geometry manager.
     def set(self, lo, hi):
         if float(lo) <= 0.0 and float(hi) >= 1.0:
-            # grid_remove is currently missing from Tkinter!
+            # grid_remove is currently missing from tkinter!
             self.tk.call("grid", "remove", self)
         else:
             self.grid()

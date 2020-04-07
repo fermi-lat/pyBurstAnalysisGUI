@@ -1,4 +1,4 @@
-from Tkinter import *
+from tkinter import *
 import tkFont
 import tkMessageBox 
 import ttk

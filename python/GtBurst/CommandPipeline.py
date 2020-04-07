@@ -1,4 +1,4 @@
-from Tkinter import *
+from tkinter import *
 from GtBurst.fontDefinitions import *
 from GtBurst import commandDefiner
 from GtBurst.EntryPoint import EntryPoint

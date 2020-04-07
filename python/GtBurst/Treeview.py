@@ -1,6 +1,6 @@
-import Tkinter
+import tkinter
 
-_flatten = Tkinter._flatten
+_flatten = tkinter._flatten
 
 def _val_or_dict(options, func, *args):
     """Format options then call func with args and options and return
@@ -85,7 +85,7 @@ def _format_optdict(optdict, script=False, ignore=None):
     return _flatten(opts)
 
 
-class Treeview(Tkinter.Widget, Tkinter.XView, Tkinter.YView):
+class Treeview(tkinter.Widget, tkinter.XView, tkinter.YView):
     """Ttk Treeview widget displays a hierarchical collection of items.
 
     Each item has a textual label, an optional image, and an optional list
@@ -112,7 +112,7 @@ class Treeview(Tkinter.Widget, Tkinter.XView, Tkinter.YView):
 
             foreground, background, font, image
         """
-        Tkinter.Widget.__init__(self, master, "ttk::treeview", kw)
+        tkinter.Widget.__init__(self, master, "ttk::treeview", kw)
 
 
     def bbox(self, item, column=None):

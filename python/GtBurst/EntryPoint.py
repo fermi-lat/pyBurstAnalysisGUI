@@ -1,5 +1,5 @@
 import os
-from Tkinter import *
+from tkinter import *
 from GtBurst.fontDefinitions import *
 from tkMessageBox import showerror, showinfo 
 #from tkFileDialog import askdirectory

@@ -1,7 +1,7 @@
-import Tkinter
+import tkinter
 
 def init():
-  root = Tkinter.Tk()
+  root = tkinter.Tk()
   path = '/home/giacomov/develop/pyBurstAnalysisGUI/python/GtBurst/tcl_extensions/msgcat'
   root.tk.eval("set auto_path [linsert $auto_path 0 %s]" %(path))
   path = '/home/giacomov/develop/pyBurstAnalysisGUI/python/GtBurst/tcl_extensions/fsdialog'
@@ -55,13 +55,13 @@ def _fromPythonToTcl(optdict):
     pass
     
     # Remember: _flatten skips over None
-    return " ".join(Tkinter._flatten(opts))
+    return " ".join(tkinter._flatten(opts))
 
 
 class FileDialog(object):
   def __init__(self,master=None,**kwargs):
     if(master is None):
-      self.root               = Tkinter.Tk()
+      self.root               = tkinter.Tk()
     else:
       self.root               = master
     pass
@@ -78,7 +78,7 @@ pass
 class DirectoryDialog(object):
   def __init__(self,master=None,**kwargs):
     if(master is None):
-      self.root               = Tkinter.Tk()
+      self.root               = tkinter.Tk()
     else:
       self.root               = master
     pass

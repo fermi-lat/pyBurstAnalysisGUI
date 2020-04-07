@@ -1,12 +1,12 @@
-import Tkinter
+import tkinter
 
-class Meter(Tkinter.Frame):
+class Meter(tkinter.Frame):
     def __init__(self, master, width=300, height=20, bg='white', fillcolor='orchid1',\
                  value=0.0, text=None, font=None, textcolor='black', *args, **kw):
-        Tkinter.Frame.__init__(self, master, bg=bg, width=width, height=height, *args, **kw)
+        tkinter.Frame.__init__(self, master, bg=bg, width=width, height=height, *args, **kw)
         self._value = value
 
-        self._canv = Tkinter.Canvas(self, bg=self['bg'], width=self['width'], height=self['height'],\
+        self._canv = tkinter.Canvas(self, bg=self['bg'], width=self['width'], height=self['height'],\
                                     highlightthickness=0, relief='flat', bd=0)
         self._canv.pack(fill='both', expand=1)
         self._rect = self._canv.create_rectangle(0, 0, 0, self._canv.winfo_reqheight(), fill=fillcolor,\

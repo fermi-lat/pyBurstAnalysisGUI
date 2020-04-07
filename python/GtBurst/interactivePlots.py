@@ -4,7 +4,7 @@ from GtBurst.my_fits_io import pyfits
 
 import matplotlib.pyplot as plt
 plt.ion()
-from Tkinter import *
+from tkinter import *
 import time
 import threading
 from GtBurst import dataHandling
