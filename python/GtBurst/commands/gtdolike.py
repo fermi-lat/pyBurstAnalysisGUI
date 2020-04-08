@@ -294,8 +294,8 @@ def displayResults(master, text):
     from GtBurst import SubWindow
     from GtBurst.fontDefinitions import NORMALFONT
     from GtBurst import AutoHideScrollbar
-    from Tkinter import Canvas
-    from Tkinter import Text, W, E, N, S, INSERT
+    from tkinter import Canvas
+    from tkinter import Text, W, E, N, S, INSERT
     
     try:
       
