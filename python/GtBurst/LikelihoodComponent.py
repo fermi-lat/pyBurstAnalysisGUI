@@ -14,7 +14,7 @@ from GtBurst import cutout
 from GtBurst.angularDistance import getAngularDistance
 from GtBurst.getDataPath import getDataPath
 
-from FuncFactory import *
+from GtBurst.FuncFactory import *
 
 # List of available spectra, and respective constructors
 availableSourceSpectra = IRFS.CaseInsensitiveDict()
