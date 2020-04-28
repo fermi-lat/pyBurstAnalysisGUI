@@ -1,9 +1,9 @@
 from tkinter import *
-import tkFont
-from tkMessageBox import showerror
+import tkinter.font
+from tkinter.messagebox import showerror
 #from ttk import *
-from Treeview import Treeview
-import urllib2
+from GtBurst.Treeview import Treeview
+import urllib.request
 from GtBurst.fontDefinitions import *
 from GtBurst.EntryPoint import EntryPoint
 from GtBurst.SubWindow import SubWindow

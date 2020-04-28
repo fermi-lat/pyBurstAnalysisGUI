@@ -1,10 +1,10 @@
 import os
 from tkinter import *
 from GtBurst.fontDefinitions import *
-from tkMessageBox import showerror, showinfo 
+from tkinter.messagebox import showerror, showinfo 
 #from tkFileDialog import askdirectory
 #from tkFileDialog import askopenfilename
-import fancyFileDialogs
+import GtBurst.fancyFileDialogs
 
 
 def selectFile(parent,entry, extension="*",**kwargs):

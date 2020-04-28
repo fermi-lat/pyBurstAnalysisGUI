@@ -1,5 +1,5 @@
 import urllib
-import HTMLParser
+import html.parser as HTMLParser
 import time
 import re, os
 import sys

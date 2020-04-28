@@ -4,9 +4,9 @@ from GtBurst import commandDefiner
 from GtBurst.EntryPoint import EntryPoint
 import os
 import traceback
-from tkMessageBox import showerror, showinfo
+from tkinter.messagebox import showerror, showinfo
 from GtBurst.GtBurstException import GtBurstException
-import dataHandling
+import GtBurst.dataHandling
 
 class CommandPipeline(object):
     def __init__(self,frame,helpCallback,commands,datasets,console,

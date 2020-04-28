@@ -1,12 +1,12 @@
 from tkinter import *
-import tkFont
-import tkMessageBox 
-import ttk
+import tkinter.font
+import tkinter.messagebox 
+import tkinter.ttk
 from GtBurst.EntryPoint import EntryPoint
 from GtBurst.SubWindow import SubWindow
 from GtBurst.fontDefinitions import *
 import os, shutil
-from tkSimpleDialog import askfloat
+from tkinter.simpledialog import askfloat
 from xml.dom.minidom import parse, parseString
 import os
 from collections import OrderedDict
