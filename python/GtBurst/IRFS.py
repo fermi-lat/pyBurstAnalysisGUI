@@ -182,7 +182,7 @@ IRFS['P8_TRANSIENT015S']    = IRF('P8_TRANSIENT015S' ,  'P8R3_TRANSIENT015S_V2' 
 
 
 PROCS                         = collections.OrderedDict()
-for k,v in IRFS.iteritems():
+for k,v in iter(IRFS.items()):
   thisReprocessings       = v.reprocessingVersion.split(",")
   for repro in thisReprocessings:
     if(repro in PROCS.keys()):
