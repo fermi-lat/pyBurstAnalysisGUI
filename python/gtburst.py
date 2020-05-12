@@ -154,7 +154,6 @@ class MetaForExceptions(type):
 
     pass
 
-
 pass
 
 
@@ -749,7 +748,7 @@ class GUI(object):
         self.objectInfoFrame.grid(row=0, column=0, sticky=N + S + E + W)
         self.objectInfoEntries = {}
 
-        for parname, description in self.object.descriptions.iteritems():
+        for parname, description in iter(self.object.descriptions.items()):
             self.objectInfoEntries[parname] = EntryPoint(self.objectInfoFrame,
                                                          labeltext=description,
                                                          textwidth=colWidth,
@@ -1036,7 +1035,7 @@ class GUI(object):
         xp = (self.root.winfo_screenwidth() / 2) - (self.root.winfo_width() / 2)
         yp = (self.root.winfo_screenheight() / 2) - (self.root.winfo_height() / 2)
         self.root.geometry('{0}x{1}+{2}+{3}'.format(self.root.winfo_width(), self.root.winfo_height(),
-                                                    xp, yp))
+                                                    int(xp), int(yp)))
 
         # If the user try to expand the window, only the canvas will expand
         Grid.rowconfigure(self.root, 0, weight=1)
