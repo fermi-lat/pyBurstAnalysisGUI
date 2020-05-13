@@ -228,7 +228,7 @@ class xmlModelGUI(object):
                                  'max': maximum,
                                  'scale': scale,
                                  'free': free}
-        for k,v in pars.iteritems():
+        for k,v in iter(pars.items()):
           v                   = str(v)
           if(v=='no'):
             v                 = '0'

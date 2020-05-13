@@ -201,7 +201,7 @@ def getLATdataFromDirectory(directory):
     dataset['rspfile'] = os.path.join(directory, "gll_cspec_%s.rsp" % (rootName))
     dataset['cspecfile'] = cspecFile
     # Check that they actually exists
-    for k, v in dataset.iteritems():
+    for k, v in iter(datasetitems()):
         if (not os.path.exists(v)):
             raise RuntimeError("Datafile %s (%s) does not exists! Corrupted dataset..." % (v, k))
         pass
@@ -685,7 +685,7 @@ pass
 def _writeParamIntoXML(xmlmodel, **pardict):
     f = open(xmlmodel, 'a')
 
-    for key, value in pardict.iteritems():
+    for key, value in iter(pardict.items()):
         f.write("\n<!-- %s=%s -->" % (key.upper(), value))
     pass
 
@@ -1133,7 +1133,7 @@ class multiprocessScienceTools(dict):
 
     def singleproc_run(self):
 
-        for k, v in self.iteritems():
+        for k, v in iter(self.items()):
             self.scienceTool[k] = v
         pass
         self.scienceTool.run()
@@ -2027,7 +2027,7 @@ class LATData(LLEData):
         emax = None
         clul = 0.95
 
-        for k, v in kwargs.iteritems():
+        for k, v in iter(kwargs.items()):
             if (k == 'expomap'):
                 expomap = v
             elif (k == 'ltcube'):
@@ -2090,7 +2090,7 @@ class LATData(LLEData):
         emax = None
         clul = 0.95
 
-        for k, v in kwargs.iteritems():
+        for k, v in iter(kwargs.items()):
             if (k == 'expomap'):
                 expomap = v
             elif (k == 'ltcube'):
@@ -3623,7 +3623,7 @@ class Spectra(object):
         newTable.header.set('CREATOR', "dataHandling.py v.%s" % (moduleVersion),
                             "(G.Vianello, giacomov@slac.stanford.edu)")
 
-        for key, value in self.spectrumHeader.iteritems():
+        for key, value in iter(self.spectrumHeader.items()):
             newTable.header.set(key, value)
         pass
 
@@ -3632,7 +3632,7 @@ class Spectra(object):
 
         # Reopen the file and add the primary keywords, if any
         f = pyfits.open(filename, "update")
-        for key, value in self.primaryHeader.iteritems():
+        for key, value in iter(self.primaryHeader.items()):
             f[0].header.set(key, value)
         pass
         f.close()
@@ -3733,7 +3733,7 @@ class Spectra(object):
         newTable.header.set('CREATOR', "dataHandling.py v.%s" % (moduleVersion),
                             "(G.Vianello, giacomov@slac.stanford.edu)")
 
-        for key, value in self.spectrumHeader.iteritems():
+        for key, value in iter(self.spectrumHeader.items()):
             newTable.header.set(key, value)
         pass
 
@@ -3745,7 +3745,7 @@ class Spectra(object):
         # Add the keywords to identify the format
         self.primaryHeader["DATATYPE"] = 'CSPEC   '
         self.primaryHeader["FILETYPE"] = 'PHAII   '
-        for key, value in self.primaryHeader.iteritems():
+        for key, value in iter(self.primaryHeader.items()):
             primaryExt.header.set(key, value)
         pass
 

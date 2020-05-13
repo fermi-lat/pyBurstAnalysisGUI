@@ -36,7 +36,7 @@ def _fromPythonToTcl(optdict):
       ('-foreground', 'blue', '-padding', '1 2 3 4')"""
 
     opts = []
-    for opt, value in optdict.iteritems():
+    for opt, value in iter(optdict.items()):
       format = "%s"
       if isinstance(value, (list, tuple)):
         format = '{%s}'

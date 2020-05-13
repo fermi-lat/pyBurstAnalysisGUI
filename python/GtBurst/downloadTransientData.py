@@ -138,7 +138,7 @@ class DownloadTransientData(dataCollector):
     parameters['spacecraft']    = 'checked'
     
     print("Query parameters:")
-    for k,v in parameters.iteritems():
+    for k,v in iter(parameters.items()):
       print("%30s = %s" %(k,v))
     
     #POST encoding    

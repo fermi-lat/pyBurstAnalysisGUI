@@ -25,7 +25,7 @@ class CommandPipeline(object):
       #Fake filter (always return True)
       self.datasetsFilter     = lambda x: True
       
-      for k,v in kwargs.iteritems():
+      for k,v in iter(kwargs.items()):
         if(k=='datasetsfilter'):
           self.datasetsFilter  = v
         pass
@@ -54,7 +54,7 @@ class CommandPipeline(object):
       for command in self.commands:
         self.frames.append(Frame(self.frame))
         thisCommandEntries    = {}
-        for parname, parameter in command.definedParameters.iteritems():
+        for parname, parameter in iter(command.definedParameters.items()):
           #Skip all parameters related to dataset files (no need to ask them again!)
           #and skip the outfile parameter (will use default values)
           if(parameter.type==commandDefiner.DATASETFILE or 
@@ -182,7 +182,7 @@ class CommandPipeline(object):
             if(not self.datasetsFilter(dataset)):
               continue
             message          += "\n\n-Dataset %s:" %(dataset.detector)
-            for descr,product in self.finalProducts.iteritems():
+            for descr,product in iter(self.finalProducts.items()):
               message        += "\n  %-20s : %s" %(descr,os.path.basename(dataset[product]))
             pass
           pass
@@ -229,7 +229,7 @@ class CommandPipeline(object):
       #This method update the value of the form with the data stored in the datasets
       command               = self.commands[self.currentStep]
       dataset               = self.datasets[0]
-      for parname, parameter in command.definedParameters.iteritems():
+      for parname, parameter in iter(command.definedParameters.items()):
          if(parname in dataset.keys()):
               try:
                 print("%s -> %s" %(parname,dataset[parname]))
@@ -252,7 +252,7 @@ class CommandPipeline(object):
       self.buttonFrame.destroy()
       
       for entry in self.entries:
-        for k,v in entry.iteritems():
+        for k,v in iter(entry.items()):
           v.destroy()
         pass    
       pass
@@ -289,7 +289,7 @@ class CommandPipeline(object):
         
         thisParameters      = {}
         
-        for parname, parameter in command.definedParameters.iteritems():
+        for parname, parameter in (command.definedParameters.items()):
           if(parameter.type==commandDefiner.OUTPUTFILE and (parname not in dataset.keys())):
           
             #Set up the default name
@@ -320,7 +320,7 @@ class CommandPipeline(object):
         pass
         
         print("\n- Running %s on dataset %s with this parameters:\n" %(command.name, dataset.detector))
-        for key, value in thisParameters.iteritems():
+        for key, value in iter(thisParameters.items()):
           if(key=="figure" or key=="tkwindow"):
             continue
           print("%-20s = %s" %(key,value))

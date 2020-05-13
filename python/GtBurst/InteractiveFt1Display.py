@@ -188,7 +188,7 @@ class InteractiveFt1Display(object):
     self.eventDisplay.set_xlabel("Time since trigger (s)",fontsize='small')
     
     #Put the legend on top of the figure
-    for k,v in self.IRFToColor.iteritems():
+    for k,v in iter(self.IRFToColor.items()):
       self.eventDisplay.scatter([],[],s=20,lw=0,label=k,c=v)
     pass
         

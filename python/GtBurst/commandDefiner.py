@@ -83,7 +83,7 @@ class Command(object):
   pass
    
   def setParValuesFromDictionary(self,inputDict):
-    for parname, parameter in self.definedParameters.iteritems():
+    for parname, parameter in iter(self.definedParameters.items()):
       try:
         if(parameter.type==INPUTFILE):
           parameter.setValue(os.path.abspath(os.path.expanduser(inputDict[parname])))
@@ -113,7 +113,7 @@ class Command(object):
     message                  += "%s" %(self.description)
     message                  += "\n"
     message                  += "\nParameters:\n"
-    for parname, parameter in self.definedParameters.iteritems():
+    for parname, parameter in iter(self.definedParameters.items()):
       if(parameter.isMandatory()):
         description             = parameter.description
       elif(parameter.type==PYTHONONLY):
