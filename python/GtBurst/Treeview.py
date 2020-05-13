@@ -37,7 +37,7 @@ def tclobjs_to_py(adict):
     """Returns adict with its values converted from Tcl objects to Python
     objects."""
     for opt, val in adict.iteritems():
-        if val and hasattr(val, '__len__') and not isinstance(val, basestring):
+        if val and hasattr(val, '__len__') and not isinstance(val, str):
             if getattr(val[0], 'typename', None) == 'StateSpec':
                 val = _list_from_statespec(val)
             else:
@@ -66,7 +66,7 @@ def _format_optdict(optdict, script=False, ignore=None):
         if isinstance(value, (list, tuple)):
             v = []
             for val in value:
-                if isinstance(val, basestring):
+                if isinstance(val, str):
                     v.append(unicode(val) if val else '{}')
                 else:
                     v.append(str(val))
@@ -201,7 +201,7 @@ class Treeview(tkinter.Widget, tkinter.XView, tkinter.YView):
 
         To configure the tree column heading, call this with column = "#0" """
         cmd = kw.get('command')
-        if cmd and not isinstance(cmd, basestring):
+        if cmd and not isinstance(cmd, str):
             # callback not registered yet, do it now
             kw['command'] = self.master.register(cmd, self._substitute)
 
