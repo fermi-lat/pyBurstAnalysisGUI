@@ -36,7 +36,7 @@ def _dict_from_tcltuple(ttuple, cut_minus=True):
 def tclobjs_to_py(adict):
     """Returns adict with its values converted from Tcl objects to Python
     objects."""
-    for opt, val in adict.iteritems():
+    for opt, val in iter(adict.items()):
         if val and hasattr(val, '__len__') and not isinstance(val, str):
             if getattr(val[0], 'typename', None) == 'StateSpec':
                 val = _list_from_statespec(val)
@@ -59,7 +59,7 @@ def _format_optdict(optdict, script=False, ignore=None):
     format = "%s" if not script else "{%s}"
 
     opts = []
-    for opt, value in optdict.iteritems():
+    for opt, value in iter(optdict.items()):
         if ignore and opt in ignore:
             continue
 
@@ -67,7 +67,7 @@ def _format_optdict(optdict, script=False, ignore=None):
             v = []
             for val in value:
                 if isinstance(val, str):
-                    v.append(unicode(val) if val else '{}')
+                    v.append(val if val else '{}')
                 else:
                     v.append(str(val))
 

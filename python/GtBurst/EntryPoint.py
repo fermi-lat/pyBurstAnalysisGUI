@@ -88,8 +88,8 @@ class EntryPoint(object):
       else:
         #Multiple choice
         self.possibleValues = possibleValues
-        self.entry         =  apply(OptionMenu, (self.subFrame, 
-                                       self.variable) + tuple(self.possibleValues))
+        self.entry         =  OptionMenu(*((self.subFrame, 
+                                       self.variable) + tuple(self.possibleValues)))
         self.entry.grid(row=0,column=1,sticky=W)
         if(initValue in possibleValues):
           self.variable.set(initValue)

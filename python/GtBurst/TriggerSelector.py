@@ -152,7 +152,7 @@ class TriggerSelector(object):
           f.close()
         pass
         
-        self.data             = map(lambda x:x.strip().split("|")[1:-1],text.split("\n")[3:-2])
+        self.data             = list(map(lambda x:x.strip().split("|")[1:-1],text.split("\n")[3:-2]))
         #Convert RA, Dec from hh mm ss to decimal, and the trigger time from ISO UTC to MET
         for i in range(len(self.data)):
             #print(self.data[i])
@@ -169,7 +169,7 @@ class TriggerSelector(object):
                 pass
             
         #Remove all spaces
-        self.data             = map(lambda x:map(lambda y:y.replace(" ",''),x),self.data)
+        self.data             = list(map(lambda x:list(map(lambda y:y.replace(" ",''),x)),self.data))
         if(self.parent is not None):
             window.destroy()
     pass
@@ -179,7 +179,7 @@ class TriggerSelector(object):
         if(useFilter):
           self.filterFrame      = Frame(self.root)
           self.filterFrame.grid(row=0,column=0)
-          triggerTypes          = list(set(map(lambda x:x[2],self.data)))
+          triggerTypes          = list(set(list(map(lambda x:x[2],self.data))))
           triggerTypes.sort()
           triggerTypes.insert(0,'All')
           self.filter           = EntryPoint(self.filterFrame,labeltext="Type filter: ",
