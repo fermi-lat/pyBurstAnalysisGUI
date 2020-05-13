@@ -128,7 +128,7 @@ class TriggerSelector(object):
           pass
           
           try:
-            response              = urllib2.urlopen(url,None,timeout=60)
+            response              = urllib.request.urlopen(url,None,timeout=60)
           except:
             self.triggerName        = None
             self.triggerTime        = None
@@ -146,7 +146,7 @@ class TriggerSelector(object):
             return
           pass
           
-          text                  = response.read()
+          text                  = response.read().decode('utf-8')
           f                     = open("trigcat.txt",'w+')
           f.write(text)
           f.close()
