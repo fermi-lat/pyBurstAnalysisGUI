@@ -65,7 +65,7 @@ IGNORE_EMPHASIS = False
 
 def name2cp(k):
     if k == 'apos': return ord("'")
-    if hasattr(htmlentitydefs, "name2codepoint"): # requires Python 2.3
+    if hasattr(html.entities.entitydefs, "name2codepoint"): # requires Python 2.3
         return html.entities.name2codepoint[k]
     else:
         k = html.entities.entitydefs[k]
