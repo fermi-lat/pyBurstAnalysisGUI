@@ -138,13 +138,12 @@ def convertXML(gtlikexml, obssimxml, emin, emax):
 
     # Return the list of the sources contained in the file
 
-    source_names = map(lambda x: x.name, sources)
+    source_names = [x.name for x in sources]
 
-    fgl_sources = filter(lambda x: x.find("FGL ") >= 0, source_names)
-    fgl_sources = map(lambda x: "_%s" % x.replace(" ", "_").replace("-", "m").replace("+", "p").replace(".", ""),
-                      fgl_sources)
+    fgl_sources = [x for x in source_names if x.find("FGL ") >= 0]
+    fgl_sources = ["_%s" % x.replace(" ", "_").replace("-", "m").replace("+", "p").replace(".", "") for x in fgl_sources]
 
-    other_sources = filter(lambda x: x.find("FGL ") < 0, source_names)
+    other_sources = [x for x in source_names if x.find("FGL ") < 0]
 
     all_sources = other_sources
     all_sources.extend(fgl_sources)
@@ -173,7 +172,7 @@ def create_from_columns(*args, **kwargs):
 def getLATdataFromDirectory(directory):
     cspecFiles = glob.glob(os.path.join(os.path.abspath(directory), "gll_cspec_tr_*.pha"))
     if (len(cspecFiles) == 0):
-        print("No data available in directory %s." % (os.path.abspath(directory)))
+        print(("No data available in directory %s." % (os.path.abspath(directory))))
         return None
     pass
 
@@ -247,12 +246,12 @@ def makeNavigationPlots(ft2file, ra_obj, dec_obj, triggerTime):
     ra_zenith = ft2['SC_DATA'].data.field("RA_ZENITH")
     dec_zenith = ft2['SC_DATA'].data.field("DEC_ZENITH")
     time = ft2['SC_DATA'].data.field("START")
-    time = numpy.array(map(lambda x: x - triggerTime, time))
+    time = numpy.array([x - triggerTime for x in time])
     ft2.close()
 
-    zenith = map(lambda x: angularDistance.getAngularDistance(x[0], x[1], ra_obj, dec_obj), zip(ra_zenith, dec_zenith))
+    zenith = [angularDistance.getAngularDistance(x[0], x[1], ra_obj, dec_obj) for x in zip(ra_zenith, dec_zenith)]
     zenith = numpy.array(zenith)
-    theta = map(lambda x: angularDistance.getAngularDistance(x[0], x[1], ra_obj, dec_obj), zip(ra_scz, dec_scz))
+    theta = [angularDistance.getAngularDistance(x[0], x[1], ra_obj, dec_obj) for x in zip(ra_scz, dec_scz)]
     theta = numpy.array(theta)
 
     # mask out data gaps do they will appear as gaps in the plots
@@ -344,7 +343,7 @@ def testIfExecutableExists(program):
 
 def runShellCommand(string, echo=False):
     if (echo):
-        print("\n%s\n" % string)
+        print(("\n%s\n" % string))
     # This is to substitute os.system, which is not working well
     # in the ipython notebook
     try:
@@ -465,14 +464,14 @@ def _getLatestVersion(filename):
 
     fileList = glob.glob(os.path.join(directory, "%s_v*.%s" % (rootName, extension)))
     # Get the versions
-    matches = map(lambda x: re.search(regExp, x), fileList)
-    matches = filter(lambda x: x  is not None, matches)
+    matches = [re.search(regExp, x) for x in fileList]
+    matches = [x for x in matches if x  is not None]
 
     if (len(matches) == 0):
         raise RuntimeError("No version found for file of type %s. Does the directory contain data?" % (
         "%sv*.%s" % (rootName, extension)))
 
-    versions = map(lambda x: int(x.group(2)[2:]), matches)
+    versions = [int(x.group(2)[2:]) for x in matches]
     # Get the position of the maximum
     idx = versions.index(max(versions))
     # Get the most recent version of the file and return it
@@ -617,7 +616,7 @@ def _makeDatasetsOutOfLATdata(ft1, ft2, grbName, tstart, tstop,
     fakematrixhdu.header.set('EXTNAME', "SPECRESP MATRIX")
     eboundsFilename = os.path.join(localRepository, "gll_cspec_tr_bn%s_v00.rsp" % (grbName))
     thdulist = pyfits.HDUList([hdu, tbhdu, fakematrixhdu])
-    print("Writing %s..." % (eboundsFilename))
+    print(("Writing %s..." % (eboundsFilename)))
     thdulist.writeto(eboundsFilename, overwrite='yes')
 
     # Produce a CSPEC file with LAT Transient data
@@ -648,7 +647,7 @@ def _makeDatasetsOutOfLATdata(ft1, ft2, grbName, tstart, tstop,
     parameters['tstop'] = cspecstop
     parameters['cspecfile'] = cspecfile
     parameters['clobber'] = 'yes'
-    print("Writing %s..." % (cspecfile))
+    print(("Writing %s..." % (cspecfile)))
     gtllebin(**parameters)
 
     try:
@@ -685,7 +684,7 @@ pass
 def _writeParamIntoXML(xmlmodel, **pardict):
     f = open(xmlmodel, 'a')
 
-    for key, value in iter(pardict.items()):
+    for key, value in iter(list(pardict.items())):
         f.write("\n<!-- %s=%s -->" % (key.upper(), value))
     pass
 
@@ -746,9 +745,9 @@ pass
 
 def getTriggerTime(ff):
     f = pyfits.open(os.path.abspath(os.path.expanduser(ff)))
-    if ("UREFTIME" in f[0].header.keys()):
+    if ("UREFTIME" in list(f[0].header.keys())):
         trigTime = f[0].header['UREFTIME']
-    elif ("TRIGTIME" in f[0].header.keys()):
+    elif ("TRIGTIME" in list(f[0].header.keys())):
         trigTime = f[0].header['TRIGTIME']
     else:
         trigTime = -1
@@ -1133,7 +1132,7 @@ class multiprocessScienceTools(dict):
 
     def singleproc_run(self):
 
-        for k, v in iter(self.items()):
+        for k, v in iter(list(self.items())):
             self.scienceTool[k] = v
         pass
         self.scienceTool.run()
@@ -1302,7 +1301,7 @@ class my_gtexpmap(multiprocessScienceTools):
                         break
                     pass
                 pass
-                print("nlong is now %s" % (nlong + 6))
+                print(("nlong is now %s" % (nlong + 6)))
                 self['nlong'] = nlong + 6
             pass
             ybins = 2
@@ -1370,7 +1369,7 @@ class LATData(LLEData):
 
             self.evtype = 'INDEF'
 
-        for key in kwargs.keys():
+        for key in list(kwargs.keys()):
             if (key == "strategy"):
                 self.strategy = kwargs[key]
             elif (key == "evtype"):
@@ -1460,7 +1459,7 @@ class LATData(LLEData):
         f = pyfits.open(self.originalEventFile)
         reprocessingVersion = str(f[0].header['PROC_VER']).replace(" ", "")
         f.close()
-        print("\nUsing %s data\n" % (reprocessingVersion))
+        print(("\nUsing %s data\n" % (reprocessingVersion)))
 
         self.gtselect['infile'] = outfilemk
         if (roicut):
@@ -1479,7 +1478,7 @@ class LATData(LLEData):
         self.gtselect['emax'] = emax
         self.gtselect['zmax'] = zenithCut
 
-        if (irf.lower() in IRFS.IRFS.keys() and IRFS.IRFS[irf].validateReprocessing(str(reprocessingVersion))):
+        if (irf.lower() in list(IRFS.IRFS.keys()) and IRFS.IRFS[irf].validateReprocessing(str(reprocessingVersion))):
             irf = IRFS.IRFS[irf]
         else:
             raise ValueError(
@@ -1501,7 +1500,7 @@ class LATData(LLEData):
         
         # This try/except is to preserve compatibility with the
         # old science tools, which didn't have the evtype parameter
-        if ('evtype' in self.gtselect.keys()):
+        if ('evtype' in list(self.gtselect.keys())):
             self.gtselect['evtype'] = self.evtype
         pass
 
@@ -1532,7 +1531,7 @@ class LATData(LLEData):
         f[0].header.set('_THETAC', '%12.5f' % float(thetaCut))
 
         nEvents = len(f['EVENTS'].data.TIME)
-        print("\nSelected %s events." % (nEvents))
+        print(("\nSelected %s events." % (nEvents)))
         f.close()
 
         # Use the filtered event list as eventfile now
@@ -1688,7 +1687,7 @@ class LATData(LLEData):
 
         # This try/except is to preserve compatibility with the
         # old science tools, which didn't have the evtype parameter
-        if ('evtype' in self.gtexpmap.keys()):
+        if ('evtype' in list(self.gtexpmap.keys())):
             self.gtexpmap['evtype'] = self.evtype
         pass
 
@@ -1732,7 +1731,7 @@ class LATData(LLEData):
 
         # This try/except is to preserve compatibility with the
         # old science tools, which didn't have the evtype parameter
-        if ('evtype' in self.gtexpcube2.keys()):
+        if ('evtype' in list(self.gtexpcube2.keys())):
             if (self.irf.find("P7") >= 0):
                 self.gtexpcube2['evtype'] = 3
             else:
@@ -1759,7 +1758,7 @@ class LATData(LLEData):
 
         # This try/except is to preserve compatibility with the
         # old science tools, which didn't have the evtype parameter
-        if ('evtype' in self.gtsrcmaps.keys()):
+        if ('evtype' in list(self.gtsrcmaps.keys())):
             self.gtsrcmaps['evtype'] = self.evtype
         pass
 
@@ -1797,7 +1796,7 @@ class LATData(LLEData):
 
         # This try/except is to preserve compatibility with the
         # old science tools, which didn't have the evtype parameter
-        if ('evtype' in self.gtmodel.keys()):
+        if ('evtype' in list(self.gtmodel.keys())):
             if (self.irf.find("P7") >= 0):
                 self.gtmodel['evtype'] = 3
             else:
@@ -1826,7 +1825,7 @@ class LATData(LLEData):
 
         # This try/except is to preserve compatibility with the
         # old science tools, which didn't have the evtype parameter
-        if ('evtype' in self.gtdiffrsp.keys()):
+        if ('evtype' in list(self.gtdiffrsp.keys())):
             # Use INDEF so the evtype is guessed from the event file
 
             self.gtdiffrsp['evtype'] = 'INDEF'
@@ -1855,7 +1854,7 @@ class LATData(LLEData):
 
         # This try/except is to preserve compatibility with the
         # old science tools, which didn't have the evtype parameter
-        if ('evtype' in self.gtrspgen.keys()):
+        if ('evtype' in list(self.gtrspgen.keys())):
             self.gtrspgen['evtype'] = self.evtype
         pass
 
@@ -1912,7 +1911,7 @@ class LATData(LLEData):
 
         # This is to preserve compatibility with the
         # old science tools, which didn't have the evtype parameter
-        if ('evtype' in self.gtbkg.keys()):
+        if ('evtype' in list(self.gtbkg.keys())):
 
             # This kludge is to avoid a bug in gtbkg, which does
             # not accept evtype='indef' for p7 data
@@ -2027,7 +2026,7 @@ class LATData(LLEData):
         emax = None
         clul = 0.95
 
-        for k, v in iter(kwargs.items()):
+        for k, v in iter(list(kwargs.items())):
             if (k == 'expomap'):
                 expomap = v
             elif (k == 'ltcube'):
@@ -2090,7 +2089,7 @@ class LATData(LLEData):
         emax = None
         clul = 0.95
 
-        for k, v in iter(kwargs.items()):
+        for k, v in iter(list(kwargs.items())):
             if (k == 'expomap'):
                 expomap = v
             elif (k == 'ltcube'):
@@ -2182,11 +2181,11 @@ class LATData(LLEData):
 
                 total_error = 0.15
 
-                print("\nApplying a Gaussian prior with sigma %s on the normalization of the Galactic Template" % (
-                    total_error))
+                print(("\nApplying a Gaussian prior with sigma %s on the normalization of the Galactic Template" % (
+                    total_error)))
                 idx = like.par_index("GalacticTemplate", "Value")
                 like[idx].addGaussianPrior(1.0, total_error)
-                print (like[idx].getPriorParams())
+                print((like[idx].getPriorParams()))
 
         # Find the name of the GRB
 
@@ -2249,7 +2248,7 @@ class LATData(LLEData):
 
         # like1.ftol                     = 1e-10
         print("\nLikelihood settings:\n")
-        print(self.like1)
+        print((self.like1))
 
         print("\nPerforming likelihood fit...")
         try:
@@ -2304,7 +2303,7 @@ class LATData(LLEData):
 
         printer = LikelihoodComponent.LikelihoodResultsPrinter(self.like1, emin, emax)
         detectedSources = printer.niceXMLprint(outfilelike, tsmin, phIndex_beforeFit, clul)
-        print("\nLog(likelihood) = %s" % (logL))
+        print(("\nLog(likelihood) = %s" % (logL)))
 
         self.logL = logL
         self.resultsStrings = printer.resultsStrings
@@ -2401,9 +2400,9 @@ class LATData(LLEData):
         source_list = convertXML(gtlikexml, obssimxml, self.emin, self.emax)
 
         if exclude is not None:
-            print("Excluding source %s... " % (exclude))
+            print(("Excluding source %s... " % (exclude)))
 
-            source_list = filter(lambda x: x != exclude, source_list)
+            source_list = [x for x in source_list if x != exclude]
 
         # Now write the source_list.txt file
 
@@ -2417,7 +2416,7 @@ class LATData(LLEData):
         with open(obssimxml) as f:
             lines = f.readlines()
 
-            newlines = map(lambda x: x.replace("$($SIMDIR)", "$(SIMDIR)"), lines)
+            newlines = [x.replace("$($SIMDIR)", "$(SIMDIR)") for x in lines]
 
         with open(obssimxml, "w+") as f:
             f.write("".join(newlines))
@@ -2452,8 +2451,8 @@ class LATData(LLEData):
         cmdLine = cmdLine.replace("time -p ", "")
         cmdLine = cmdLine.replace('evtype="none"', "")
 
-        print("\n%s" % (cmdLine))
-        print (subprocess.check_output(cmdLine, shell=True))
+        print(("\n%s" % (cmdLine)))
+        print((subprocess.check_output(cmdLine, shell=True)))
 
         # Here we assume that gtobssim produced only one file
 
@@ -2530,10 +2529,10 @@ class Simulation(object):
         idsfile = glob.glob("%s_srcIds.txt" % (evroot))[0]
 
         f = open(idsfile, 'r')
-        print("\n%10s %30s %20s %20s" % ('Source ID', 'Source name', 'Sim. events', 'Detect. events'))
+        print(("\n%10s %30s %20s %20s" % ('Source ID', 'Source name', 'Sim. events', 'Detect. events')))
         for line in f.readlines():
             srcid, name, ngen, nobs = line.split()
-            print("%10s %30s %20s %20s" % (srcid.strip(), name.strip(), ngen.strip(), nobs.strip()))
+            print(("%10s %30s %20s %20s" % (srcid.strip(), name.strip(), ngen.strip(), nobs.strip())))
         pass
         print("")
         f.close()
@@ -2808,11 +2807,11 @@ class CspecBackground(object):
         nChannels = len(filteredData.field("COUNTS")[0])
         polynomials = []
         for chanNumber in range(nChannels):
-            print("\nChannel %s: " % (chanNumber))
+            print(("\nChannel %s: " % (chanNumber)))
             thisPolynomial, cstat = self._fitChannel(chanNumber, filteredData, optimalPolGrade)
             print(thisPolynomial)
-            print ('{0:>20} {1:>6.2f} for {2:<5} d.o.f.'.format("logLikelihood = ", cstat,
-                                                               len(filteredData) - optimalPolGrade))
+            print(('{0:>20} {1:>6.2f} for {2:<5} d.o.f.'.format("logLikelihood = ", cstat,
+                                                               len(filteredData) - optimalPolGrade)))
             polynomials.append(thisPolynomial)
         pass
         self.polynomials = polynomials
@@ -2823,7 +2822,7 @@ class CspecBackground(object):
     def makeLightCurveWithResiduals(self, **kwargs):
         print("\nComputing residuals...\n")
         lcFigure = None
-        for key in kwargs.keys():
+        for key in list(kwargs.keys()):
             if key.lower() == "figure":
                 lcFigure = kwargs[key]
         pass
@@ -2859,11 +2858,11 @@ class CspecBackground(object):
         f.close()
 
         subfigures.append(lcFigure.add_subplot(2, 1, 1, xlabel=xlabel, ylabel=ylabel))
-        subfigures[-1].step(t, map(lambda x: x[0] / x[1], zip(LC, exposure)), where='post')
+        subfigures[-1].step(t, [x[0] / x[1] for x in zip(LC, exposure)], where='post')
         subfigures[-1].xaxis.set_visible(False)
         # Now add the residuals
         residuals = []
-        for i, t1, t2 in zip(range(N), t[:-1], t[1:]):
+        for i, t1, t2 in zip(list(range(N)), t[:-1], t[1:]):
             backgroundCounts, backErr = self.getTotalBackgroundCounts(t1, t2)
             liveFrac = exposure[i] / (t2 - t1)
             try:
@@ -2873,10 +2872,10 @@ class CspecBackground(object):
                 residuals.append(0)
         pass
         subfigures.append(lcFigure.add_subplot(2, 1, 2, xlabel=xlabel, ylabel="Sigma"))
-        tmean = map(lambda x: (x[0] + x[1]) / 2.0, zip(t[:-1], t[1:]))
-        subfigures[-1].errorbar(tmean, residuals, yerr=map(lambda x: 1, tmean))
+        tmean = [(x[0] + x[1]) / 2.0 for x in zip(t[:-1], t[1:])]
+        subfigures[-1].errorbar(tmean, residuals, yerr=[1 for x in tmean])
         subfigures[-1].set_ylim([min(residuals), min(max(residuals), 10)])
-        subfigures[-1].step(tmean, map(lambda x: 0, tmean), "r--", where='post')
+        subfigures[-1].step(tmean, [0 for x in tmean], "r--", where='post')
 
         # Wait for the window to close
         self.retryButton = lcFigure.text(0.9, 0.15, 'Retry',
@@ -2945,14 +2944,14 @@ class CspecBackground(object):
         # (note that polyfit returns the coefficient starting from the maximum grade,
         # thus we need to reverse the order)
         if (test):
-            print("  Initial estimate with SVD..."),
+            print(("  Initial estimate with SVD..."), end=' ')
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             initialGuess = numpy.polyfit(x, y / exposure, polGrade)
         pass
         initialGuess = initialGuess[::-1]
         if (test):
-            print("  done -> %s" % (initialGuess))
+            print(("  done -> %s" % (initialGuess)))
 
         polynomial = Polynomial(initialGuess)
 
@@ -2965,7 +2964,7 @@ class CspecBackground(object):
             # Reset the initialGuess to reasonable value
             initialGuess[0] = numpy.mean(y)
             meanx = numpy.mean(x)
-            initialGuess = map(lambda x: abs(x[1]) / pow(meanx, x[0]), enumerate(initialGuess))
+            initialGuess = [abs(x[1]) / pow(meanx, x[0]) for x in enumerate(initialGuess)]
 
         # Improve the solution using a logLikelihood statistic (Cash statistic)
         logLikelihood = LogLikelihood(x, y, polynomial, exposure=exposure)
@@ -2974,7 +2973,7 @@ class CspecBackground(object):
         # otherwise lower the grade
         dof = Nnonzero - (polGrade + 1)
         if (test):
-            print("Effective dof: %s" % (dof))
+            print(("Effective dof: %s" % (dof)))
         if (dof <= 2):
             # Fit is poorly or ill-conditioned, have to reduce the number of parameters
             while (dof < 2 and len(initialGuess) > 1):
@@ -3044,10 +3043,10 @@ class CspecBackground(object):
             logLikelihoods.append(logLike)
         pass
         # Found the best one
-        deltaLoglike = numpy.array(map(lambda x: 2 * (x[0] - x[1]), zip(logLikelihoods[:-1], logLikelihoods[1:])))
+        deltaLoglike = numpy.array([2 * (x[0] - x[1]) for x in zip(logLikelihoods[:-1], logLikelihoods[1:])])
         print("\ndelta log-likelihoods:")
         for i in range(maxGrade):
-            print("%s -> %s: delta Log-likelihood = %s" % (i, i + 1, deltaLoglike[i]))
+            print(("%s -> %s: delta Log-likelihood = %s" % (i, i + 1, deltaLoglike[i])))
         pass
         print("")
         deltaThreshold = 9.0
@@ -3147,7 +3146,7 @@ class Spectrum(object):
         self.poisserr = False
 
         # Update default values with keywords content, if specified
-        for key in kwargs.keys():
+        for key in list(kwargs.keys()):
             if (key.lower() == "telescope"):
                 self.telescope = kwargs[key]
             elif (key.lower() == "instrument"):
@@ -3209,27 +3208,27 @@ class Spectrum(object):
     pass
 
     def getRates(self):
-        return map(lambda key: self.spectrum[self.channels[key]][0], self.sortedChanellNumbers)
+        return [self.spectrum[self.channels[key]][0] for key in self.sortedChanellNumbers]
 
     pass
 
     def getStat_err(self):
-        return map(lambda key: self.spectrum[self.channels[key]][1], self.sortedChanellNumbers)
+        return [self.spectrum[self.channels[key]][1] for key in self.sortedChanellNumbers]
 
     pass
 
     def getSys_err(self):
-        return map(lambda key: self.spectrum[self.channels[key]][2], self.sortedChanellNumbers)
+        return [self.spectrum[self.channels[key]][2] for key in self.sortedChanellNumbers]
 
     pass
 
     def getQuality(self):
-        return map(lambda key: self.spectrum[self.channels[key]][3], self.sortedChanellNumbers)
+        return [self.spectrum[self.channels[key]][3] for key in self.sortedChanellNumbers]
 
     pass
 
     def getGrouping(self):
-        return map(lambda key: self.spectrum[self.channels[key]][4], self.sortedChanellNumbers)
+        return [self.spectrum[self.channels[key]][4] for key in self.sortedChanellNumbers]
 
     pass
 
@@ -3299,7 +3298,7 @@ class Spectra(object):
         try:
             q = numpy.array(data.field(name))
         except:
-            q = numpy.array(map(lambda x: header[name], range(len(data))))
+            q = numpy.array([header[name] for x in range(len(data))])
         pass
 
         return q
@@ -3311,7 +3310,7 @@ class Spectra(object):
             rate = data.field("RATE")
         except:
             counts = data.field("COUNTS")
-            rate = numpy.array(map(lambda x: x[0] / x[1], zip(counts, (data.field("TELAPSE")))))
+            rate = numpy.array([x[0] / x[1] for x in zip(counts, (data.field("TELAPSE")))])
         pass
         return rate
 
@@ -3324,10 +3323,10 @@ class Spectra(object):
             if (q.ndim == 1):
                 # q has one value for spectrum, while we need N values for each i-th spectrum, where
                 # N is len(channel[i]). Copy the value to generate an array for each spectrum
-                q = numpy.array(map(lambda x: numpy.zeros(len(x)) + q, channels))
+                q = numpy.array([numpy.zeros(len(x)) + q for x in channels])
             pass
         except:
-            q = numpy.array(map(lambda x: numpy.zeros(len(x)) + defaultValue, channels))
+            q = numpy.array([numpy.zeros(len(x)) + defaultValue for x in channels])
         pass
 
         return q
@@ -3452,7 +3451,7 @@ class Spectra(object):
         # Fill all the lists
         self.tstart.append(spectrum.tstart)
         self.tstop.append(spectrum.tstop)
-        self.channel.append(spectrum.channels.keys())
+        self.channel.append(list(spectrum.channels.keys()))
         self.rate.append(spectrum.getRates())
         self.stat_err.append(spectrum.getStat_err())
         self.sys_err.append(spectrum.getSys_err())
@@ -3466,9 +3465,9 @@ class Spectra(object):
         # This is to store the maximum length of the strings describing background,
         # response and ancillary files, which is needed to write the columns in the correct
         # FITS format
-        self.maxlengthbackfile = max(map(lambda x: len(x), self.backfile))
-        self.maxlengthrespfile = max(map(lambda x: len(x), self.respfile))
-        self.maxlengthancrfile = max(map(lambda x: len(x), self.ancrfile))
+        self.maxlengthbackfile = max([len(x) for x in self.backfile])
+        self.maxlengthrespfile = max([len(x) for x in self.respfile])
+        self.maxlengthancrfile = max([len(x) for x in self.ancrfile])
 
         self.setPoisson()
 
@@ -3497,7 +3496,7 @@ class Spectra(object):
 
         format = 'PHA2'
         clobber = False
-        for key in kwargs.keys():
+        for key in list(kwargs.keys()):
             if (key.lower() == "format"):
                 format = kwargs[key].upper()
                 if (format != "PHA2" and format != "CSPEC"):
@@ -3524,7 +3523,7 @@ class Spectra(object):
 
         trigTime = None
         clobber = False
-        for key in kwargs.keys():
+        for key in list(kwargs.keys()):
             if (key.lower() == "trigtime"):
                 trigTime = kwargs[key]
             elif (key.lower() == "clobber"):
@@ -3548,7 +3547,7 @@ class Spectra(object):
                                    array=(numpy.array(self.tstop) - numpy.array(self.tstart)), unit="s")
 
         spec_numCol = pyfits.Column(name='SPEC_NUM', format='I',
-                                    array=range(1, len(self.spectra) + 1))
+                                    array=list(range(1, len(self.spectra) + 1)))
 
         channelCol = pyfits.Column(name='CHANNEL', format=vectFormatI,
                                    array=numpy.array(self.channel))
@@ -3623,7 +3622,7 @@ class Spectra(object):
         newTable.header.set('CREATOR', "dataHandling.py v.%s" % (moduleVersion),
                             "(G.Vianello, giacomov@slac.stanford.edu)")
 
-        for key, value in iter(self.spectrumHeader.items()):
+        for key, value in iter(list(self.spectrumHeader.items())):
             newTable.header.set(key, value)
         pass
 
@@ -3632,7 +3631,7 @@ class Spectra(object):
 
         # Reopen the file and add the primary keywords, if any
         f = pyfits.open(filename, "update")
-        for key, value in iter(self.primaryHeader.items()):
+        for key, value in iter(list(self.primaryHeader.items())):
             f[0].header.set(key, value)
         pass
         f.close()
@@ -3655,7 +3654,7 @@ class Spectra(object):
         # of the first spectrum as default value
         trigTime = min(self.tstart)
         clobber = False
-        for key in kwargs.keys():
+        for key in list(kwargs.keys()):
             if (key.lower() == "trigtime"):
                 trigTime = kwargs[key]
             elif (key.lower() == "clobber"):
@@ -3668,16 +3667,16 @@ class Spectra(object):
 
         dt = numpy.array(self.tstop) - numpy.array(self.tstart)
 
-        counts = map(lambda x: x[0] * x[1], zip(numpy.array(self.rate), dt))
+        counts = [x[0] * x[1] for x in zip(numpy.array(self.rate), dt)]
 
         countsCol = pyfits.Column(name='COUNTS', format=vectFormatI,
                                   array=numpy.array(counts),
                                   unit="Counts")
         if (self.poisserr == False):
-            stat_err = map(lambda x: x[0] * x[1], zip(numpy.array(self.stat_err), dt))
+            stat_err = [x[0] * x[1] for x in zip(numpy.array(self.stat_err), dt)]
             stat_errCol = pyfits.Column(name='STAT_ERR', format=vectFormatD,
                                         array=numpy.array(stat_err))
-            sys_err = map(lambda x: x[0] * x[1], zip(numpy.array(self.sys_err), dt))
+            sys_err = [x[0] * x[1] for x in zip(numpy.array(self.sys_err), dt)]
             sys_errCol = pyfits.Column(name='SYS_ERR', format=vectFormatD,
                                        array=numpy.array(sys_err))
         pass
@@ -3687,7 +3686,7 @@ class Spectra(object):
 
         # If there is even just one bad channel in a given spectrum, set its quality as bad
         qualityCol = pyfits.Column(name='QUALITY', format="I",
-                                   array=numpy.array(map(lambda x: max(x), self.quality)))
+                                   array=numpy.array([max(x) for x in self.quality]))
 
         timeCol = pyfits.Column(name='TIME', format='D',
                                 array=numpy.array(self.tstart), unit="s", bzero=trigTime)
@@ -3733,7 +3732,7 @@ class Spectra(object):
         newTable.header.set('CREATOR', "dataHandling.py v.%s" % (moduleVersion),
                             "(G.Vianello, giacomov@slac.stanford.edu)")
 
-        for key, value in iter(self.spectrumHeader.items()):
+        for key, value in iter(list(self.spectrumHeader.items())):
             newTable.header.set(key, value)
         pass
 
@@ -3745,7 +3744,7 @@ class Spectra(object):
         # Add the keywords to identify the format
         self.primaryHeader["DATATYPE"] = 'CSPEC   '
         self.primaryHeader["FILETYPE"] = 'PHAII   '
-        for key, value in iter(self.primaryHeader.items()):
+        for key, value in iter(list(self.primaryHeader.items())):
             primaryExt.header.set(key, value)
         pass
 
@@ -3874,7 +3873,7 @@ def findMaximumTSmap(tsmap, tsexpomap):
             break
         else:
             # Mask out this value
-            print("Neglecting maximum at %s,%s because of low exposure there..." % (ra, dec))
+            print(("Neglecting maximum at %s,%s because of low exposure there..." % (ra, dec)))
             image[idxs[0], idxs[1]] = 0.0
             idxs = numpy.unravel_index(image.argmax(), image.shape)
             # R.A., Dec of the maximum (the +1 is due to the FORTRAN Vs C convention

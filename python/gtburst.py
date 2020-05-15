@@ -116,7 +116,7 @@ knownDetectors = ['n0', 'n1', 'n2', 'n3', 'n4', 'n5', 'n6', 'n7', 'n8', 'n9', 'n
 class MetaForExceptions(type):
     def __new__(cls, name, bases, attrs):
 
-        for attr_name, attr_value in attrs.iteritems():
+        for attr_name, attr_value in attrs.items():
             if isinstance(attr_value, types.FunctionType):
                 attrs[attr_name] = cls.exceptionHandlerDecorator(attr_value)
 
@@ -157,9 +157,7 @@ class MetaForExceptions(type):
 pass
 
 
-class GUI(object):
-    __metaclass__ = MetaForExceptions
-
+class GUI(object, metaclass=MetaForExceptions):
     def __init__(self):
         self.configuration = Configuration()
         # Figure out where are the data
@@ -298,7 +296,7 @@ class GUI(object):
                     dataset['rspfile'] = _getLatestVersion(
                         os.path.join(directory, "%s_cspec_%s.rsp" % (prefix, rootName)))
                 except:
-                    if ('rspfile' in dataset.keys()):
+                    if ('rspfile' in list(dataset.keys())):
                         del dataset['rspfile']
                     # I did not find any .rsp file nor any .rsp2 file
                     dataset.status = "noRESP"
@@ -307,7 +305,7 @@ class GUI(object):
         pass
 
         # Check that the file exists
-        for key, f in dataset.iteritems():
+        for key, f in dataset.items():
             if (key == 'ft2file' and prefix == 'glg'):
                 # It's ok not having the FT2 file with GBM data
                 continue
@@ -346,7 +344,7 @@ class GUI(object):
         f = pyfits.open(self.datasets[0]['rspfile'])
         header = f[0].header
 
-        for key in self.objectInfoEntries.keys():
+        for key in list(self.objectInfoEntries.keys()):
             self.objectInfoEntries[key].entry.config(state='normal')
             if (key == 'name'):
                 # Workaround for the OBJECT keyword, which is wrong in some files
@@ -440,7 +438,7 @@ class GUI(object):
         except:
             # Try and read it from the event file
             f = pyfits.open(entries['eventfile'].get())
-            if ('TRIGTIME' in f[0].header.keys()):
+            if ('TRIGTIME' in list(f[0].header.keys())):
                 triggerTime = float(f[0].header['TRIGTIME'])
             else:
                 showerror("Error in the trigger time",
@@ -485,8 +483,8 @@ class GUI(object):
             sys.stderr.write("\nChange of trigger time canceled. Keeping the old value.\n")
             return
         for dataset in self.datasets:
-            print("Using %s as trigger time for detector %s and object %s" % (triggerTime, dataset.detector,
-                                                                              dataset.triggerName))
+            print(("Using %s as trigger time for detector %s and object %s" % (triggerTime, dataset.detector,
+                                                                              dataset.triggerName)))
             dataset.triggerTime = triggerTime
         pass
 
@@ -519,8 +517,8 @@ class GUI(object):
     def makeNavigationPlots(self):
         # Find if there is any available ft2 file
         # Search for LAT standard data
-        LATdataset = filter(lambda x: x.detector == "LAT", self.datasets)
-        LLEdataset = filter(lambda x: x.detector == "LAT-LLE", self.datasets)
+        LATdataset = [x for x in self.datasets if x.detector == "LAT"]
+        LLEdataset = [x for x in self.datasets if x.detector == "LAT-LLE"]
         if (len(LATdataset) != 0):
             # We have LAT standard data
             ft2file = LATdataset[0]['ft2file']
@@ -560,7 +558,7 @@ class GUI(object):
                 showinfo("No update", "No update available at this moment!")
                 print("No update available at this moment!")
             else:
-                print("\nDone! %s files updated" % (nUpdates))
+                print(("\nDone! %s files updated" % (nUpdates)))
                 showinfo("Restarting gtburst",
                          "Update finished! About to restart gtburst for the update to take effect.")
                 reset()
@@ -664,9 +662,9 @@ class GUI(object):
         self.console.grid(row=0, column=0, sticky=W + E + N + S)
         consoleScrollbar.grid(row=0, column=1, sticky=W + E + N + S)
         self.console.start()
-        print(
+        print((
         "Welcome to the %s v. %s!\n\nCredits: G.Vianello (giacomov@slac.stanford.edu), N.Omodei (nicola.omodei@gmail.com)\n" % (
-        GUIname, packageVersion))
+        GUIname, packageVersion)))
         print("This software embeds:")
         print("-gtapps_mp by J. Perkins (http://fermi.gsfc.nasa.gov/ssc/data/analysis/user/)")
         print("-APlpy (http://aplpy.github.io/)")
@@ -748,7 +746,7 @@ class GUI(object):
         self.objectInfoFrame.grid(row=0, column=0, sticky=N + S + E + W)
         self.objectInfoEntries = {}
 
-        for parname, description in iter(self.object.descriptions.items()):
+        for parname, description in iter(list(self.object.descriptions.items())):
             self.objectInfoEntries[parname] = EntryPoint(self.objectInfoFrame,
                                                          labeltext=description,
                                                          textwidth=colWidth,
@@ -858,8 +856,8 @@ class GUI(object):
 
     def recenterROIafterSkymap(self, datasetsFilter=lambda x: True):
         # Update RA and DEC
-        dataset = filter(datasetsFilter, self.datasets)[0]
-        if ('user_ra' in dataset.keys()):
+        dataset = list(filter(datasetsFilter, self.datasets))[0]
+        if ('user_ra' in list(dataset.keys())):
             user_ra = dataset['user_ra']
             user_dec = dataset['user_dec']
 
@@ -885,7 +883,7 @@ class GUI(object):
 
     def simulateObservation(self):
         datasetsFilter = lambda x: x.detector == "LAT"
-        datasets = filter(datasetsFilter, self.datasets)
+        datasets = list(filter(datasetsFilter, self.datasets))
 
         triggernamesim = "%ssim" % self.objectInfoEntries['name'].variable.get()
 
@@ -908,7 +906,7 @@ class GUI(object):
         pass
 
         latdataset = datasets[0]
-        if ('likexmlresults' in latdataset.keys()):
+        if ('likexmlresults' in list(latdataset.keys())):
             gteditxmlmodelsim.definedParameters['likexmlresults'].value = latdataset['likexmlresults']
 
         gteditxmlmodelsim.definedParameters['tkwindow'].value = self.root
@@ -948,7 +946,7 @@ class GUI(object):
         datasetsFilter = lambda x: x.detector == "LAT"
 
         # Get the processing version for this LAT data
-        reproc = pyfits.getval(filter(datasetsFilter, self.datasets)[0]['eventfile'], 'PROC_VER', ext=0)
+        reproc = pyfits.getval(list(filter(datasetsFilter, self.datasets))[0]['eventfile'], 'PROC_VER', ext=0)
 
         # Select the appropriate irfs
         irfs = IRFS.PROCS[str(reproc)]
@@ -956,7 +954,7 @@ class GUI(object):
         # If the ORIGIN keyword is 'FSSC' then remove P8TRANSIENT_R100E and P8TRANSIENT_R100
         # because the FSSC release of P8 does not contain them
 
-        origin = pyfits.getval(filter(datasetsFilter, self.datasets)[0]['eventfile'],
+        origin = pyfits.getval(list(filter(datasetsFilter, self.datasets))[0]['eventfile'],
                                'ORIGIN',
                                ext=('EVENTS', 1))
 
@@ -1082,7 +1080,7 @@ class GUI(object):
         # since there is no point in doing the polynomial fit for those data
         datasetsFilter = lambda x: x.detector != "LAT"
 
-        datasets = filter(datasetsFilter, self.datasets)
+        datasets = list(filter(datasetsFilter, self.datasets))
 
         if (len(datasets) == 0):
             showinfo("No suitable datasets",
@@ -1098,7 +1096,7 @@ class GUI(object):
                                     commandDefiner.MANDATORY,
                                     None,
                                     partype=commandDefiner.PYTHONONLY,
-                                    possibleValues=map(lambda x: x.detector, datasets))
+                                    possibleValues=[x.detector for x in datasets])
         commands.append(gtllesrcbindef)
         commands.append(gtllebkgGUI)
         commands.append(gtllesrc)
@@ -1146,7 +1144,7 @@ class GUI(object):
                     else:
                         f.write("data %i:%i %s{%i} \n" % (i + 1, i + 1, dataset['srcspectra'], intID))
                         f.write("back %i %s{%i} \n" % (i + 1, dataset['bkgspectra'], intID))
-                        if ('weightedrsp' in dataset.keys()):
+                        if ('weightedrsp' in list(dataset.keys())):
                             f.write("resp %i %s{%i} \n" % (i + 1, dataset['weightedrsp'], intID))
                         else:
                             f.write("resp %i %s \n" % (i + 1, dataset['rspfile']))
@@ -1169,14 +1167,14 @@ class GUI(object):
                 maxDim = max(len(dataset['bkgspectra']), len(dataset['rspfile'])) + 20
                 frmt = "%sA" % (maxDim)
                 # Add two columns to the PHA II file: BACKFILE and RESPFILE
-                backfileArr = numpy.array(map(lambda x: "%s{%i}" % (dataset['bkgspectra'], x + 1), range(nIntervals)))
+                backfileArr = numpy.array(["%s{%i}" % (dataset['bkgspectra'], x + 1) for x in range(nIntervals)])
                 backfileCol = pyfits.Column(name='BACKFILE', format=frmt,
                                             array=backfileArr)
-                if 'weightedrsp' in dataset.keys():
+                if 'weightedrsp' in list(dataset.keys()):
                     respfileArr = numpy.array(
-                        map(lambda x: "%s{%i}" % (dataset['weightedrsp'], x + 1), range(nIntervals)))
+                        ["%s{%i}" % (dataset['weightedrsp'], x + 1) for x in range(nIntervals)])
                 else:
-                    respfileArr = numpy.array(map(lambda x: "%s{%i}" % (dataset['rspfile'], x + 1), range(nIntervals)))
+                    respfileArr = numpy.array(["%s{%i}" % (dataset['rspfile'], x + 1) for x in range(nIntervals)])
                 pass
                 respfileCol = pyfits.Column(name='RESPFILE', format=frmt,
                                             array=respfileArr)
@@ -1511,7 +1509,7 @@ class GUI(object):
             variables[3].set(0)
             types = ["TTE", "CSPEC", "RSP", "CTIME"]
             checks = []
-            for i, v, t in zip(range(len(variables)), variables, types):
+            for i, v, t in zip(list(range(len(variables))), variables, types):
                 checks.append(Checkbutton(checkButtonsFrame, text="%s data" % (t), variable=v))
                 checks[-1].grid(row=i, column=0, sticky=W)
             pass
@@ -1582,7 +1580,7 @@ class GUI(object):
         entries = {}
         sortedKeys = sorted(self.configuration.keys())
 
-        for key in self.configuration.keys():
+        for key in list(self.configuration.keys()):
             if (key != 'maxNumberOfCPUs'):
                 directory = True
                 browser = True
@@ -1609,7 +1607,7 @@ class GUI(object):
 
     def saveConfiguration(self, entries, window):
         
-        for key in entries.keys():
+        for key in list(entries.keys()):
         
             self.configuration.set(key, entries[key].get())
 
@@ -1727,7 +1725,7 @@ class GUI(object):
                                                          dataset.detector)
                 angleString = '%3.0f' % (angle)
                 dataset.angleToGRB = angle
-            elif ('trigdat' in dataset.keys() and RA_OBJ != 'not available'):
+            elif ('trigdat' in list(dataset.keys()) and RA_OBJ != 'not available'):
                 try:
                     f = pyfits.open(dataset['trigdat'])
                     # Get spacecraft pointing
@@ -1796,7 +1794,7 @@ class GUI(object):
         RAs = []
         DECs = []
         names = []
-        for dataset, yesNo in zip(datasets, map(lambda x: x.get(), parValues)):
+        for dataset, yesNo in zip(datasets, [x.get() for x in parValues]):
             if (yesNo == 1):
                 triggerTimes.append(dataset.triggerTime)
                 try:
@@ -1846,7 +1844,7 @@ class GUI(object):
 
         # Check for the coordinates of the source
         if ((max(RAs) - min(RAs) > 0.2) or (max(DECs) - min(DECs) > 0.2)):
-            string = map(lambda x: "%s -> (%s,%s); " % (x[0], x[1], x[2]), zip(names, RAs, DECs))
+            string = ["%s -> (%s,%s); " % (x[0], x[1], x[2]) for x in zip(names, RAs, DECs)]
             showerror("Inconsistent coordinates",
                       "The selected datasets have been generated with inconsistent coordinates for the source.\n%s\n Please write to the FSSC." % (
                       string),
@@ -1863,8 +1861,8 @@ class GUI(object):
                 self.datasets = []
                 return
             for dataset in datasets:
-                print("Using %s as trigger time for detector %s and object %s" % (triggerTime, dataset.detector,
-                                                                                  dataset.triggerName))
+                print(("Using %s as trigger time for detector %s and object %s" % (triggerTime, dataset.detector,
+                                                                                  dataset.triggerName)))
                 dataset.triggerTime = triggerTime
         if (max(triggerTimes) - min(triggerTimes) > 1E-3):
             msg = "Minimum trigger time: %s\nMaximum trigger time: %s" % (min(triggerTimes), max(triggerTimes))
@@ -1875,8 +1873,8 @@ class GUI(object):
                 self.datasets = []
                 return
             for dataset in datasets:
-                print("Using %s as trigger time for detector %s and trigger %s" % (triggerTime, dataset.detector,
-                                                                                   dataset.triggerName))
+                print(("Using %s as trigger time for detector %s and trigger %s" % (triggerTime, dataset.detector,
+                                                                                   dataset.triggerName)))
                 dataset.triggerTime = triggerTime
         else:
             triggerTime = datasets[0].triggerTime
@@ -1908,11 +1906,11 @@ class GUI(object):
             pass
 
             # Activate the Make spectra button in the main window if there is either a GBM or a LLE dataset
-            if (len(filter(lambda x: x.detector != "LAT", self.datasets)) > 0):
+            if (len([x for x in self.datasets if x.detector != "LAT"]) > 0):
                 self.tasksmenu.entryconfig(4, state=NORMAL)
 
             # If there is a LAT dataset, activate also the likelihood and the simulations button
-            if (len(filter(lambda x: x.detector == "LAT", self.datasets)) > 0):
+            if (len([x for x in self.datasets if x.detector == "LAT"]) > 0):
                 for i in range(4):
                     self.tasksmenu.entryconfig(i, state=NORMAL)
 
@@ -1950,8 +1948,8 @@ class GUI(object):
                                                             text="%s (%i deg)" % (dataset.detector, dataset.angleToGRB),
                                                             variable=self.displayDatasetVars[-1],
                                                             command=self.makeLightCurves))
-                row = i / 3 + 1
-                col = i - (row - 1) * 3
+                row = int(i / 3 + 1)
+                col = int(i - (row - 1) * 3)
 
                 self.displayCheckButtons[-1].grid(column=col, row=row, sticky=SW)
             pass
@@ -1970,7 +1968,7 @@ class GUI(object):
     pass
 
     def writeDefaultHelpMessage(self):
-        message = "Loaded datasets: %s" % ','.join(map(lambda x: x.detector, self.datasets))
+        message = "Loaded datasets: %s" % ','.join([x.detector for x in self.datasets])
         if (self.useOnlyCSPEC):
             message += " (NOT using GBM TTE data, as per user request)"
         self.updateRootStatusbar(message,
@@ -1989,8 +1987,8 @@ class GUI(object):
             self.eventLock = True
         pass
 
-        detToDisplay = filter(lambda x: x[0].get() == 1, zip(self.displayDatasetVars, self.datasets))
-        detToDisplay = map(lambda x: x[1], detToDisplay)
+        detToDisplay = [x for x in zip(self.displayDatasetVars, self.datasets) if x[0].get() == 1]
+        detToDisplay = [x[1] for x in detToDisplay]
 
         nDatasets = len(detToDisplay)
 
