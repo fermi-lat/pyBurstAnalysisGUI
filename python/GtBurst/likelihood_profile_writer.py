@@ -192,7 +192,7 @@ class LikelihoodProfiler(object):
         # from the minimum)
         grid = np.logspace(np.log10(min_value), np.log10(max_value), 1000)[1:-1]
 
-        grid_log_like_values = map(lnprob, np.log10(grid))
+        grid_log_like_values = list(map(lnprob, np.log10(grid)))
 
         log_like_values = np.append(log_like_values, grid_log_like_values)
         photon_flux = np.append(photon_flux, grid)

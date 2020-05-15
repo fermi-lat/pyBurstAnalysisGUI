@@ -40,7 +40,7 @@ def findGalacticTemplate(irfname, ra, dec, rad, cutout_name=None):
                                                 "You don't have a Galactic template for IRF %s. Cannot continue." % (
                                                 irfname))
     else:
-        print("\nFound Galactic template for IRF. %s: %s" % (irfname, templ))
+        print(("\nFound Galactic template for IRF. %s: %s" % (irfname, templ)))
         print("\nCutting the template around the ROI: \n")
         name, ext = os.path.basename(templ).split(".")
         
@@ -74,7 +74,7 @@ def findIsotropicTemplate(irfname):
                                                 "You don't have an Isotropic template for IRF %s. Cannot continue." % (
                                                 irfname))
     else:
-        print("\nFound Isotropic template for irf %s: %s" % (irfname, templ))
+        print(("\nFound Isotropic template for irf %s: %s" % (irfname, templ)))
         return templ
 
 
@@ -124,7 +124,7 @@ def findTemplate(options):
         # The user forces the template path
 
         path = os.environ.get('GTBURST_TEMPLATE_PATH')
-        print("\n\nUsing user-defined path for templates: %s\n\n" % (path))
+        print(("\n\nUsing user-defined path for templates: %s\n\n" % (path)))
     pass
 
     for tmp in templates:
@@ -135,7 +135,7 @@ def findTemplate(options):
     pass
 
     # If we are here no template has been found
-    print("\nI was looking for %s into %s\n" % (",".join(templates), path))
+    print(("\nI was looking for %s into %s\n" % (",".join(templates), path)))
     return None
 
 
@@ -220,7 +220,7 @@ class GenericSource(object):
         xml = xml.replace("<spectrum", "   <spectrum")
         xml = xml.replace("</source", "\n</source")
         # Remove repetite blanck lines
-        xml = "\n".join(filter(lambda x: x.replace(" ", '') != "", xml.split("\n")))
+        xml = "\n".join([x for x in xml.split("\n") if x.replace(" ", '') != ""])
         return "%s\n" % xml
 
     pass
@@ -240,10 +240,10 @@ def myPtSrc(spectrumFunction):
     src = minidom.parseString(src).getElementsByTagName('source')[0]
     src = Source(src)
 
-    if (spectrumFunction not in availableSourceSpectra.keys()):
+    if (spectrumFunction not in list(availableSourceSpectra.keys())):
         raise RuntimeError("Spectrum function %s is not available. Available functions are: %s" % (spectrumFunction,
                                                                                                    ",".join(
-                                                                                                       availableSourceSpectra.keys())
+                                                                                                       list(availableSourceSpectra.keys()))
                                                                                                    ))
 
     src.spectrum = availableSourceSpectra[spectrumFunction]()
@@ -475,10 +475,10 @@ class catalog_2FGL(object):
                     # Remove this source
                     root.remove(source)
                 elif (float(thisDist) <= 0.01):
-                    print("\nWARNING: Auto-removed source %s\n" % (source.get('name')))
+                    print(("\nWARNING: Auto-removed source %s\n" % (source.get('name'))))
                     root.remove(source)
                 else:
-                    print("Keeping point source %s (%4.2f deg away)..." % (source.get('name'), float(thisDist)))
+                    print(("Keeping point source %s (%4.2f deg away)..." % (source.get('name'), float(thisDist))))
                     # Fix all parameters
                     specModel = source.findall('spectrum')[0]
                     for p in specModel.findall('parameter'):
@@ -513,24 +513,24 @@ class catalog_2FGL(object):
                     # Now correct the name of the FITS template so that the likelihood
                     # will find it
                     #spatialModel = source.findall('spatialModel')[0]
-                    print (spatialModel.get('type'),spatialModel.get('type') == 'SpatialMap')
+                    print((spatialModel.get('type'),spatialModel.get('type') == 'SpatialMap'))
                     if spatialModel.get('type') == 'SpatialMap':
                         filename      = spatialModel.get('file').replace('$(LATEXTDIR)/Templates/','')
                         templatesPath = os.path.join(os.path.join(getDataPath(), 'templates'))
                         newFilename   = os.path.abspath(os.path.join(templatesPath, filename))
                         spatialModel.set('file', '%s' % newFilename)
-                        print("Keeping diffuse source %s (%4.2f deg away) using template %s..." % (
-                            source.get('name'), float(thisDist), newFilename))
+                        print(("Keeping diffuse source %s (%4.2f deg away) using template %s..." % (
+                            source.get('name'), float(thisDist), newFilename)))
                     #for gaussian and radial, I just use the spatial model, since all the parameters are determined and fixed:
-                    print("Keeping diffuse source %s (%4.2f deg away) using spatial model %s..." % (
-                        source.get('name'), float(thisDist), spatialModel.get('type')))
+                    print(("Keeping diffuse source %s (%4.2f deg away) using spatial model %s..." % (
+                        source.get('name'), float(thisDist), spatialModel.get('type'))))
 
                     srcs += 1
             else:
                 print("Source type not recognized.")
                 raise
         pass
-        print("Kept %s point sources from the FGL catalog" % (srcs))
+        print(("Kept %s point sources from the FGL catalog" % (srcs)))
         self.tree.write(output)
 
     pass
@@ -795,7 +795,7 @@ class LikelihoodResultsPrinter(object):
         append("*** Upper limits (if any) are computed assuming a photon index of %3.1f, with the %s %s c.l." % (
         phIndexForUL, clul * 100, '%'))
 
-        print("\n".join(resultsStrings))
+        print(("\n".join(resultsStrings)))
 
         self.resultsStrings = "\n".join(resultsStrings)
 
@@ -838,15 +838,15 @@ def optimizeBins(like, energies, sourceName, minTs=20, minEvt=3):
         pass
         # Make the boundary at half way between the photons, so we are sure they will be selected
         putativeBoundary = putativeBoundary - (putativeBoundary - putativeBoundary2) / 2.0
-        print("Trying bin %s-%s" % (putativeBoundary, boundaries[-1]))
+        print(("Trying bin %s-%s" % (putativeBoundary, boundaries[-1])))
         like.setEnergyRange(float(putativeBoundary), float(boundaries[-1]))
         thisTs = like.Ts(sourceName, reoptimize=True)
-        print("TS = %s" % (thisTs))
+        print(("TS = %s" % (thisTs)))
         if (thisTs >= minTs):
             boundaries.append(putativeBoundary)
             mask = (energies > boundaries[-1]) & (energies <= boundaries[-2])
-            print("\n==> Accepted bin %s-%s with TS = %5.2f and %s events\n" % (
-            boundaries[-1], boundaries[-2], thisTs, len(energies[mask])))
+            print(("\n==> Accepted bin %s-%s with TS = %5.2f and %s events\n" % (
+            boundaries[-1], boundaries[-2], thisTs, len(energies[mask]))))
 
             curIdx += (minEvt - 1)
             continue

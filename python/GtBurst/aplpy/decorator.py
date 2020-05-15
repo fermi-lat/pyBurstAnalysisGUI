@@ -96,7 +96,7 @@ class FunctionMaker(object):
         func.__name__ = self.name
         func.__doc__ = getattr(self, 'doc', None)
         func.__dict__ = getattr(self, 'dict', {})
-        func.func_defaults = getattr(self, 'defaults', ())
+        func.__defaults__ = getattr(self, 'defaults', ())
         callermodule = sys._getframe(3).f_globals.get('__name__', '?')
         func.__module__ = getattr(self, 'module', callermodule)
         func.__dict__.update(kw)
@@ -111,14 +111,14 @@ class FunctionMaker(object):
         name = mo.group(1) # extract the function name
         reserved_names = set([name] + [
             arg.strip(' *') for arg in self.signature.split(',')])
-        for n, v in evaldict.iteritems():
+        for n, v in evaldict.items():
             if n in reserved_names:
                 raise NameError('%s is overridden in\n%s' % (n, src))
         if not src.endswith('\n'): # add a newline just for safety
             src += '\n'
         try:
             code = compile(src, '<string>', 'single')
-            exec (code) in evaldict
+            exec((code), evaldict)
         except:
             print ('Error in generated code:', file=sys.stderr)
             print (src, file=sys.stderr)

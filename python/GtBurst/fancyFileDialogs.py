@@ -20,8 +20,8 @@ def _tupleToTclList(value):
   
   v = []
   for val in value:
-    if isinstance(val, basestring):
-      v.append(unicode(val) if val else '{}')
+    if isinstance(val, str):
+      v.append(str(val) if val else '{}')
     else:
       v.append(str(val))
     pass
@@ -36,14 +36,14 @@ def _fromPythonToTcl(optdict):
       ('-foreground', 'blue', '-padding', '1 2 3 4')"""
 
     opts = []
-    for opt, value in iter(optdict.items()):
+    for opt, value in iter(list(optdict.items())):
       format = "%s"
       if isinstance(value, (list, tuple)):
         format = '{%s}'
         v = []
         for val in value:
-          if isinstance(val, basestring):
-            v.append(unicode(val) if val else '{}')
+          if isinstance(val, str):
+            v.append(str(val) if val else '{}')
           else:
             v.append(str(_tupleToTclList(val)))
           pass

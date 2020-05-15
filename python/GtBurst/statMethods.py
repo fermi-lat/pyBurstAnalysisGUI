@@ -33,7 +33,7 @@ class Fitter(object):
     #Fill a TGraph with the exposure, so that we can evaluate the
     #exposure later using the Eval() method of the TGraph class
     self.exposureGraph        = ROOT.TGraph()
-    for i,tt,exp in zip(range(len(t)),t,exposure):
+    for i,tt,exp in zip(list(range(len(t))),t,exposure):
       self.exposureGraph.SetPoint(i,tt,exp)
     pass  
   pass
@@ -76,7 +76,7 @@ def fitWithROOT(x,y,exposure,polynomial,savePNG=False):
     zeros                     = numpy.zeros(len(x))
     binsize                   = (x[1]-x[0])
     h                         = ROOT.TH1D("test","ciaps",len(x),x[0]-binsize/2.0,x[-1]+binsize/2.0)
-    for i,xx,yy in zip(range(len(x)),x,y):
+    for i,xx,yy in zip(list(range(len(x))),x,y):
       h.SetBinContent(i+1,yy)
       h.SetBinError(i+1,math.sqrt(yy))
     pass
@@ -98,7 +98,7 @@ def fitWithROOT(x,y,exposure,polynomial,savePNG=False):
     ratio                     = []
     for i,p in enumerate(parameters):
       thisRatio               = fitfunction.GetParameter(i)/p
-      print("\nParam. %s, ratio (ROOT/thisModule) = %s" %(i,thisRatio))
+      print(("\nParam. %s, ratio (ROOT/thisModule) = %s" %(i,thisRatio)))
       ratio.append(thisRatio)
     pass
     h.Draw("HIST")
@@ -126,7 +126,7 @@ class LogLikelihood(object):
     #have been used
     self.exposure             = numpy.zeros(len(x))+1.0
         
-    for key in kwargs.keys():
+    for key in list(kwargs.keys()):
       if  (key.lower()=="exposure"):            
         self.exposure = numpy.array(kwargs[key])
     pass  
@@ -294,7 +294,7 @@ class Polynomial(object):
     Npar                      = self.degree+1
     freeDerivs                = []
     for i in range(Npar):
-      freeDerivs.append(map(lambda xx:pow(xx,i),x))
+      freeDerivs.append([pow(xx,i) for xx in x])
     pass
     return numpy.array(freeDerivs)
   pass
@@ -317,7 +317,7 @@ class Polynomial(object):
     Evaluate the integral of the polynomial between xmin and xmax
     '''
     integralCoeff             = [0]
-    integralCoeff.extend(map(lambda i:self.params[i-1]/float(i),range(1,self.degree+1+1)))
+    integralCoeff.extend([self.params[i-1]/float(i) for i in range(1,self.degree+1+1)])
     
     integralPolynomial        = Polynomial(integralCoeff)
     
@@ -328,7 +328,7 @@ class Polynomial(object):
     # Based on http://root.cern.ch/root/html/tutorials/fit/ErrorIntegral.C.html
     
     #Set the weights
-    i_plus_1                  = numpy.array(range(1,self.degree+1+1),'d')
+    i_plus_1                  = numpy.array(list(range(1,self.degree+1+1)),'d')
     def evalBasis(x):
       return (1/i_plus_1) * pow(x,i_plus_1)
     c                         = evalBasis(xmax) - evalBasis(xmin)
@@ -405,10 +405,10 @@ def computeCovarianceMatrix(grad,par,full_output=False,
                 return True,0
     
     iters                     = numpy.zeros(nparams)
-    for i in xrange(nparams):
+    for i in range(nparams):
         converged             = False
         
-        for j in xrange(max_iters):        
+        for j in range(max_iters):        
             iters[i]         += 1
             
             di                = step_size[i]
@@ -434,7 +434,7 @@ def computeCovarianceMatrix(grad,par,full_output=False,
         hess[i,:] = (g_up - g_dn) / (2*di)  # central difference
         
         if not converged:
-            print ('Warning: step size for parameter %d (%.2g) did not result in convergence.'%(i,di))
+            print(('Warning: step size for parameter %d (%.2g) did not result in convergence.'%(i,di)))
     try:
         cov = numpy.linalg.inv(hess)
     except:

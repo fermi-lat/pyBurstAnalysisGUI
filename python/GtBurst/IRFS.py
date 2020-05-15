@@ -33,7 +33,7 @@ class CaseInsensitiveDict(collections.OrderedDict):
         item                    = super(CaseInsensitiveDict, self).__getitem__(key.lower())
       except:
         #Try with the short name
-        item                    = filter(lambda x:x.name==key,self.values())[0]
+        item                    = [x for x in list(self.values()) if x.name==key][0]
       pass
       return item
   pass
@@ -102,7 +102,7 @@ def fromEvclassToIRF(rep,event_class):
       #according to the source of data. If the data come from the FSSC, the two Pass8
       #transient100 classes are removed, for example
       
-      irf_ = filter(lambda irf:IRFS[irf].evclass==evclass, PROCS[rep])
+      irf_ = [irf for irf in PROCS[rep] if IRFS[irf].evclass==evclass]
       
       if len(irf_)==0:
          
@@ -182,10 +182,10 @@ IRFS['P8_TRANSIENT015S']    = IRF('P8_TRANSIENT015S' ,  'P8R3_TRANSIENT015S_V2' 
 
 
 PROCS                         = collections.OrderedDict()
-for k,v in iter(IRFS.items()):
+for k,v in iter(list(IRFS.items())):
   thisReprocessings       = v.reprocessingVersion.split(",")
   for repro in thisReprocessings:
-    if(repro in PROCS.keys()):
+    if(repro in list(PROCS.keys())):
       PROCS[repro].append(k)
     else:
       PROCS[repro] = [k]

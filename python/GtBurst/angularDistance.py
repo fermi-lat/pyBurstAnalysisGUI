@@ -25,7 +25,7 @@ DetDir['LAT-LLE'] = [0.0,0.0]
 DetDir['LAT'] = [0.0,0.0]
 
 def getDetectorAngle(ra_scx,dec_scx,ra_scz,dec_scz,sourceRa,sourceDec,detector):
-  if detector in DetDir.keys():
+  if detector in list(DetDir.keys()):
     t                         = DetDir[detector][0]
     p                         = DetDir[detector][1]
     ra,dec                    = getRaDec(ra_scx,dec_scx,ra_scz,dec_scz,t,p)

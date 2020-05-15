@@ -2,6 +2,7 @@ from distutils import version
 import os
 import warnings
 import operator
+from functools import reduce
 
 try:
     import matplotlib
@@ -183,7 +184,7 @@ class FITSFigure(Layers, Regions, Deprecated):
         if not 'figsize' in kwargs:
             kwargs['figsize'] = (10, 9)
 
-        if isinstance(data, basestring) and data.split('.')[-1].lower() in ['png', 'jpg', 'tif']:
+        if isinstance(data, str) and data.split('.')[-1].lower() in ['png', 'jpg', 'tif']:
 
             if not pil_installed:
                 raise ImportError("The Python Imaging Library (PIL) is required to read in RGB images")
@@ -321,7 +322,7 @@ class FITSFigure(Layers, Regions, Deprecated):
 
     def _get_hdu(self, data, hdu, north, convention=None, dimensions=[0, 1], slices=[]):
 
-        if isinstance(data, basestring):
+        if isinstance(data, str):
 
             filename = data
 
@@ -1551,7 +1552,7 @@ class FITSFigure(Layers, Regions, Deprecated):
 
         artists = []
         if adjust_bbox:
-            for artist in self._layers.values():
+            for artist in list(self._layers.values()):
                 if isinstance(artist, matplotlib.text.Text):
                     artists.append(artist)
             self._figure.savefig(filename, dpi=dpi, transparent=transparent, bbox_inches='tight', bbox_extra_artists=artists)

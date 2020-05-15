@@ -62,7 +62,7 @@ def sortby(tree, col, descending):
     #transform to float so the ordering will be meaningful
     try:
       
-      data = map(lambda x: ( float(x[0]), x[1]), data)
+      data = [( float(x[0]), x[1]) for x in data]
     
     except:
       
@@ -102,7 +102,7 @@ class TriggerSelector(object):
     pass
     
     def downloadList(self,**kwargs):
-        if('catalog' in kwargs.keys()):
+        if('catalog' in list(kwargs.keys())):
           f                     = open(kwargs['catalog'])
           text                  = f.read()
           f.close()
@@ -152,7 +152,7 @@ class TriggerSelector(object):
           f.close()
         pass
         
-        self.data             = list(map(lambda x:x.strip().split("|")[1:-1],text.split("\n")[3:-2]))
+        self.data             = list([x.strip().split("|")[1:-1] for x in text.split("\n")[3:-2]])
         #Convert RA, Dec from hh mm ss to decimal, and the trigger time from ISO UTC to MET
         for i in range(len(self.data)):
             #print(self.data[i])
@@ -169,7 +169,7 @@ class TriggerSelector(object):
                 pass
             
         #Remove all spaces
-        self.data             = list(map(lambda x:list(map(lambda y:y.replace(" ",''),x)),self.data))
+        self.data             = list([list([y.replace(" ",'') for y in x]) for x in self.data])
         if(self.parent is not None):
             window.destroy()
     pass
@@ -179,7 +179,7 @@ class TriggerSelector(object):
         if(useFilter):
           self.filterFrame      = Frame(self.root)
           self.filterFrame.grid(row=0,column=0)
-          triggerTypes          = list(set(list(map(lambda x:x[2],self.data))))
+          triggerTypes          = list(set(list([x[2] for x in self.data])))
           triggerTypes.sort()
           triggerTypes.insert(0,'All')
           self.filter           = EntryPoint(self.filterFrame,labeltext="Type filter: ",
@@ -219,7 +219,7 @@ class TriggerSelector(object):
       else:
         #No GUI mode
         try:
-          par                     = filter(lambda x:x[0].replace("bn","").replace("GRB","").replace("SF","")==item.replace("bn","").replace("GRB","").replace("SF",""), self.data)[0]
+          par                     = [x for x in self.data if x[0].replace("bn","").replace("GRB","").replace("SF","")==item.replace("bn","").replace("GRB","").replace("SF","")][0]
         except:
           raise ValueError("Trigger %s not found in the trigger catalog" %(item))
       self.triggerName        = par[0]
@@ -269,7 +269,7 @@ class TriggerSelector(object):
         
         self.items            = []
         if(curfilter!='All'):
-          dataToDisplay         = filter(lambda x:x[2]==curfilter,self.data)   
+          dataToDisplay         = [x for x in self.data if x[2]==curfilter]   
         else:
           dataToDisplay         = self.data
         pass
@@ -289,5 +289,5 @@ class TriggerSelector(object):
         
 if __name__ == "__main__":
     a                         = TriggerSelector()
-    print (a.triggerName)
+    print((a.triggerName))
     

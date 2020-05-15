@@ -36,12 +36,12 @@ def _dict_from_tcltuple(ttuple, cut_minus=True):
 def tclobjs_to_py(adict):
     """Returns adict with its values converted from Tcl objects to Python
     objects."""
-    for opt, val in iter(adict.items()):
+    for opt, val in iter(list(adict.items())):
         if val and hasattr(val, '__len__') and not isinstance(val, str):
             if getattr(val[0], 'typename', None) == 'StateSpec':
                 val = _list_from_statespec(val)
             else:
-                val = map(_convert_stringval, val)
+                val = list(map(_convert_stringval, val))
 
         elif hasattr(val, 'typename'): # some other (single) Tcl object
             val = _convert_stringval(val)
@@ -59,7 +59,7 @@ def _format_optdict(optdict, script=False, ignore=None):
     format = "%s" if not script else "{%s}"
 
     opts = []
-    for opt, value in iter(optdict.items()):
+    for opt, value in iter(list(optdict.items())):
         if ignore and opt in ignore:
             continue
 

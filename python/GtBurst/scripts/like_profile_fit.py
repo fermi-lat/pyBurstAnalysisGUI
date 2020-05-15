@@ -22,7 +22,7 @@ def find_profiles(intervals_dir):
 
     intervals = glob.glob(os.path.join(intervals_dir, "interval*"))
 
-    print("Found %i intervals in directory %s" % (len(intervals), intervals_dir))
+    print(("Found %i intervals in directory %s" % (len(intervals), intervals_dir)))
 
     if len(intervals) == 0:
         print("No interval found, nothing to do.")
@@ -34,7 +34,7 @@ def find_profiles(intervals_dir):
 
     for interval in intervals:
 
-        start, stop = map(float, os.path.basename(interval).replace("interval", "").split("-"))
+        start, stop = list(map(float, os.path.basename(interval).replace("interval", "").split("-")))
 
         log_like_profile_file = os.path.join(interval, "log_like_profile.npz")
 
@@ -171,7 +171,7 @@ def go(profiles_dict, tstart, tstop, outroot, local_minimizer="ROOT"):
 
     TS = 2 * (po_log_like.loc['castro'] - bknpo_log_like.loc['castro']).values[0]
 
-    print("TS is %s" % TS)
+    print(("TS is %s" % TS))
 
     return po_best_fit, bknpo_best_fit, TS
 

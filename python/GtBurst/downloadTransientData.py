@@ -1,4 +1,4 @@
-import urllib
+import urllib.request, urllib.parse, urllib.error
 import html.parser as HTMLParser
 import time
 import re, os
@@ -72,9 +72,9 @@ class DownloadTransientData(dataCollector):
       pass
     pass
     
-    urllib.urlcleanup() 
+    urllib.request.urlcleanup() 
     try:
-      urllib.urlretrieve("https://fermi.gsfc.nasa.gov/cgi-bin/ssc/LAT/LATDataQuery.cgi",temporaryFileName)
+      urllib.request.urlretrieve("https://fermi.gsfc.nasa.gov/cgi-bin/ssc/LAT/LATDataQuery.cgi",temporaryFileName)
     except socket.timeout:
       raise GtBurstException(11,"Time out when connecting to the server. Check your internet connection, or that you can access https://fermi.gsfc.nasa.gov, then retry")
     except:
@@ -107,7 +107,7 @@ class DownloadTransientData(dataCollector):
         raise GtBurstException(14,"The requested time limit %s is too large. Data are available up to %s." %(self.tstop,maxTimeLimit-1))
         return maxTimeLimit-1
       else:
-        print("\n\nWARNING:The requested time limit %s is too large. Data are available up to %s. Will download up to %s.\n\n" %(self.tstop,maxTimeLimit-1,maxTimeLimit-1))
+        print(("\n\nWARNING:The requested time limit %s is too large. Data are available up to %s. Will download up to %s.\n\n" %(self.tstop,maxTimeLimit-1,maxTimeLimit-1)))
         self.tstop                = float(maxTimeLimit)-1
       pass
     pass
@@ -138,11 +138,11 @@ class DownloadTransientData(dataCollector):
     parameters['spacecraft']    = 'checked'
     
     print("Query parameters:")
-    for k,v in iter(parameters.items()):
-      print("%30s = %s" %(k,v))
+    for k,v in iter(list(parameters.items())):
+      print(("%30s = %s" %(k,v)))
     
     #POST encoding    
-    postData                    = urllib.urlencode(parameters)
+    postData                    = urllib.parse.urlencode(parameters)
     temporaryFileName           = "__temp_query_result.html"
     try:
       os.remove(temporaryFileName)
@@ -150,9 +150,9 @@ class DownloadTransientData(dataCollector):
       pass
     pass
        
-    urllib.urlcleanup()
+    urllib.request.urlcleanup()
     try:
-      urllib.urlretrieve(url, 
+      urllib.request.urlretrieve(url, 
                        temporaryFileName, 
                        lambda x,y,z:0, postData)
     except socket.timeout:
@@ -175,14 +175,14 @@ class DownloadTransientData(dataCollector):
     
     if("".join(text).replace(" ","")==""):
       raise GtBurstException(1,"Problems with the download. Empty answer from the LAT server. Normally this means that the server is ingesting new data, please retry in half an hour or so.")
-    text                        = filter(lambda x:x.find("[") < 0 and 
+    text                        = [x for x in text if x.find("[") < 0 and 
                                                   x.find("]") < 0 and 
                                                   x.find("#") < 0 and 
                                                   x.find("* ") < 0 and
                                                   x.find("+") < 0 and
-                                                  x.find("Skip navigation")<0,text)
-    text                        = filter(lambda x:len(x.replace(" ",""))>1,text)
-    print("\n".join(text))
+                                                  x.find("Skip navigation")<0]
+    text                        = [x for x in text if len(x.replace(" ",""))>1]
+    print(("\n".join(text)))
     print("\n\n")
     os.remove(temporaryFileName)
     if(" ".join(text).find("down due to maintenance")>=0):
@@ -197,7 +197,7 @@ class DownloadTransientData(dataCollector):
     pass
     
     try: 
-      estimatedTimeLine           = filter(lambda x:x.find("The estimated time for your query to complete is")==0,parser.data)[0]
+      estimatedTimeLine           = [x for x in parser.data if x.find("The estimated time for your query to complete is")==0][0]
       estimatedTimeForTheQuery    = re.findall("The estimated time for your query to complete is ([0-9]+) seconds",estimatedTimeLine)[0]
     except:
       raise GtBurstException(1,"Problems with the download. Empty or wrong answer from the LAT server (see console). Please retry later.")
@@ -205,12 +205,12 @@ class DownloadTransientData(dataCollector):
     
     try:
     
-    	httpAddress                 = filter(lambda x:x.find("http://fermi.gsfc.nasa.gov") >=0,parser.data)[0]
+    	httpAddress                 = [x for x in parser.data if x.find("http://fermi.gsfc.nasa.gov") >=0][0]
     
     except IndexError:
         
         # Try https
-        httpAddress                 = filter(lambda x:x.find("https://fermi.gsfc.nasa.gov") >=0,parser.data)[0]
+        httpAddress                 = [x for x in parser.data if x.find("https://fermi.gsfc.nasa.gov") >=0][0]
     
     #Now periodically check if the query is complete
     startTime                   = time.time()
@@ -249,14 +249,14 @@ class DownloadTransientData(dataCollector):
       sys.stdout.flush()
       #Fetch the html with the results
       try:
-        (filename, header)        = urllib.urlretrieve(httpAddress,fakeName)
+        (filename, header)        = urllib.request.urlretrieve(httpAddress,fakeName)
       except socket.timeout:
-        urllib.urlcleanup()
+        urllib.request.urlcleanup()
         if(root is not None):
           root.destroy()
         raise GtBurstException(11,"Time out when connecting to the server. Check your internet connection, or that you can access https://fermi.gsfc.nasa.gov, then retry")
       except:
-        urllib.urlcleanup()
+        urllib.request.urlcleanup()
         if(root is not None):
           root.destroy()
         raise GtBurstException(1,"Problems with the download. Check your connection or that you can access https://fermi.gsfc.nasa.gov, then retry.")
@@ -272,7 +272,7 @@ class DownloadTransientData(dataCollector):
         break
       f.close()
       os.remove(fakeName)
-      urllib.urlcleanup()
+      urllib.request.urlcleanup()
       time.sleep(refreshTime)
     pass
     
@@ -291,7 +291,7 @@ class DownloadTransientData(dataCollector):
     remotePath                = "%s/%s/queries/" %(self.dataRepository,self.instrument)
     
     if(links is not None):
-      filenames                 = map(lambda x:x.split('/')[-1],links)    
+      filenames                 = [x.split('/')[-1] for x in links]    
       try:
         self.downloadDirectoryWithFTP(remotePath,filenames=filenames)
       except Exception as e:
@@ -333,7 +333,7 @@ class DownloadTransientData(dataCollector):
     pass
     
     ###########################
-    if('ft1' in newFilenames.keys() and 'ft2' in newFilenames.keys()):
+    if('ft1' in list(newFilenames.keys()) and 'ft2' in list(newFilenames.keys())):
       dataHandling._makeDatasetsOutOfLATdata(newFilenames['ft1'],newFilenames['ft2'],
                                              self.grbName,self.tstart,self.tstop,
                                              self.ra,self.dec,self.triggerTime,

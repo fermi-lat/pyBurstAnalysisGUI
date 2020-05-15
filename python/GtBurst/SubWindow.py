@@ -8,7 +8,7 @@ class SubWindow(object):
       transient               = True
       initialHint             = ''
       geometry                = "800x400+10+10"
-      for key in kwargs.keys():
+      for key in list(kwargs.keys()):
         if    key.lower()=="title":             title          = kwargs[key]
         elif  key.lower()=="transient":         transient      = bool(kwargs[key])
         elif  key.lower()=="initialhint":       initialHint    = kwargs[key]

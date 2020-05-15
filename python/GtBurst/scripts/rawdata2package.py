@@ -14,8 +14,8 @@ if __name__=="__main__":
     
     if len(sys.argv) < 7:
         
-        print("Usage: %s [ft1] [ft2] [triggertime] [triggername] [ra] [dec]" 
-              % sys.argv[0])
+        print(("Usage: %s [ft1] [ft2] [triggertime] [triggername] [ra] [dec]" 
+              % sys.argv[0]))
         
         sys.exit(0)
     

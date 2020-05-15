@@ -18,7 +18,7 @@ class InteractiveFt1Display(object):
     self.events               = ft1['EVENTS'].data
     self.empty                = False
     if(len(self.events)==0):
-      print("No events in FT1 file %s" %(ft1file))
+      print(("No events in FT1 file %s" %(ft1file)))
       self.empty              = True
       #raise RuntimeError("No events in FT1 file %s" %(ft1file))
     pass
@@ -47,7 +47,7 @@ class InteractiveFt1Display(object):
     self.generateColorMap()
     
     #Print a summary
-    irfs                      = numpy.array(map(lambda x:IRFS.fromEvclassToIRF(self.reprocVer,x),self.events.field("EVENT_CLASS")))
+    irfs                      = numpy.array([IRFS.fromEvclassToIRF(self.reprocVer,x) for x in self.events.field("EVENT_CLASS")])
     print("")
     for irf in IRFS.PROCS[self.reprocVer]:
       try:
@@ -55,7 +55,7 @@ class InteractiveFt1Display(object):
       except:
         n                     = 0
       pass
-      print("%-50s %s" %("Class %s only:" % irf,n))
+      print(("%-50s %s" %("Class %s only:" % irf,n)))
 
     
     self.pickerID             = None
@@ -81,7 +81,7 @@ class InteractiveFt1Display(object):
     #Translate from bitmask to color
     
     #Get all IRFS for this reprocessing
-    irfs                      = map(lambda x:IRFS.IRFS[x],IRFS.PROCS[self.reprocVer])
+    irfs                      = [IRFS.IRFS[x] for x in IRFS.PROCS[self.reprocVer]]
     #Order by evclass
     irfs                      = sorted(irfs,key=lambda x:x.evclass)
     self.IRFToColor           = IRFS.CaseInsensitiveDict()
@@ -159,13 +159,12 @@ class InteractiveFt1Display(object):
   pass
   
   def mapEventClassesColors(self,classes):
-    return map(lambda x:self.IRFToColor[IRFS.fromEvclassToIRF(self.reprocVer,x)],classes)
+    return [self.IRFToColor[IRFS.fromEvclassToIRF(self.reprocVer,x)] for x in classes]
   pass
   
   def displayEvents(self,xmin=-1,xmax=1e9,ymin=-1,ymax=1e9):
     #Filter data
-    idx                       = numpy.array(map(lambda x:self.inRegion(x.field("RA"),x.field("DEC"),xmin,xmax,ymin,ymax),
-                                                self.events),'bool')
+    idx                       = numpy.array([self.inRegion(x.field("RA"),x.field("DEC"),xmin,xmax,ymin,ymax) for x in self.events],'bool')
     
     events                    = self.events[idx]
     
@@ -188,7 +187,7 @@ class InteractiveFt1Display(object):
     self.eventDisplay.set_xlabel("Time since trigger (s)",fontsize='small')
     
     #Put the legend on top of the figure
-    for k,v in iter(self.IRFToColor.items()):
+    for k,v in iter(list(self.IRFToColor.items())):
       self.eventDisplay.scatter([],[],s=20,lw=0,label=k,c=v)
     pass
         

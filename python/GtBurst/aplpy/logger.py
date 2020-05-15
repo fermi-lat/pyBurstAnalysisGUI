@@ -1,6 +1,6 @@
 import os
 import logging
-from ConfigParser import SafeConfigParser
+from configparser import SafeConfigParser
 
 # Read in configuration file
 config = SafeConfigParser()

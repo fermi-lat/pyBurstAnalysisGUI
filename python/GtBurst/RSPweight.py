@@ -54,11 +54,11 @@ class EventsCounter(object):
       cspeccounts             = self.data.field("COUNTS")
     except:
       rates                   = self.data.field("RATE")
-      cspeccounts              = map(lambda x:x[0]*x[1],zip(rates,cspectelapse))
+      cspeccounts              = [x[0]*x[1] for x in zip(rates,cspectelapse)]
     pass  
     self.tstarts              = numpy.array(cspectstarts)
     self.tstops               = numpy.array(cspectstops)
-    self.counts               = numpy.array(map(lambda x:numpy.sum(x),cspeccounts))
+    self.counts               = numpy.array([numpy.sum(x) for x in cspeccounts])
     #Place zeros where QUALITY is > 0 (bad data)
     self.goodDataMask         = (f["SPECTRUM"].data.field('QUALITY')==0)
     self.counts[~self.goodDataMask]  = 0 
@@ -148,7 +148,7 @@ def RSPweight(**kwargs):
     #The trigger time is only for printing purposes: if specified,
     #all the messages from the program will contain time intervals referred
     #to the trigger time, otherwise they will be in MET
-    if('triggerTime' in kwargs.keys()):
+    if('triggerTime' in list(kwargs.keys())):
       trigger                        = kwargs['triggerTime']
     else:
       trigger                        = 0
@@ -175,8 +175,8 @@ def RSPweight(**kwargs):
     for tstart,tstop,nEvents,intervalNumber in zip(timeIntervals.tstarts,
                                                    timeIntervals.tstops,
                                                    timeIntervals.counts,
-                                                   range(nIntervals)):
-      print("\nInterval: %s - %s" % (tstart-trigger,tstop-trigger))
+                                                   list(range(nIntervals))):
+      print(("\nInterval: %s - %s" % (tstart-trigger,tstop-trigger)))
       
       #find the RSP matrices falling in the current tstart-tstop interval
       rspList                         = []
@@ -193,7 +193,7 @@ def RSPweight(**kwargs):
           #Check that the instrument is the same of the TTE file
           instrument2                         = curHeader["INSTRUME"]
           if(instrument2!=instrument):
-            print("WARNING: the Events file %s and the response matrix file %s refers to different instruments" % (instrument,instrument2))
+            print(("WARNING: the Events file %s and the response matrix file %s refers to different instruments" % (instrument,instrument2)))
           pass
           
           #Find the start and stop time of the interval covered 
@@ -253,8 +253,8 @@ def RSPweight(**kwargs):
               #Since there are no matrices after this one, this has to cover until the end of the interval
               if(tstop > rspStop):
                 print("\nWARNING: RSPweight: The RSP file does not cover the required time interval.")
-                print("    The last response should cover from %s to %s, but we'll use it" % (trueRspStart, rspStop))
-                print("    to cover until the end of the time interval (%s)." % (tstop))
+                print(("    The last response should cover from %s to %s, but we'll use it" % (trueRspStart, rspStop)))
+                print(("    to cover until the end of the time interval (%s)." % (tstop)))
                 trueRspStop                      = tstop
               else:
                 trueRspStop                      = tstop 
@@ -266,7 +266,7 @@ def RSPweight(**kwargs):
             rspStarts.append(trueRspStart)
             rspStops.append(trueRspStop)
             
-            print("  Matr. in ext #%s covers %s - %s" % (extNumber,trueRspStart-trigger,trueRspStop-trigger))
+            print(("  Matr. in ext #%s covers %s - %s" % (extNumber,trueRspStart-trigger,trueRspStop-trigger)))
             if(rspStop >= tstop):
               #This matrix cover after the tstop,
               #no reason to analize the other matrices
@@ -289,7 +289,7 @@ def RSPweight(**kwargs):
         #Number of total events contained in the interval
         nThisTotalEvt                   = nEvents
 
-        print("\n  Total counts for this interval:        %s" %(nThisTotalEvt))
+        print(("\n  Total counts for this interval:        %s" %(nThisTotalEvt)))
 
         if(nThisTotalEvt <= 0): 
           print("  Counts is zero: no signal here. Weight will be exposure-based.")
@@ -298,7 +298,7 @@ def RSPweight(**kwargs):
             for index,rsp in enumerate(rspList):
               thisWeight                      = (rspStops[index]-rspStarts[index])/(tstop-tstart)
               weight.append(thisWeight)
-              print("  Weight for response %s - %s:           %s" % (rspStarts[index]-trigger,rspStops[index]-trigger,thisWeight))
+              print(("  Weight for response %s - %s:           %s" % (rspStarts[index]-trigger,rspStops[index]-trigger,thisWeight)))
             pass
           pass
         else:
@@ -324,8 +324,8 @@ def RSPweight(**kwargs):
             weight.append(thisWeight)
             
             #Print information
-            print("  Weight for response %s - %s:           %s" % (rspStart-trigger,rspStop-trigger,thisWeight))
-            print("  Counts in time covered by this rsp:  %s" % nThisRspEvt)      
+            print(("  Weight for response %s - %s:           %s" % (rspStart-trigger,rspStop-trigger,thisWeight)))
+            print(("  Counts in time covered by this rsp:  %s" % nThisRspEvt))      
           pass
         pass
         
@@ -339,7 +339,7 @@ def RSPweight(**kwargs):
           pass
         pass
         
-        print("\nTotal weight ---> %s" %(sum(weight)))
+        print(("\nTotal weight ---> %s" %(sum(weight))))
         
       else:        
         #There is only one matrix...
@@ -384,7 +384,7 @@ def RSPweight(**kwargs):
           nChannels                             = data['EBOUNDS'].data.size
         
           #Fix the CHANNEL column, and TLMIN/TLMAX keywords
-          data['EBOUNDS'].data.field('CHANNEL')[:]=numpy.array(range(1,nChannels+1))
+          data['EBOUNDS'].data.field('CHANNEL')[:]=numpy.array(list(range(1,nChannels+1)))
           data['EBOUNDS'].header.set("TLMIN%s" %(tlminID),1)
           data['EBOUNDS'].header.set("TLMAX%s" %(tlminID),nChannels)
           #SPECRESP MATRIX
@@ -429,7 +429,7 @@ def RSPweight(**kwargs):
       else:
         #Run addrmf and weight the relevant matrices
         cmdline                              = "addrmf @%s rmffile=%s clobber=yes" % (asciiFilename,thisRspName)
-        print("\n %s \n" %(cmdline))
+        print(("\n %s \n" %(cmdline)))
         
         out, err                             = _callSubprocess(cmdline)
         
@@ -490,7 +490,7 @@ def RSPweight(**kwargs):
       #Add history
       history="This is a matrix computed by weighting applying matrices contained in "+rsp2
       curHeader.add_history(history)
-      print("Appending matrix number %s..." %(i+1))
+      print(("Appending matrix number %s..." %(i+1)))
       #Write this as an extension in the output file      
       outRsp2.append(curM)
     pass

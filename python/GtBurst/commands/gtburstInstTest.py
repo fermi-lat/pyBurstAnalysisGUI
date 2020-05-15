@@ -2,7 +2,7 @@
 
 import os,sys
 
-print("Testing Science Tools Python wrappers..."),
+print(("Testing Science Tools Python wrappers..."), end=' ')
 try:
   from GtApp import GtApp
   st = ['gtbin','gtselect','gtbindef','gtmktime','gtlike',
@@ -19,7 +19,7 @@ except:
 else:
   print("ok")
 
-print("Testing environment variables..."),
+print(("Testing environment variables..."), end=' ')
 if(os.environ.get('ISOTROPIC_TEMPLATE') is None):
   print("Error!")
   print("\nYou have to set the env. variable ISOTROPIC_TEMPLATE. Refers to the documentation.")
@@ -34,16 +34,16 @@ else:
   
 print("Testing likelihood templates for read access...")
 for temp in ['GALACTIC_DIFFUSE_TEMPLATE','ISOTROPIC_TEMPLATE']:
-  print("  %s..." %(temp)),
+  print(("  %s..." %(temp)), end=' ')
   try:
     f                           = open(os.environ.get(temp))
     f.close()
   except:
     print("Error!")
-    print("\nThe %s variables points to %s, which is not readable." %(temp,os.environ.get(temp)))
+    print(("\nThe %s variables points to %s, which is not readable." %(temp,os.environ.get(temp))))
     sys.exit(-1)
   else:
-    print("Using %s" %(os.environ.get(temp)))
+    print(("Using %s" %(os.environ.get(temp))))
 pass
 
 print("Testing gtBurst GUI...")

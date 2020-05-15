@@ -62,7 +62,7 @@ def gtllebindef(**kwargs):
 pass
 
 def run(**kwargs):
-  if(len(kwargs.keys())==0):
+  if(len(list(kwargs.keys()))==0):
     #Nothing specified, the user needs just help!
     thisCommand.getHelp()
     return
@@ -79,10 +79,10 @@ def run(**kwargs):
     verbose                     = _yesOrNoToBool(thisCommand.getParValue('verbose'))
     figure                      = thisCommand.getParValue('figure')
   except KeyError as err:
-    print("\n\nERROR: Parameter %s not found or incorrect! \n\n" %(err.args[0]))
+    print(("\n\nERROR: Parameter %s not found or incorrect! \n\n" %(err.args[0])))
     
     #Print help
-    print (thisCommand.getHelp())
+    print((thisCommand.getHelp()))
     return
   pass
   
@@ -136,7 +136,7 @@ def run(**kwargs):
         raise ValueError("Could not understand time intervals syntax!")
     pass
 
-    timeIntervals                 = map(lambda x:float(x)+int(float(x) < 231292801.000)*trigTime,timeBounds)
+    timeIntervals                 = [float(x)+int(float(x) < 231292801.000)*trigTime for x in timeBounds]
   pass
   
   if(len(timeIntervals) < 2 or float(len(timeIntervals))%2 !=0):
@@ -163,7 +163,7 @@ def run(**kwargs):
   timeIntervals.sort()
       
   message(" *  Define ASCII file with time intervals...")
-  for i,t1,t2 in zip(range(len(timeIntervals[::2])),timeIntervals[::2],timeIntervals[1::2]):
+  for i,t1,t2 in zip(list(range(len(timeIntervals[::2]))),timeIntervals[::2],timeIntervals[1::2]):
     message("    Interval %s: %s - %s (%s - %s)" %(i+1,t1,t2,t1-trigTime,t2-trigTime))
   interactivePlots.writeAsciiFile(timeIntervals,"__asciiTimeBins.txt")
   message("\n    done.")

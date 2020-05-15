@@ -25,13 +25,13 @@ class CommandPipeline(object):
       #Fake filter (always return True)
       self.datasetsFilter     = lambda x: True
       
-      for k,v in iter(kwargs.items()):
+      for k,v in iter(list(kwargs.items())):
         if(k=='datasetsfilter'):
           self.datasetsFilter  = v
         pass
       pass
       
-      if(len(filter(self.datasetsFilter,self.datasets))==0):
+      if(len(list(filter(self.datasetsFilter,self.datasets)))==0):
         #Nothing to do
         showerror("No appropriate datasets loaded","You have to load at least one appropriate dataset first!")
         return
@@ -54,7 +54,7 @@ class CommandPipeline(object):
       for command in self.commands:
         self.frames.append(Frame(self.frame))
         thisCommandEntries    = {}
-        for parname, parameter in iter(command.definedParameters.items()):
+        for parname, parameter in iter(list(command.definedParameters.items())):
           #Skip all parameters related to dataset files (no need to ask them again!)
           #and skip the outfile parameter (will use default values)
           if(parameter.type==commandDefiner.DATASETFILE or 
@@ -182,7 +182,7 @@ class CommandPipeline(object):
             if(not self.datasetsFilter(dataset)):
               continue
             message          += "\n\n-Dataset %s:" %(dataset.detector)
-            for descr,product in iter(self.finalProducts.items()):
+            for descr,product in iter(list(self.finalProducts.items())):
               message        += "\n  %-20s : %s" %(descr,os.path.basename(dataset[product]))
             pass
           pass
@@ -216,7 +216,7 @@ class CommandPipeline(object):
       
       #If there is an active eventDisplay, clear its bindings (otherwise it will slow down everything)
       for i,ds in enumerate(self.datasets):
-        if('eventDisplay' in ds.keys() and self.datasets[i]['eventDisplay'] is not None):
+        if('eventDisplay' in list(ds.keys()) and self.datasets[i]['eventDisplay'] is not None):
             #Explicity free the bindinds in the eventDisplay (otherwise they will still be called)
             self.datasets[i]['eventDisplay'].unbind()
         pass
@@ -229,10 +229,10 @@ class CommandPipeline(object):
       #This method update the value of the form with the data stored in the datasets
       command               = self.commands[self.currentStep]
       dataset               = self.datasets[0]
-      for parname, parameter in iter(command.definedParameters.items()):
-         if(parname in dataset.keys()):
+      for parname, parameter in iter(list(command.definedParameters.items())):
+         if(parname in list(dataset.keys())):
               try:
-                print("%s -> %s" %(parname,dataset[parname]))
+                print(("%s -> %s" %(parname,dataset[parname])))
                 self.entries[self.currentStep][parname].set(dataset[parname])
               except:
                 pass
@@ -252,7 +252,7 @@ class CommandPipeline(object):
       self.buttonFrame.destroy()
       
       for entry in self.entries:
-        for k,v in iter(entry.items()):
+        for k,v in iter(list(entry.items())):
           v.destroy()
         pass    
       pass
@@ -272,12 +272,12 @@ class CommandPipeline(object):
       pass
       
       thisFilter            = self.datasetsFilter
-      if("dataset to use" in command.definedParameters.keys()):
+      if("dataset to use" in list(command.definedParameters.keys())):
         detectorToUse       = self.entries[self.currentStep]["dataset to use"].get().lower()
         thisFilter          = lambda x:x.detector.lower()==detectorToUse.lower()
       pass
       
-      print("\n ==================== %s =============================== \n" %(command.name))
+      print(("\n ==================== %s =============================== \n" %(command.name)))
       
       #For each dataset, build the command line and run the command
       nProcessed            = 0
@@ -289,8 +289,8 @@ class CommandPipeline(object):
         
         thisParameters      = {}
         
-        for parname, parameter in (command.definedParameters.items()):
-          if(parameter.type==commandDefiner.OUTPUTFILE and (parname not in dataset.keys())):
+        for parname, parameter in (list(command.definedParameters.items())):
+          if(parameter.type==commandDefiner.OUTPUTFILE and (parname not in list(dataset.keys()))):
           
             #Set up the default name
             outfileParName  = parname
@@ -305,9 +305,9 @@ class CommandPipeline(object):
             continue  
           else:            
             #Check if this parameter is part of the dataset
-            if(parname in dataset.keys()):
+            if(parname in list(dataset.keys())):
               thisParameters[parname] = dataset[parname]
-            if(parameter.parname in self.entries[self.currentStep].keys()):
+            if(parameter.parname in list(self.entries[self.currentStep].keys())):
               #Set the parameter to the user-supplied value
               userProvidedValue       = self.entries[self.currentStep][parname].get()
               if(parameter.isMandatory and userProvidedValue==''):
@@ -319,11 +319,11 @@ class CommandPipeline(object):
           pass
         pass
         
-        print("\n- Running %s on dataset %s with this parameters:\n" %(command.name, dataset.detector))
-        for key, value in iter(thisParameters.items()):
+        print(("\n- Running %s on dataset %s with this parameters:\n" %(command.name, dataset.detector)))
+        for key, value in iter(list(thisParameters.items())):
           if(key=="figure" or key=="tkwindow"):
             continue
-          print("%-20s = %s" %(key,value))
+          print(("%-20s = %s" %(key,value)))
         print("")
         #Inhibits the user to press Cancel (which would leave the command
         #in a unsafe status)  
@@ -341,13 +341,13 @@ class CommandPipeline(object):
           success           = False
         except GtBurstException as error:
           showerror("Problem","Problem executing %s:\n\n '%s' \n" %(command.name,error.longMessage))
-          print(error.longMessage)            
+          print((error.longMessage))            
           outtuple          = None
           self.figure.clear()
           self.canvas.draw()
           success           = False
         except:            
-          print (map(lambda x:x[0],traceback.extract_stack()))
+          print(([x[0] for x in traceback.extract_stack()]))
           filename, line, dummy, dummy = traceback.extract_stack().pop()
           
           filename                     = os.path.basename( filename )

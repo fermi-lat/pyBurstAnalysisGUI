@@ -67,7 +67,7 @@ def gtdosimulation(**kwargs):
   pass
 
 def run(**kwargs):
-  if(len(kwargs.keys())==0):
+  if(len(list(kwargs.keys()))==0):
     #Nothing specified, the user needs just help!
     thisCommand.getHelp()
     return
@@ -89,8 +89,8 @@ def run(**kwargs):
     clobber                     = _yesOrNoToBool(thisCommand.getParValue('clobber'))
     verbose                     = _yesOrNoToBool(thisCommand.getParValue('verbose'))
   except KeyError as err:
-    print("\n\nERROR: Parameter %s not found or incorrect! \n\n" %(err.args[0]))    
-    print (thisCommand.getHelp())
+    print(("\n\nERROR: Parameter %s not found or incorrect! \n\n" %(err.args[0])))    
+    print((thisCommand.getHelp()))
     return
   
   from GtBurst import dataHandling
@@ -155,9 +155,9 @@ def run(**kwargs):
     try:
       os.makedirs(destdir)
     except os.error:
-      print("Note: directory %s already exists" %(outdir))
+      print(("Note: directory %s already exists" %(outdir)))
     
-    for orig,dest in zip([ft1,ft2,rsp,cspec],map(lambda x:os.path.join(destdir,x),[ft1,ft2,rsp,cspec])):
+    for orig,dest in zip([ft1,ft2,rsp,cspec],[os.path.join(destdir,x) for x in [ft1,ft2,rsp,cspec]]):
       if(os.path.exists(dest)):
         if(clobber==True):
           os.remove(dest)

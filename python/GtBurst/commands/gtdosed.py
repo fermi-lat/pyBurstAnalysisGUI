@@ -67,7 +67,7 @@ def gtdosed(**kwargs):
 pass
 
 def run(**kwargs):
-  if(len(kwargs.keys())==0):
+  if(len(list(kwargs.keys()))==0):
     #Nothing specified, the user needs just help!
     thisCommand.getHelp()
     return
@@ -90,10 +90,10 @@ def run(**kwargs):
     verbose                     = _yesOrNoToBool(thisCommand.getParValue('verbose'))
     figure                      = thisCommand.getParValue('figure')
   except KeyError as err:
-    print("\n\nERROR: Parameter %s not found or incorrect! \n\n" %(err.args[0]))
+    print(("\n\nERROR: Parameter %s not found or incorrect! \n\n" %(err.args[0])))
     
     #Print help
-    print (thisCommand.getHelp())
+    print((thisCommand.getHelp()))
     return
   pass
   
@@ -114,7 +114,7 @@ def run(**kwargs):
   
   totalExposure               = pyfits.getheader(pha1file,'SPECTRUM').get("EXPOSURE")
   
-  print("\nTotal exposure: %s s" %(totalExposure))
+  print(("\nTotal exposure: %s s" %(totalExposure)))
   
   #Transfer information on the source from the input to the output XML
   irf                         = dataHandling._getParamFromXML(xmlmodel,'IRF')
@@ -151,7 +151,7 @@ def run(**kwargs):
                   value           = float(fixphindex)
                 except:
                   raise ValueError("The value for the photon index (%s) is not a float. Value not recognized." % fixphindex)
-                print("\n\nFixing photon index to the provided value (%s) \n\n" %(value))
+                print(("\n\nFixing photon index to the provided value (%s) \n\n" %(value)))
                 param.set('value',"%s" % value)
               else:
                 print("\n\nFixing photon index to the best fit value on the whole energy range\n\n")
@@ -180,16 +180,16 @@ def run(**kwargs):
   f.close()
   
   if(energybins is not None):
-    energyBoundaries            = map(lambda x:float(x),energybins.split(','))
+    energyBoundaries            = [float(x) for x in energybins.split(',')]
   else:
     energyBoundaries          = LikelihoodComponent.optimizeBins(LATdata.like1,energies,sourceName,minTs=tsmin,minEvt=3)
   
   print("\nEnergy boundaries:")
-  for i,ee1,ee2 in zip(range(len(energyBoundaries)-1),energyBoundaries[:-1],energyBoundaries[1:]):
-    print("%02i: %10s - %10s" %(i+1,ee1,ee2))
+  for i,ee1,ee2 in zip(list(range(len(energyBoundaries)-1)),energyBoundaries[:-1],energyBoundaries[1:]):
+    print(("%02i: %10s - %10s" %(i+1,ee1,ee2)))
   pass
   print("\n")
-  print("\nNumber of energy bins: %s\n" %(len(energyBoundaries)-1))
+  print(("\nNumber of energy bins: %s\n" %(len(energyBoundaries)-1)))
     
   fluxes                      = numpy.zeros(len(energyBoundaries)-1)
   fluxes_errors               = numpy.zeros(len(energyBoundaries)-1)
@@ -198,7 +198,7 @@ def run(**kwargs):
   TSs                         = numpy.zeros(len(energyBoundaries)-1)
   phIndexes                   = numpy.zeros(len(energyBoundaries)-1)
   totalCounts                 = 0
-  for i,e1,e2 in zip(range(len(fluxes)),energyBoundaries[:-1],energyBoundaries[1:]):
+  for i,e1,e2 in zip(list(range(len(fluxes))),energyBoundaries[:-1],energyBoundaries[1:]):
     thisLATdata               = dataHandling.LATData(eventfile,rspfile,ft2file,root="SED_%s-%s" %(e1,e2))
     #Further cut in the energy range for this Band
     #Remove the version _vv from the name of the irf
@@ -212,7 +212,7 @@ def run(**kwargs):
                                                                          dogtdiffrsp=False,
                                                                          expomap=expomap,
                                                                          ltcube=ltcube)
-    source                    = filter(lambda x:x.name==sourceName,sources)[0]
+    source                    = [x for x in sources if x.name==sourceName][0]
     if(source.flux.find("<")>=0):
       #This is an upper limit
       source.flux             = float(source.flux.split("<")[1].strip())
@@ -240,7 +240,7 @@ def run(**kwargs):
   de                          = (ee2-ee1)
   #Use the photon index of the total fit to compute the mean energy
   pow                         = numpy.power
-  meanEnergies                = numpy.array(map(lambda x:computeMeanEnergy(x[0],x[1],x[2]),zip(phIndexes,ee1,ee2)))
+  meanEnergies                = numpy.array([computeMeanEnergy(x[0],x[1],x[2]) for x in zip(phIndexes,ee1,ee2)])
   nuFnu                       = phfluxes / de * pow(meanEnergies,2.0) * MeV2Erg
   nuFnuError                  = phfluxes_errors / de * pow(meanEnergies,2.0) * MeV2Erg
 
@@ -252,7 +252,7 @@ def run(**kwargs):
   fw.write("#Total exposure: %s s\n" %(totalExposure))
   for e1,e2,f,fe,ph,phe,ts,ne,nee1,nee2,nuF,nuFe in zip(energyBoundaries[:-1],energyBoundaries[1:],fluxes,fluxes_errors,phfluxes,phfluxes_errors,TSs,meanEnergies,meanEnergies-ee1,ee2-meanEnergies,nuFnu,nuFnuError):
     fw.write("%s %s %s %s %s %s %s %s %s %s %s %s\n" %(e1,e2,f,fe,ph,phe,ts,ne,nee1,nee2,nuF,nuFe))
-    print("%10s - %10s MeV -> %g +/- %g erg/cm2/s, %g +/- %g ph/cm2/s, TS = %s" %(e1,e2,f,fe,ph,phe,ts))
+    print(("%10s - %10s MeV -> %g +/- %g erg/cm2/s, %g +/- %g ph/cm2/s, TS = %s" %(e1,e2,f,fe,ph,phe,ts)))
   pass
   fw.close()
   

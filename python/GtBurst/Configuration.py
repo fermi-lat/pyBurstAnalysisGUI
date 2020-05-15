@@ -52,7 +52,7 @@ class Configuration(object):
     
     def set(self,key,value):
 
-      if(key in self.description.keys()):
+      if(key in list(self.description.keys())):
 
         self.configuration[key] = value
 
@@ -62,7 +62,7 @@ class Configuration(object):
     
     def get(self,key):
     
-      if key in self.description.keys():
+      if key in list(self.description.keys()):
       
         return self.configuration[key]
         
@@ -72,12 +72,12 @@ class Configuration(object):
     
     def getDescription(self,key):
     
-      if(key in self.description.keys()):
+      if(key in list(self.description.keys())):
     
         return self.description[key]
 
       
     def keys(self):
 
-      return self.configuration.keys()
+      return list(self.configuration.keys())
 

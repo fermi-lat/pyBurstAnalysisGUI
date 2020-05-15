@@ -19,7 +19,7 @@ class Callback(object):
       pass
     else:
       if((ratio%5)==0):
-        print(".%s." %(ratio))
+        print((".%s." %(ratio)))
   pass 
 pass
 
@@ -39,7 +39,7 @@ if __name__ == '__main__':
   dest                        = src.split("/")[-1]
   f                           = open(dest, 'wb+')
   w                           = Callback(size, f)
-  print("Downloading %s bytes..." %(size))
+  print(("Downloading %s bytes..." %(size)))
   c.retrbinary('RETR %s' % src, w)
   f.close()
   c.quit()

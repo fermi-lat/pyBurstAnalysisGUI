@@ -46,7 +46,7 @@ pass
 
 def run(**kwargs):
   global thisCommand
-  if(len(kwargs.keys())==0):
+  if(len(list(kwargs.keys()))==0):
     #Nothing specified, the user needs just help!
     thisCommand.getHelp()
     return
@@ -58,7 +58,7 @@ def run(**kwargs):
     logfile                     = thisCommand.getParValue('logfile')
     outscript                   = thisCommand.getParValue('outscript')
   except KeyError as err:
-    print("\n\nERROR: Parameter %s not found or incorrect! \n\n" %(err.args[0]))
+    print(("\n\nERROR: Parameter %s not found or incorrect! \n\n" %(err.args[0])))
     
     #Print help
     thisCommand.getHelp()
@@ -69,7 +69,7 @@ def run(**kwargs):
     commands                    = []
     while 1:
       try:
-        row                       = f.next()
+        row                       = next(f)
       except:
         break
       match                     = re.findall("- Running (.+) on dataset",row)
@@ -78,11 +78,11 @@ def run(**kwargs):
       else:
         thisCommand             = "%s.py" % match[0]
         #There is an empty line to jump
-        f.next()
+        next(f)
         
         #Now go for the parameters
         while 1:
-          row2                  = f.next()
+          row2                  = next(f)
           if(len(row2)<2):
             break
           parname,parvalue      = row2.split("=")
@@ -99,7 +99,7 @@ def run(**kwargs):
   outf                        = open(outscript,"w+")
   outf.write("#Usage: source %s\n\n" %(outscript))
   for cmd in commands:
-    print("%s\n" % cmd)
+    print(("%s\n" % cmd))
     outf.write("\n%s\n" % cmd)
   outf.close()
 pass

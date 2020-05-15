@@ -55,7 +55,7 @@ pass
 callbackID                    = None
 
 def run(**kwargs):
-  if(len(kwargs.keys())==0):
+  if(len(list(kwargs.keys()))==0):
     #Nothing specified, the user needs just help!
     thisCommand.getHelp()
     return
@@ -68,17 +68,17 @@ def run(**kwargs):
     skymap                      = thisCommand.getParValue('skymap')
     figure                      = thisCommand.getParValue('figure')
   except KeyError as err:
-    print("\n\nERROR: Parameter %s not found or incorrect! \n\n" %(err.args[0]))
+    print(("\n\nERROR: Parameter %s not found or incorrect! \n\n" %(err.args[0])))
     
     #Print help
-    print (thisCommand.getHelp())
+    print((thisCommand.getHelp()))
     return
   pass
   from GtBurst.InteractiveFt1Display import InteractiveFt1Display
   
   displ                     = InteractiveFt1Display(filteredeventfile,skymap,figure)
   displ.waitClick()
-  print("\nSelected (R.A., Dec): (%s,%s)" %(displ.user_ra,displ.user_dec))
+  print(("\nSelected (R.A., Dec): (%s,%s)" %(displ.user_ra,displ.user_dec)))
   user_ra                   = float(displ.user_ra)
   user_dec                  = float(displ.user_dec)
   displ.unbind()

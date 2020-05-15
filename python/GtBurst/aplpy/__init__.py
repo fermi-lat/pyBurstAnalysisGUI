@@ -2,7 +2,7 @@ try:
     
     # Use internal aplpy
     
-    from my_aplpy import *
+    from .my_aplpy import *
     
 except ImportError:
     

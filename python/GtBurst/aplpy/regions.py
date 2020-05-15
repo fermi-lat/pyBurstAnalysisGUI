@@ -93,7 +93,7 @@ def ds9(region_file, header, zorder=3, **kwargs):
     """
 
     # read region file
-    if isinstance(region_file, basestring):
+    if isinstance(region_file, str):
         rr = pyregion.open(region_file)
     elif isinstance(region_file, pyregion.ShapeList):
         rr = region_file

@@ -29,10 +29,10 @@ class Parameter(object):
     self.type                 = INDEF
     self.extension            = "*"
     self.possibleValues       = []
-    for key in kwargs.keys():
+    for key in list(kwargs.keys()):
       if   key.lower()=="partype":        self.type           = kwargs[key]
       elif key.lower()=="extension":      self.extension      = kwargs[key]
-      elif key.lower()=="possiblevalues": self.possibleValues = map(lambda x:x.lower(),kwargs[key])
+      elif key.lower()=="possiblevalues": self.possibleValues = [x.lower() for x in kwargs[key]]
   pass
   
   def setValue(self,value):
@@ -62,7 +62,7 @@ class Command(object):
   pass
   
   def greetings(self):
-    print("This is %s (%s %s)\nAuthor: %s\n" %(self.name,getPackageName(),getVersion(),self.author))
+    print(("This is %s (%s %s)\nAuthor: %s\n" %(self.name,getPackageName(),getVersion(),self.author)))
   pass
   
   def addParameter(self,parname,description,mandatory=True,defaultValue=None,**kwargs):
@@ -83,7 +83,7 @@ class Command(object):
   pass
    
   def setParValuesFromDictionary(self,inputDict):
-    for parname, parameter in iter(self.definedParameters.items()):
+    for parname, parameter in iter(list(self.definedParameters.items())):
       try:
         if(parameter.type==INPUTFILE):
           parameter.setValue(os.path.abspath(os.path.expanduser(inputDict[parname])))
@@ -113,7 +113,7 @@ class Command(object):
     message                  += "%s" %(self.description)
     message                  += "\n"
     message                  += "\nParameters:\n"
-    for parname, parameter in iter(self.definedParameters.items()):
+    for parname, parameter in iter(list(self.definedParameters.items())):
       if(parameter.isMandatory()):
         description             = parameter.description
       elif(parameter.type==PYTHONONLY):

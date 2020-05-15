@@ -24,7 +24,7 @@ def ltcube(times):
     created ltcube file which can be combined with other files and/or
     deleted later.'''
 
-    print ("Starting calculation on interval {} to {}".format(times[0],times[1]))
+    print(("Starting calculation on interval {} to {}".format(times[0],times[1])))
     evfile = tempfile.NamedTemporaryFile(suffix=".fits")
     filter['rad'] = "INDEF"
     filter['evclass'] = 0
@@ -53,7 +53,7 @@ def ltcube(times):
     expCube['zmax'] = times[4]
     expCube['chatter'] = 0
     expCube.run(print_command=True)
-    print ("Completed calculation on interval {} to {}".format(times[0],times[1]))
+    print(("Completed calculation on interval {} to {}".format(times[0],times[1])))
     return outfilename
 
 
@@ -126,20 +126,20 @@ def gtltcube_mp(bins, SCFile, EVFile, OutFile, SaveTemp, zmax):
         stops = [st[-1] for st in scstopssplit]
 
         for interval in zip(starts,stops):
-            if verbose: print ("Looking at interval",interval[0],"to",interval[1])
+            if verbose: print(("Looking at interval",interval[0],"to",interval[1]))
             good_times = False
             #grrrr.  some bug in pyfits doesn't let me do this the python way...
             for gti_i in range(len(gti_data)):
                 if(not good_times):
-                    if verbose: print ("   Checking gti",gti_data[gti_i]['START'],"to",gti_data[gti_i]['STOP'])
+                    if verbose: print(("   Checking gti",gti_data[gti_i]['START'],"to",gti_data[gti_i]['STOP']))
                     gti_starts = interval[0] <= gti_data[gti_i]['START'] <= interval[1]
                     gti_stops = interval[0] < gti_data[gti_i]['STOP'] <= interval[1]
-                    if verbose: print ("   Does this gti start inside this interval? ", gti_starts)
-                    if verbose: print ("   Does this gti stop inside this interval? ", gti_stops)
+                    if verbose: print(("   Does this gti start inside this interval? ", gti_starts))
+                    if verbose: print(("   Does this gti stop inside this interval? ", gti_stops))
                     good_times = gti_starts or gti_stops
                     if verbose: print()
         
-            if verbose: print ("  Are there good times inside this interval? ", good_times)
+            if verbose: print(("  Are there good times inside this interval? ", good_times))
             if not good_times:
                 redo = True
             if verbose: print()
@@ -149,7 +149,7 @@ def gtltcube_mp(bins, SCFile, EVFile, OutFile, SaveTemp, zmax):
                 print ("No good time intervals found.  Bailing...")
                 sys.exit(1)
             print ("One (or more) of the slices doesn't have a GTI.")
-            print ("Reducing the number of threads from ",bins,"to",bins-1)
+            print(("Reducing the number of threads from ",bins,"to",bins-1))
             bins -= 1
         
     scfiles = [SCFile for st in scstartssplit]
@@ -158,7 +158,7 @@ def gtltcube_mp(bins, SCFile, EVFile, OutFile, SaveTemp, zmax):
 
     pool = Pool(processes=bins)      
     times = np.array([starts,stops,scfiles,evfiles,zmaxes])
-    print ("Spawning {} jobs...".format(bins))
+    print(("Spawning {} jobs...".format(bins)))
     tempfilenames = pool.map(ltcube,times.transpose())
     print ("Combining temporary files...")
     ltsum(tempfilenames, OutFile, SaveTemp)

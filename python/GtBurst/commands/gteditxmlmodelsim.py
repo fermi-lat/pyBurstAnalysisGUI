@@ -54,7 +54,7 @@ def gteditxmlmodelsim(**kwargs):
 pass
 
 def run(**kwargs):
-  if(len(kwargs.keys())==0):
+  if(len(list(kwargs.keys()))==0):
     #Nothing specified, the user needs just help!
     thisCommand.getHelp()
     return
@@ -66,10 +66,10 @@ def run(**kwargs):
     xmlmodel                    = thisCommand.getParValue('likexmlresults')
     tkwindow                    = thisCommand.getParValue('tkwindow')
   except KeyError as err:
-    print("\n\nERROR: Parameter %s not found or incorrect! \n\n" %(err.args[0]))
+    print(("\n\nERROR: Parameter %s not found or incorrect! \n\n" %(err.args[0])))
     
     #Print help
-    print (thisCommand.getHelp())
+    print((thisCommand.getHelp()))
     return
   pass
   

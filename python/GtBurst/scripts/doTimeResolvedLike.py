@@ -49,8 +49,8 @@ def clean_intervals(tstarts, tstops, gti_starts, gti_stops):
 
                 cleaned_ints.append(intersect)
 
-    new_starts = map(lambda x: x.start, cleaned_ints)
-    new_stops = map(lambda x: x.stop, cleaned_ints)
+    new_starts = [x.start for x in cleaned_ints]
+    new_stops = [x.stop for x in cleaned_ints]
 
     return new_starts, new_stops
 
@@ -205,11 +205,11 @@ class Interval(object):
 def printCommand(cmdname, targs):
     commandLine = cmdname
 
-    for k, v in targs.iteritems():
+    for k, v in targs.items():
         commandLine += " %s='%s'" % (k, v)
     pass
 
-    print("-> %s" % commandLine)
+    print(("-> %s" % commandLine))
 
 
 pass
@@ -366,7 +366,7 @@ pass
 if __name__ == "__main__":
 
     configuration = Configuration()
-    irfs = IRFS.IRFS.keys()
+    irfs = list(IRFS.IRFS.keys())
     irfs.append('auto')
     parser = argparse.ArgumentParser()
 
@@ -492,12 +492,12 @@ if __name__ == "__main__":
             raise ImportError("In order to make the likelihood profile you have to install emcee.")
 
     # Determine time intervals
-    tstarts = numpy.array(map(lambda x: float(x.replace('\\', "")), args.tstarts.split(",")))
-    tstops = numpy.array(map(lambda x: float(x.replace('\\', "")), args.tstops.split(",")))
+    tstarts = numpy.array([float(x.replace('\\', "")) for x in args.tstarts.split(",")])
+    tstops = numpy.array([float(x.replace('\\', "")) for x in args.tstops.split(",")])
     print("\nRequested intervals:")
     print("------------------------------------------------------")
     for t1, t2 in zip(tstarts, tstops):
-        print("%-20s - %s" % (t1, t2))
+        print(("%-20s - %s" % (t1, t2)))
 
     # Check if data exists, otherwise download them
     try:
@@ -508,7 +508,7 @@ if __name__ == "__main__":
 
     if (dataset is None):
         # Download data
-        print("\nData for trigger %s are not available. Let's download them!" % (args.triggername))
+        print(("\nData for trigger %s are not available. Let's download them!" % (args.triggername)))
         cmdLine = "gtdownloadLATdata.py triggername=%s timebefore=%s timeafter=%s datarepository=%s" % (
         args.triggername,
         min(tstarts.min(), -5000),
@@ -521,8 +521,8 @@ if __name__ == "__main__":
 
     print("\nData files:")
     print("-----------")
-    for k, v in dataset.iteritems():
-        print("%-20s %s" % (k, v))
+    for k, v in dataset.items():
+        print(("%-20s %s" % (k, v)))
     pass
 
     # Now get R.A. and Dec. if not specified
@@ -538,9 +538,9 @@ if __name__ == "__main__":
 
     print("\nROI:")
     print("-----")
-    print("%-20s %s" % ('R.A.', ra))
-    print("%-20s %s" % ('Dec.', dec))
-    print("%-20s %s" % ('Radius', args.roi))
+    print(("%-20s %s" % ('R.A.', ra)))
+    print(("%-20s %s" % ('Dec.', dec)))
+    print(("%-20s %s" % ('Radius', args.roi)))
 
     if args.filter_GTI:
 
@@ -587,21 +587,21 @@ if __name__ == "__main__":
         print("\nAfter intersecting with GTI these are the intervals:")
         print("------------------------------------------------------")
         for t1, t2 in zip(tstarts, tstops):
-            print("%-20s - %s" % (t1, t2))
+            print(("%-20s - %s" % (t1, t2)))
 
     results = []
     initialWorkdir = os.getcwd()
 
-    for i, t1, t2 in zip(range(1, len(tstarts) + 1), tstarts, tstops):
+    for i, t1, t2 in zip(list(range(1, len(tstarts) + 1)), tstarts, tstops):
 
-        print("\nInterval # %s (%s-%s):" % (i, t1, t2))
+        print(("\nInterval # %s (%s-%s):" % (i, t1, t2)))
         print("-----------------------\n")
 
         # Create a work dir and move there
         dirname = os.path.abspath("interval%s-%s" % (t1, t2))
 
         if os.path.exists(dirname):
-            print("%s already exists, skipping" % dirname)
+            print(("%s already exists, skipping" % dirname))
 
             continue
 
@@ -621,7 +621,7 @@ if __name__ == "__main__":
 
                 args.irf = 'p8_source'
 
-            print("\nAutoselected %s class\n" % args.irf)
+            print(("\nAutoselected %s class\n" % args.irf))
 
         irf = args.irf
 
@@ -777,7 +777,7 @@ if __name__ == "__main__":
                                                               verbose=False)
 
         # Now append the results for this interval
-        grb = filter(lambda x: x.name.find("GRB") >= 0, sources)[0]
+        grb = [x for x in sources if x.name.find("GRB") >= 0][0]
 
         if args.tsmap_spec is not None:
 
@@ -790,7 +790,7 @@ if __name__ == "__main__":
                 # grb.dec                  = float(bestdec)
                 grb.TS = float(maxTS)
 
-                print("(R.A., Dec.) = (%.3f, %3f) with TS = %.2f\n" % (bestra, bestdec, grb.TS))
+                print(("(R.A., Dec.) = (%.3f, %3f) with TS = %.2f\n" % (bestra, bestdec, grb.TS)))
 
         else:
 

@@ -26,7 +26,7 @@ class dataCollector(object):
                     getTTE=True,getCSPEC=True,getRSP=True,getCTIME=True,**kwargs):
     
     self.parent               = None
-    for key in kwargs.keys():
+    for key in list(kwargs.keys()):
       if key.lower()=='parent' :  self.parent    = kwargs['parent']
     
     self.instrument           = instrument
@@ -62,7 +62,7 @@ class dataCollector(object):
         message                = "already existent"  
     pass
     
-    print("Local data repository (destination): %s (%s)" %(self.localRepository,message))    
+    print(("Local data repository (destination): %s (%s)" %(self.localRepository,message)))    
   pass
   
   def downloadDirectoryWithFTP(self,address,filenames=None,namefilter=None):
@@ -163,10 +163,10 @@ class dataCollector(object):
       #if(filename.find(".pdf")>0 or filename.find("gif") >0 or filename.find(".png")>0):
       #  skip                  = (not self.minimal)
       if(skip):
-        print("Skipping %s ..." %(filename))   
+        print(("Skipping %s ..." %(filename)))   
         continue
       else:
-        print("Retrieving %s ..." %(filename)),
+        print(("Retrieving %s ..." %(filename)), end=' ')
       
       if(root is not None):
         l['text']               = "Downloading %s..." % filename

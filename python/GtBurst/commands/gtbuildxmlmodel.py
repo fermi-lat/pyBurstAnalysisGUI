@@ -38,7 +38,7 @@ thisCommand.addParameter("galactic_model",'''Model for the Galactic background (
 thisCommand.addParameter("source_model",'''Spectral model for the new source (GRB or SF).''',
                                            commandDefiner.MANDATORY,
                                          'PowerLaw2',
-                                         possiblevalues=LikelihoodComponent.availableSourceSpectra.keys())
+                                         possiblevalues=list(LikelihoodComponent.availableSourceSpectra.keys()))
 thisCommand.addParameter("fgl_mode",
 '''"fast" = include FGL sources in or around ROI giving at least 1 photons in this
 time interval if at their normal flux (use only for GRBs and SFs).
@@ -93,7 +93,7 @@ def gtbuildxmlmodel(**kwargs):
 pass
 
 def run(**kwargs):
-  if(len(kwargs.keys())==0):
+  if(len(list(kwargs.keys()))==0):
     #Nothing specified, the user needs just help!
     thisCommand.getHelp()
     return
@@ -115,10 +115,10 @@ def run(**kwargs):
     clobber                     = _yesOrNoToBool(thisCommand.getParValue('clobber'))
     verbose                     = _yesOrNoToBool(thisCommand.getParValue('verbose'))
   except KeyError as err:
-    print("\n\nERROR: Parameter %s not found or incorrect! \n\n" %(err.args[0]))
+    print(("\n\nERROR: Parameter %s not found or incorrect! \n\n" %(err.args[0])))
     
     #Print help
-    print (thisCommand.getHelp())
+    print((thisCommand.getHelp()))
     return
   pass
   

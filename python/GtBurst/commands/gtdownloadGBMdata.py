@@ -55,7 +55,7 @@ def gtdownloadLATdata(**kwargs):
 pass
 
 def run(**kwargs):
-  if(len(kwargs.keys())==0):
+  if(len(list(kwargs.keys()))==0):
     #Nothing specified, the user needs just help!
     thisCommand.getHelp()
     return
@@ -69,16 +69,16 @@ def run(**kwargs):
     types                         = thisCommand.getParValue('types').replace(" ","")
     datarepository                = os.path.abspath(os.path.expanduser(thisCommand.getParValue('datarepository')))
   except KeyError as err:
-    print("\n\nERROR: Parameter %s not found or incorrect! \n\n" %(err.args[0]))
+    print(("\n\nERROR: Parameter %s not found or incorrect! \n\n" %(err.args[0])))
     
     #Print help
-    print (thisCommand.getHelp())
+    print((thisCommand.getHelp()))
     return
   pass
     
   configuration           = Configuration()
   
-  types_list              = map(lambda x:x.lower(),types.split(","))
+  types_list              = [x.lower() for x in types.split(",")]
   
   getTTE                  = ('tte' in types_list)
   getCSPEC                = ('cspec' in types_list)
@@ -91,7 +91,7 @@ def run(**kwargs):
     detlist_list          = detlist.split(",")
     for det in detlist_list:
       ff                  = "%s_bn%s" %(det,triggername)
-      print("Filter: %s" %(ff))
+      print(("Filter: %s" %(ff)))
       collector.getFTP(None,ff)
   else:
     collector.getFTP()

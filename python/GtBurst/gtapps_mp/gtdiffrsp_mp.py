@@ -23,7 +23,7 @@ def diffrsp(times):
     name of the created event file which can be combined with other
     files and/or deleted later.'''
 
-    print ("Starting calculation on interval {} to {}".format(times[0],times[1]))
+    print(("Starting calculation on interval {} to {}".format(times[0],times[1])))
 
     osfilehandle,outfilename = tempfile.mkstemp(suffix=".fits")
     filter['rad'] = "INDEF"
@@ -49,7 +49,7 @@ def diffrsp(times):
     diffResps['irfs'] = times[5]
     diffResps['chatter'] = 0
     diffResps.run(print_command=False)
-    print ("Completed calculation of interval {} to {}".format(times[0],times[1]))
+    print(("Completed calculation of interval {} to {}".format(times[0],times[1])))
     return outfilename
 
 def eventsum(filenames, Outfile, SaveTemp):
@@ -114,7 +114,7 @@ def gtdiffrsp_mp(bins, SCFile, EVFile, OutFile, SaveTemp, SrcModel,IRF):
     pool = Pool(processes=bins)      
     times = np.array([starts,stops,scfiles,evfiles,srcmdls,irfs])
 
-    print ("Spawning {} jobs...".format(bins))
+    print(("Spawning {} jobs...".format(bins)))
     tempfilenames = pool.map(diffrsp,times.transpose())
     print ("Combining temporary files...")
     eventsum(tempfilenames, OutFile, SaveTemp)

@@ -116,7 +116,7 @@ else:
             coord                        = numpy.ones((shapex*shapey,3))
             firstColBase                 = numpy.arange(shapex)+1
             firstColumn                  = numpy.repeat(firstColBase,shapey)
-            secondColumn                 = numpy.array(range(shapey)*shapex)+1
+            secondColumn                 = numpy.array(list(range(shapey))*shapex)+1
             coord[:,0]                   = firstColumn
             coord[:,1]                   = secondColumn
                             
@@ -136,7 +136,7 @@ else:
             coord                        = numpy.ones((shapex*shapey,2))
             firstColBase                 = numpy.arange(shapex)+1
             firstColumn                  = numpy.repeat(firstColBase,shapey)
-            secondColumn                 = numpy.array(range(shapey)*shapex)+1
+            secondColumn                 = numpy.array(list(range(shapey))*shapex)+1
             coord[:,0]                   = firstColumn
             coord[:,1]                   = secondColumn
                             
@@ -146,14 +146,14 @@ else:
             decs                         = res[:,1]
           pass
             
-          print("Center is (%s,%s) pixel, (%s,%s) sky" %(xx,yy,xc,yc))
+          print(("Center is (%s,%s) pixel, (%s,%s) sky" %(xx,yy,xc,yc)))
           
           #Cannot deal with fractional pixel
           if(xx - int(xx) >= 1e-4):
-            print("Approximating the X pixel: %s -> %s" %(xx,int(xx)))
+            print(("Approximating the X pixel: %s -> %s" %(xx,int(xx))))
             xx                          = int(xx)
           if(yy - int(yy) >= 1e-4):
-            print("Approximating the Y pixel: %s -> %s" %(yy,int(yy)))
+            print(("Approximating the Y pixel: %s -> %s" %(yy,int(yy))))
             yy                          = int(yy)
           pass
           
@@ -246,19 +246,19 @@ else:
             
             pass        
             
-            print("X range -> %s - %s" %(xmin,xmax))
-            print("Y range -> %s - %s" %(ymin,ymax))
-            print("Input image shape is ([z],y,x) = %s" %(str(f[0].shape)))
+            print(("X range -> %s - %s" %(xmin,xmax)))
+            print(("Y range -> %s - %s" %(ymin,ymax)))
+            print(("Input image shape is ([z],y,x) = %s" %(str(f[0].shape))))
             
             #Using the mode='wrap' option we wrap around the edges of the image,
             #if ymin is negative
             if(isCube):
               
-              img                        = f[0].data.take(range(ymin,ymax),mode='wrap', axis=1).take(range(xmin,xmax),mode='wrap',axis=2)
+              img                        = f[0].data.take(list(range(ymin,ymax)),mode='wrap', axis=1).take(list(range(xmin,xmax)),mode='wrap',axis=2)
             
             else:
               
-              img                        = f[0].data.take(range(ymin,ymax),mode='wrap', axis=0).take(range(xmin,xmax),mode='wrap',axis=1)
+              img                        = f[0].data.take(list(range(ymin,ymax)),mode='wrap', axis=0).take(list(range(xmin,xmax)),mode='wrap',axis=1)
             
             pass
             

@@ -24,7 +24,7 @@ thisCommand.addParameter("ft2file","Spacecraft file (FT2)",commandDefiner.MANDAT
 thisCommand.addParameter("ra","R.A. of the center of the Region of Interest (ROI) (J2000, deg)",commandDefiner.MANDATORY)
 thisCommand.addParameter("dec","Dec of the center of the Region of Interest (ROI) (J2000, deg)",commandDefiner.MANDATORY)
 thisCommand.addParameter("rad","Radius of the Region of Interest (ROI) (deg)",commandDefiner.MANDATORY,12)
-thisCommand.addParameter("irf","Data class (TRANSIENT or SOURCE)",commandDefiner.MANDATORY,'TRANSIENT',possiblevalues=IRFS.IRFS.keys())
+thisCommand.addParameter("irf","Data class (TRANSIENT or SOURCE)",commandDefiner.MANDATORY,'TRANSIENT',possiblevalues=list(IRFS.IRFS.keys()))
 thisCommand.addParameter("zmax","Zenith cut in deg. If strategy==time, then time intervals when the edge of the ROI exceed this limit will be excluded from the analysis. If strategy==events, events with a Zenith angle larger than this will be excluded from the analysis.",commandDefiner.MANDATORY,100)
 thisCommand.addParameter("tstart","Start time for the output file (seconds from trigger or MET)",commandDefiner.MANDATORY,0)
 thisCommand.addParameter("tstop","Stop time for the output file (seconds from trigger or MET)",commandDefiner.MANDATORY,100)
@@ -79,7 +79,7 @@ pass
 lastDisplay                   = None
 
 def run(**kwargs):
-  if(len(kwargs.keys())==0):
+  if(len(list(kwargs.keys()))==0):
     #Nothing specified, the user needs just help!
     thisCommand.getHelp()
     return
@@ -109,10 +109,10 @@ def run(**kwargs):
     verbose                     = _yesOrNoToBool(thisCommand.getParValue('verbose'))
     figure                      = thisCommand.getParValue('figure')
   except KeyError as err:
-    print("\n\nERROR: Parameter %s not found or incorrect! \n\n" %(err.args[0]))
+    print(("\n\nERROR: Parameter %s not found or incorrect! \n\n" %(err.args[0])))
     
     #Print help
-    print (thisCommand.getHelp())
+    print((thisCommand.getHelp()))
     return
   pass
   
@@ -136,8 +136,8 @@ def run(**kwargs):
   totalNumberOfEvents         = numpy.sum(skymap[0].data)
   totalTime                   = numpy.sum(skymap['GTI'].data.field('STOP')-skymap['GTI'].data.field('START'))
   skymap.close()
-  print("\nTotal number of events in the counts map: %s" %(totalNumberOfEvents))
-  print("Total time in Good Time Intervals:        %s" %(totalTime))
+  print(("\nTotal number of events in the counts map: %s" %(totalNumberOfEvents)))
+  print(("Total time in Good Time Intervals:        %s" %(totalTime)))
   if((totalTime==0) and allowEmpty==False):
     raise GtBurstException(2,"Your filter resulted in zero exposure. \n\n" +
                              " Loose your cuts, or enlarge the time interval. You might want to "+

@@ -11,7 +11,7 @@ def selectFile(parent,entry, extension="*",**kwargs):
     
     directory         = False
     workdir           = os.getcwd()
-    for key in kwargs.keys():
+    for key in list(kwargs.keys()):
       if    key.lower()=="directory":           directory    = bool(kwargs[key])
       elif  key.lower()=="workdir":             workdir      = kwargs[key]
     pass
@@ -48,7 +48,7 @@ class EntryPoint(object):
       workdir                 = os.getcwd()
       possibleValues          = []
       extension               = '*'
-      for key in kwargs.keys():
+      for key in list(kwargs.keys()):
         if    key.lower()=="labeltext":         labelText      = kwargs[key]
         elif  key.lower()=="browser":           browser        = bool(kwargs[key])
         elif  key.lower()=="textwidth":         textWidth      = int(kwargs[key])

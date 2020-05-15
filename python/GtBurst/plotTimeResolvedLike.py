@@ -60,7 +60,7 @@ def plot_time_resolved_like(time_resolved_results_files, trigger_names, redshift
     
         except:
     
-            print('No Upper-Limits Found in %s.' % (trigger_name))
+            print(('No Upper-Limits Found in %s.' % (trigger_name)))
     
         # Remove the "n.a." from the error column in the cases where there are upper limits,
         # and replace it with 0
@@ -72,7 +72,7 @@ def plot_time_resolved_like(time_resolved_results_files, trigger_names, redshift
             
         except:
     
-            print('No 0-Error Found in %s.' % (trigger_name))
+            print(('No 0-Error Found in %s.' % (trigger_name)))
     
         bar = 0.5
     

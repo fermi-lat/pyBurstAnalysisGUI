@@ -94,13 +94,13 @@ class FastTSMap(object):
                     ang_sep.append(np.rad2deg(angular_separation(*np.deg2rad([ra_center, dec_center,
                                                                               this_ra, this_dec]))))
 
-                    print("(%.3f, %.3f) -> %.2f (%.3f deg away from center)" % (this_ra, this_dec,
-                                                                                this_TS, ang_sep[-1]))
+                    print(("(%.3f, %.3f) -> %.2f (%.3f deg away from center)" % (this_ra, this_dec,
+                                                                                this_TS, ang_sep[-1])))
 
         if verbose:
-            print("Total number of points: %i" % len(ang_sep))
-            print("Minimum ang. dist: %s deg" % min(ang_sep))
-            print("Maximum ang. dist: %s deg" % max(ang_sep))
+            print(("Total number of points: %i" % len(ang_sep)))
+            print(("Minimum ang. dist: %s deg" % min(ang_sep)))
+            print(("Maximum ang. dist: %s deg" % max(ang_sep)))
 
         # Find maximum and its position
         return max_ts_position, max_ts

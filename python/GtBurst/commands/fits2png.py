@@ -30,7 +30,7 @@ def fitsToPNG(fitsfile,pngfile,vmin=None,vmax=None,**kwargs):
     tsfig.show_grid()
     tsfig.add_colorbar()
     
-    if('sources' in kwargs.keys()):
+    if('sources' in list(kwargs.keys())):
       sources                 = kwargs['sources']
       for src in sources:
         tsfig.add_label(float(src[1]),float(src[2]), "%s" % src[0],
@@ -38,7 +38,7 @@ def fitsToPNG(fitsfile,pngfile,vmin=None,vmax=None,**kwargs):
                         verticalalignment='top', horizontalalignment='left')
         tsfig.show_markers([float(src[1])],[float(src[2])],edgecolor='green',marker='x')
       pass
-    if('ra' in kwargs.keys()):
+    if('ra' in list(kwargs.keys())):
       ra                      = float(kwargs['ra'])
       dec                     = float(kwargs['dec'])
       tsfig.show_markers([ra],[dec],edgecolor='cyan',facecolor='cyan',marker='x',s=120,alpha=0.5,linewidth=3)

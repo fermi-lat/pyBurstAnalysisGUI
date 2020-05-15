@@ -25,7 +25,7 @@ def transformGBMdetname(name):
                                  'NAI_11': 'nb',
                                  'BGO_00': 'b0',
                                  'BGO_01': 'b1'}
-  if(name in translations.keys()):
+  if(name in list(translations.keys())):
     return translations[name]
   else:
     return name                                 
@@ -34,11 +34,11 @@ pass
 def getInteractiveFigureFromCSPEC(cspecfile,**kwargs):
   trigTime                    = dataHandling.getTriggerTime(cspecfile)
   f                           = pyfits.open(cspecfile)  
-  if('DETNAM' in f['SPECTRUM'].header.keys()):
+  if('DETNAM' in list(f['SPECTRUM'].header.keys())):
     detector                  = transformGBMdetname(f['SPECTRUM'].header['DETNAM'])
-  elif('LLECUT' in f['SPECTRUM'].header.keys()):
+  elif('LLECUT' in list(f['SPECTRUM'].header.keys())):
     detector                  = "LAT"
-  elif('TELESCOP' in f['SPECTRUM'].keys()):
+  elif('TELESCOP' in list(f['SPECTRUM'].keys())):
     detector                  = f['SPECTRUM'].header['TELESCOP']
   else:    
     detector                  = 'Unknown'
@@ -78,7 +78,7 @@ class InteractiveFigure(object):
     self.selectSource         = True
     self.xoffset              = 0
     self.figure               = None  
-    for key in kwargs.keys():
+    for key in list(kwargs.keys()):
       if   key.lower()=="xlabel":                self.xlabel               = kwargs[key]
       elif key.lower()=="ylabel":                self.ylabel               = kwargs[key]
       elif key.lower()=="title" :                self.title                = kwargs[key]
@@ -256,7 +256,7 @@ class InteractiveFigure(object):
     newTstop                  = tstops.pop(-1)
     newInterval               = dataHandling.TimeInterval(newTstart,newTstop,True)
     
-    oldIntervals              = map(lambda x:dataHandling.TimeInterval(x[0],x[1],True),zip(tstarts,tstops))
+    oldIntervals              = [dataHandling.TimeInterval(x[0],x[1],True) for x in zip(tstarts,tstops)]
     
     #Verify if the new interval overlap with the old ones
     merged                    = False
@@ -335,9 +335,9 @@ class InteractiveFigure(object):
     Converts an array to double-length for step plotting
     """
     if isX:
-      newarr = np.array(zip(arr[:-1],arr[1:])).ravel()
+      newarr = np.array(list(zip(arr[:-1],arr[1:]))).ravel()
     else:
-      newarr = np.array(zip(arr[:-1],arr[:-1])).ravel()
+      newarr = np.array(list(zip(arr[:-1],arr[:-1]))).ravel()
     return newarr
   
   def printHelp(self):

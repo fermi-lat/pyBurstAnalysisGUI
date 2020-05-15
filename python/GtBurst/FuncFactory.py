@@ -195,7 +195,7 @@ class FuncContainer(object):
         if value.type == self.funcs[name].type:
             self.funcs[name] = value
     def keys(self):
-        return self.funcs.keys()
+        return list(self.funcs.keys())
 
 class Spectra(FuncContainer):
     def __init__(self):

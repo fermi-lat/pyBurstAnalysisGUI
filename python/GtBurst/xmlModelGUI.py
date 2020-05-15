@@ -61,11 +61,11 @@ class parseXML(object):
   
   def setAttribute(self,parameter,attributeName,newValue):
     #Find the right parameter to change
-    par                       = filter(lambda x:x['Source Name']==parameter[0] and
+    par                       = [x for x in self.parameters if x['Source Name']==parameter[0] and
                                                 x['Source Type']==parameter[8] and
                                                 x['Feature']==parameter[9] and
                                                 x['Feature Type']==parameter[10] and
-                                                x['Name']==parameter[1],self.parameters)[0]
+                                                x['Name']==parameter[1]][0]
     parID                     = self.parameters.index(par)
     self.doms[parID].setAttribute(attributeName.lower(),newValue)
     self.fill()
@@ -112,7 +112,7 @@ class xmlModelGUI(object):
         shutil.copyfile(xmlModelFile,self.workingCopy)
         self.xmlModel = parseXML(self.workingCopy)
         self.xmlModelFile = xmlModelFile
-        self.columns = self.xmlModel.parameters[0].keys()
+        self.columns = list(self.xmlModel.parameters[0].keys())
         self.tree = None
         self._setup_widgets()
         self.notSaved = False
@@ -203,11 +203,11 @@ class xmlModelGUI(object):
         
         self.items = []    
         
-        colWidths = map(lambda x:len(x),self.columns)
-        colLongestEntry = map(lambda x:x,self.columns)
+        colWidths = [len(x) for x in self.columns]
+        colLongestEntry = [x for x in self.columns]
         
         for item in self.data:
-            self.items.append(self.tree.insert('', 'end', values=item.values()))
+            self.items.append(self.tree.insert('', 'end', values=list(item.values())))
             
             #Keep track of column length
             for indx, val in enumerate(item.values()):
@@ -228,7 +228,7 @@ class xmlModelGUI(object):
                                  'max': maximum,
                                  'scale': scale,
                                  'free': free}
-        for k,v in iter(pars.items()):
+        for k,v in iter(list(pars.items())):
           v                   = str(v)
           if(v=='no'):
             v                 = '0'
