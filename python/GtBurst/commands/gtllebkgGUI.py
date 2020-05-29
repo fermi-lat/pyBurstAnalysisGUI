@@ -87,8 +87,8 @@ def run(**kwargs):
     return
   pass
   
-  from .gtllebkgbindef import thisCommand as gtllebkgbindef
-  from .gtllebkg import thisCommand as gtllebkg
+  from GtBurst.commands.gtllebkgbindef import thisCommand as gtllebkgbindef
+  from GtBurst.commands.gtllebkg import thisCommand as gtllebkg
   
   message                     = Message(verbose)
   while(1==1):

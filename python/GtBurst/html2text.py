@@ -245,6 +245,7 @@ class HTML2Text(html.parser.HTMLParser):
 
 
     def feed(self, data):
+        print ("data:",data)
         data = data.replace("</' + 'script>", "</ignore>")
         html.parser.HTMLParser.feed(self, data)
 

@@ -263,9 +263,8 @@ class CommandPipeline(object):
       self.helpCallback(self.commands[self.currentStep].GUIdescription)
     pass
     
-    def runCommand(self):                
-            
-      self.figureFrame.focus_set()
+    def runCommand(self):
+      self.figureFrame.focus()
       command               = self.commands[self.currentStep]
       if(self.console is None):  
         self.console        = Console(self.windows[self.currentStep].window)

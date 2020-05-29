@@ -64,10 +64,10 @@ def runLikelihood(subdir, tpl_file):
     ts_results.dat.'''
 
 
-    parfile = open("par.pck", "r")
+    parfile = open("par.pck", "rb")
     pars = pickle.load(parfile)
 
-    pixelfile = open("pixel.pck", "r")
+    pixelfile = open("pixel.pck", "rb")
     pixels = pickle.load(pixelfile)
 
     pixel_coords = PixelCoords(tpl_file)
@@ -77,7 +77,6 @@ def runLikelihood(subdir, tpl_file):
                       expMap='../'+pars['expmap'],
                       expCube='../'+pars['expcube'],
                       irfs=pars['irfs'])
-
     like = UnbinnedAnalysis(obs, '../'+pars['srcmdl'], pars['optimizer'])
     like.setFitTolType(pars['toltype'])
     like.optimize(0)
@@ -123,11 +122,11 @@ def launchJobs(SQ):
 
     os.chdir(subdir)
     
-    parfile = open("par.pck", "w")
+    parfile = open("par.pck",'wb')
     pickle.dump(pars, parfile)
     parfile.close()
 
-    pixelfile = open("pixel.pck", "w")
+    pixelfile = open("pixel.pck", "wb")
     pickle.dump(pixels, pixelfile)
     pixelfile.close()
 
@@ -218,13 +217,30 @@ class BatchTsMap(object):
         
     def _createTemplate(self):
         pars = self.pars
+
         gtbin = GtApp('gtbin')
-        gtbin.run(algorithm='CMAP', evfile=pars['evfile'],
-                  scfile=pars['scfile'], outfile=self.tpl_file,
-                  nxpix=pars['nxpix'], nypix=pars['nypix'],
-                  binsz=pars['binsz'], coordsys=pars['coordsys'],
-                  xref=pars['xref'], yref=pars['yref'], axisrot=0,
-                  proj=pars['proj'], chatter=0, clobber='yes')
+        print (gtbin.command())
+        gtbin['algorithm']='CMAP'
+        gtbin['evfile']=pars['evfile']
+        gtbin['scfile']=pars['scfile']
+        gtbin['outfile']=self.tpl_file
+        gtbin['nxpix']=pars['nxpix']
+        gtbin['nypix']=pars['nypix']
+        gtbin['binsz']=pars['binsz']
+        gtbin['coordsys']=pars['coordsys']
+        gtbin['xref']=pars['xref']
+        gtbin['yref']=pars['yref']
+        gtbin['axisrot']=0
+        gtbin['proj']=pars['proj']
+        gtbin['chatter']=0
+        gtbin['clobber']='yes'        
+        gtbin.run()
+        #gtbin.run(algorithm='CMAP', evfile=pars['evfile'],
+        #            scfile=pars['scfile'], outfile=self.tpl_file,
+        #            nxpix=pars['nxpix'], nypix=pars['nypix'],
+        #            binsz=pars['binsz'], coordsys=pars['coordsys'],
+        #            xref=pars['xref'], yref=pars['yref'], axisrot=0,
+        #            proj=pars['proj'], chatter=0, clobber='yes')
 
     def getPixels(self, partition):
         nx, ny = self.pixel_coords.nx, self.pixel_coords.ny
@@ -258,8 +274,8 @@ class BatchTsMap(object):
                 continue
             for i, j, ts in zip(ii, jj, ts_vals):
                 tsmap[0].data[int(j)][int(i)] = ts
-        tsmap.writeto(self.pars['outfile'], clobber=True)
-                
+        tsmap.writeto(self.pars['outfile'], overwrite=True)
+        
     def remove_tempfiles(self):
 
         for subdir in self.subdirs:

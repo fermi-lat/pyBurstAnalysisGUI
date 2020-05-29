@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 # Author: Giacomo Vianello (giacomov@slac.stanford.edu)
-
 from GtBurst import version
 
 packageName = version.getPackageName()
@@ -171,7 +170,7 @@ class GUI(object, metaclass=MetaForExceptions):
         self.eventLock = False
         self.addrmfWarning = True
         self.main()
-
+        
     pass
 
     def _findOtherFiles(self, cspecFile, parent):
@@ -534,15 +533,14 @@ class GUI(object, metaclass=MetaForExceptions):
             pass
         pass
         # If we are here, we have an ft2 file
-
         ra_obj = float(self.objectInfoEntries['ra'].variable.get())
         dec_obj = float(self.objectInfoEntries['dec'].variable.get())
         triggerTime = float(self.datasets[0].triggerTime)
 
         figure = dataHandling.makeNavigationPlots(ft2file, ra_obj, dec_obj, triggerTime)
-        figure.canvas.draw()
-
-    pass
+        #figure.canvas.draw()
+        figure.show()        
+        pass
 
     def updateGtBurst(self):
         cwd = os.getcwd()
@@ -588,7 +586,7 @@ class GUI(object, metaclass=MetaForExceptions):
         self.root.tk.eval("set auto_path [linsert $auto_path 0 %s]" % (path))
 
         self.root.iconify()
-        # self.root.geometry("1024x768+0+0")
+        #self.root.geometry("1024x768+0+0")
         self.root.title("Fermi bursts analysis GUI")
 
         # Add the menubar
@@ -627,15 +625,17 @@ class GUI(object, metaclass=MetaForExceptions):
                                    command=self.commandInterface,
                                    state=DISABLED)
 
-        toolsmenu = Menu(menubar, tearoff=0)
-        toolsmenu.add_command(label="Make navigation plots (you need to load either LLE or standard LAT data)",
-                              command=self.makeNavigationPlots)
+        self.toolsmenu = Menu(menubar, tearoff=0)
+        self.toolsmenu.add_command(label="Make navigation plots (you need to load either LLE or standard LAT data)",
+                                  command=self.makeNavigationPlots,
+                                  state=DISABLED)
+        
         updatemenu = Menu(menubar, tearoff=0)
         updatemenu.add_command(label="Update to the latest version", command=self.updateGtBurst)
 
         menubar.add_cascade(label="File", menu=filemenu)
         menubar.add_cascade(label="Tasks", menu=self.tasksmenu)
-        menubar.add_cascade(label="Tools", menu=toolsmenu)
+        menubar.add_cascade(label="Tools", menu=self.toolsmenu)
         menubar.add_cascade(label="Update", menu=updatemenu)
 
         self.root.config(menu=menubar)
@@ -651,13 +651,15 @@ class GUI(object, metaclass=MetaForExceptions):
         logoLabel = Label(self.root, image=logo)
         # logoLabel.image           = logo
         # logoLabel.grid(row=2,column=0,sticky=W+E+N+S)
+        ###################################################
         # Console
         self.consoleFrame = Frame(self.root)
         self.consoleFrame.grid(row=2, column=1, sticky=W + E + N + S)
         consoleScrollbar = Scrollbar(self.consoleFrame, orient="vertical")
+        
         self.console = ConsoleText.ConsoleText(self.consoleFrame,
                                                yscrollcommand=consoleScrollbar.set,
-                                               width=100, height=10, bg='white')
+                                               width=100, height=20, bg='white')
         consoleScrollbar.config(command=self.console.yview)
         self.console.grid(row=0, column=0, sticky=W + E + N + S)
         consoleScrollbar.grid(row=0, column=1, sticky=W + E + N + S)
@@ -669,6 +671,7 @@ class GUI(object, metaclass=MetaForExceptions):
         print("-gtapps_mp by J. Perkins (http://fermi.gsfc.nasa.gov/ssc/data/analysis/user/)")
         print("-APlpy (http://aplpy.github.io/)")
         print("\nThese packages are property of the respective authors.")
+        ##################################################
         # Fill the mainFrame
         bigFrame = Frame(self.root)
         bigFrame.grid(row=0, column=0, rowspan=2, sticky=N + S + W + E)
@@ -689,14 +692,14 @@ class GUI(object, metaclass=MetaForExceptions):
 
         self.userInteractionFrame = Frame(self._canvas, bd=0)
         self.userInteractionFrame.bind("<Configure>", self.OnFrameConfigure)
-
+        ##################################################
         # Help text
         self.bottomtextFrame = Frame(self.root)
         self.bottomtextFrame.grid(row=2, column=0, sticky=W + E + N + S)
         helpscrollbar = AutoHideScrollbar.AutoHideScrollbar(self.bottomtextFrame)
         self.helptextCanvas = Canvas(self.bottomtextFrame, yscrollcommand=helpscrollbar.set)
         self.bottomtext = Text(self.helptextCanvas, wrap='word',
-                               font=COMMENTFONT, height=8, width=45,
+                               font=COMMENTFONT, height=8, width=60,
                                yscrollcommand=helpscrollbar.set)
         helpscrollbar.config(command=self.bottomtext.yview)
         self.bottomtext.grid(row=0, column=0, sticky=W + E + N + S)
@@ -713,9 +716,9 @@ class GUI(object, metaclass=MetaForExceptions):
 
         self.updateRootStatusbar(" ".join(descr.split()), "To begin, click on the File menu.")
         self.userInteractionFrame.bind("<Configure>", self.OnFrameConfigure2)
-
+        ##################################################
         self.figureFrame = Frame(self.root)
-        self.figure = Figure(dpi=100, figsize=(7.0, 4))
+        self.figure = Figure(dpi=100, figsize=(7.0, 5.0))
         self.canvas = FigureCanvasTkAgg(self.figure,
                                         master=self.figureFrame)
 
@@ -741,34 +744,53 @@ class GUI(object, metaclass=MetaForExceptions):
         
         # Set up the form for the dataset
         colWidth = 20
-
+        ##################################################
         self.objectInfoFrame = Frame(self.userInteractionFrame)
         self.objectInfoFrame.grid(row=0, column=0, sticky=N + S + E + W)
         self.objectInfoEntries = {}
-
+        
         for parname, description in iter(list(self.object.descriptions.items())):
             self.objectInfoEntries[parname] = EntryPoint(self.objectInfoFrame,
-                                                         labeltext=description,
-                                                         textwidth=colWidth,
-                                                         initvalue=self.object[parname],
-                                                         directory=False,
-                                                         browser=False,
-                                                         inactive=True)
-        pass
-
+                                                            labeltext=description,
+                                                            textwidth=colWidth,
+                                                            initvalue=self.object[parname],
+                                                            directory=False,
+                                                            browser=False,
+                                                             inactive=True)
+            pass
+    
         self.displayDetFrame = None
         self._canvas.create_window(0, 0, anchor=NW, window=self.userInteractionFrame, height=400)
         self.userInteractionFrame.grid_rowconfigure(0, weight=1)
         self.userInteractionFrame.update_idletasks()
         self._canvas.config(scrollregion=self._canvas.bbox("all"))
-
         self.saveUserInteractionFrame()
-
-    pass
+        pass
 
     def tsmap(self):
         datasetsFilter = lambda x: x.detector == "LAT"
+        reproc = pyfits.getval(list(filter(datasetsFilter, self.datasets))[0]['eventfile'], 'PROC_VER', ext=0)
+        # Select the appropriate irfs
+        irfs = IRFS.PROCS[str(reproc)]
+        origin = pyfits.getval(list(filter(datasetsFilter, self.datasets))[0]['eventfile'],
+                                'ORIGIN',
+                                ext=('EVENTS', 1))
 
+        if (origin.find('FSSC') >= 0):
+
+            for r in ['P8_TRANSIENT100E', 'P8_TRANSIENT100', 'P8_TRANSIENT100S']:
+
+                try:
+
+                    irfs.remove(r.lower())
+
+                except:
+                    # This could happen with p7 data. In any case we don't want to fail for
+                    # something this unimportant
+                    pass
+
+        gtdocountsmap.definedParameters['irf'].possibleValues = irfs
+        
         gtdocountsmap.definedParameters['ra'].type = commandDefiner.HIDDEN
         gtdocountsmap.definedParameters['ra'].value = self.objectInfoEntries['ra'].variable.get()
 
@@ -1050,30 +1072,23 @@ class GUI(object, metaclass=MetaForExceptions):
         # self.root.grid_rowconfigure(self.figureFrame,row=0,weight=1)
         # self.figureFrame.grid_columnconfigure(self.figureFrame,column=0,weight=1)
         # self.figureFrame.grid_rowconfigure(self.figureFrame,row=0,weight=1)
-
+        
         self.root.deiconify()
-        try:
-            self.root.mainloop()
-        except:
-            print("HEY!")
-            raise
-
-    pass
+        self.root.mainloop()
+        pass
 
     def cleanUserInteractionFrame(self):
         for child in self.userInteractionFrame.grid_slaves():
             child.grid_remove()
+            pass
         pass
-
-    pass
 
     def fillUserInteractionFrame(self):
         self.cleanUserInteractionFrame()
         for child in self.userInteractionFrameContent:
             child.grid()
+            pass
         pass
-
-    pass
 
     def commandInterface(self):
         # Remove LAT Transient data from the datasets used for the spectral analysis,
@@ -1335,7 +1350,7 @@ class GUI(object, metaclass=MetaForExceptions):
         self.downloadDataSetFromFTP(name, met, ra, dec, window, 0, 0, 1)
 
     def downloadDataSet(self):
-        # self.cleanUserInteractionFrame()
+        
         thisWindow = SubWindow(self.root,
                                transient=True, title="Download data",
                                initialHint="Please insert a trigger name/number, and select which data you want to download.")
@@ -1372,6 +1387,7 @@ class GUI(object, metaclass=MetaForExceptions):
                                  textwidth=20, initvalue='',
                                  directory=False, browser=False,
                                  inactive=False)
+        
         browserButton = Button(triggerFrame, text="Browse triggers", font=NORMALFONT,
                                command=lambda: self.browseTriggers(thisWindow.window, triggerForm.variable,
                                                                    triggerTimeForm.variable, raForm.variable,
@@ -1550,7 +1566,7 @@ class GUI(object, metaclass=MetaForExceptions):
                 if (downloadedSomething):
                     self.loadDataSetsFromAdirectory(
                         os.path.join(self.configuration.get('dataRepository'), "bn%s" % (triggerName)))
-                pass
+                    pass
                 self.fillUserInteractionFrame()
                 raise
             finally:
@@ -1561,8 +1577,7 @@ class GUI(object, metaclass=MetaForExceptions):
             self.loadDataSetsFromAdirectory(
                 os.path.join(self.configuration.get('dataRepository'), "bn%s" % (triggerName)))
         self.fillUserInteractionFrame()
-
-    pass
+        pass
 
     def configure(self):
         configureWindow = SubWindow(self.root, transient=True, title="Configuration",
@@ -1617,22 +1632,21 @@ class GUI(object, metaclass=MetaForExceptions):
                  "variables GTBURST_DATA, GTBURST_FTP and GTBURST_NCPUS", parent=window)
         window.destroy()
 
-    pass
+        pass
 
     def loadDataSetsFromAdirectory(self, directory=None):
         # Load a dataset
         # Select a file from a browser and change correspondingly the given entry
         if (directory  is None):
             directory = fancyFileDialogs.chooseDirectory(self.root,
-                                                         title="Please select a directory containing data files",
-                                                         initialdir=self.configuration.get('dataRepository'))
-        pass
-
+                                                            title="Please select a directory containing data files",
+                                                            initialdir=self.configuration.get('dataRepository'))
+            pass
+        
         if (directory  is None or directory == '' or directory == ()):
             # Cancel button, do nothing
             return
-        pass
-
+        
         # Find GBM and LLE datasets in this directory
         # Find all CSPEC files
         cspecFiles = glob.glob(os.path.join(os.path.abspath(directory), "*cspec*.pha"))
@@ -1648,10 +1662,9 @@ class GUI(object, metaclass=MetaForExceptions):
             triggers.append(trigger)
             if (trigger != triggers[-1]):
                 showerror("Inconsistent data",
-                          "Directory %s contains data from different triggers! Please clean it, and retry." % (
-                          directory))
+                            "Directory %s contains data from different triggers! Please clean it, and retry." % (
+                            directory))
                 return
-        pass
 
         # Sort the detectors by energy (NaIs, BGOs, LAT)
         def my_sorter(dataset):
@@ -1659,12 +1672,12 @@ class GUI(object, metaclass=MetaForExceptions):
                 return knownDetectors.index(dataset.detector)
             except:
                 return 9999
-
+            
         datasets.sort(key=my_sorter)
 
         # Open a window
         datasetsWindow = SubWindow(self.root, transient=True, title="Select datasets",
-                                   initialHint="Select datasets to use for your analysis. Pre-selected detectors are NaIs closer than 50 deg to the source, the closest BGO and the LAT (if present).")
+                                       initialHint="Select datasets to use for your analysis. Pre-selected detectors are NaIs closer than 50 deg to the source, the closest BGO and the LAT (if present).")
         # datasetsWindow.window.geometry("350x500+20+20")
         datasetsWindow.bottomtext.config(state="normal")
         datasetsWindow.bottomtext.insert(1.0,
@@ -1713,16 +1726,16 @@ class GUI(object, metaclass=MetaForExceptions):
                     # showinfo("No RA,DEC","No RA_OBJ,DEC_OBJ keywords in response file %s" %(dataset['rspfile']))
                     RA_OBJ = 'not available'
                     DEC_OBJ = 'not available'
-            pass
-
+                pass
+            
             angle = 99999
             angleString = 'n.a.'
             # Compute the angle between this detector and the object
             if (dataset.detector.find('LAT') >= 0 and RA_OBJ != 'not available'):
                 RA_SCZ, DEC_SCZ, RA_SCX, DEC_SCX = dataHandling.getPointing(dataset.triggerTime, dataset['ft2file'],
-                                                                            True)
+                                                                                True)
                 angle = angularDistance.getDetectorAngle(RA_SCX, DEC_SCX, RA_SCZ, DEC_SCZ, RA_OBJ, DEC_OBJ,
-                                                         dataset.detector)
+                                                            dataset.detector)
                 angleString = '%3.0f' % (angle)
                 dataset.angleToGRB = angle
             elif ('trigdat' in list(dataset.keys()) and RA_OBJ != 'not available'):
@@ -1735,30 +1748,26 @@ class GUI(object, metaclass=MetaForExceptions):
                     DEC_SCZ = f[0].header['DEC_SCZ']
                     f.close()
                     angle = angularDistance.getDetectorAngle(RA_SCX, DEC_SCX, RA_SCZ, DEC_SCZ, RA_OBJ, DEC_OBJ,
-                                                             dataset.detector)
+                                                                dataset.detector)
                     angleString = '%3.0f' % (angle)
                     dataset.angleToGRB = angle
                 except:
                     # If something goes wrong, just continue without annoying the user
                     pass
                 pass
-            pass
-
+            
             parValues.append(IntVar())
             if (angleString != 'n.a.'):
                 if (dataset.detector.find('b') == 0):
                     # BGO
                     # get the angle for the other bgo
-                    if (dataset.detector == 'b0'):
-                        other = 'b1'
-                    else:
-                        other = 'b0'
-                    otherAngle = angularDistance.getDetectorAngle(RA_SCX, DEC_SCX, RA_SCZ, DEC_SCZ, RA_OBJ, DEC_OBJ,
-                                                                  other)
-                    if (otherAngle < angle):
-                        parValues[-1].set(int(0))
-                    else:
-                        parValues[-1].set(int(1))
+                    if (dataset.detector == 'b0'):     other = 'b1'
+                    else:                              other = 'b0'
+                    otherAngle = angularDistance.getDetectorAngle(
+                        RA_SCX, DEC_SCX, RA_SCZ, DEC_SCZ, RA_OBJ, DEC_OBJ,other
+                        )
+                    if (otherAngle < angle):      parValues[-1].set(int(0))
+                    else:                        parValues[-1].set(int(1))
                 elif (dataset.detector.find('LAT') != -1):
                     # Always select the LAT
                     parValues[-1].set(int(1))
@@ -1780,12 +1789,11 @@ class GUI(object, metaclass=MetaForExceptions):
             else:
                 col = 1
             pass
-        pass
+        
         datasetsWindow.frame.columnconfigure(0, weight=1, minsize=200)
         detFrame.columnconfigure(0, weight=1, minsize=50)
         detFrame.columnconfigure(1, weight=1, minsize=50)
-
-    pass
+        pass
 
     def registerDatasets(self, datasets, parValues, parent, useOnlyCSPEC=False):
         self.datasets = []
@@ -1908,11 +1916,13 @@ class GUI(object, metaclass=MetaForExceptions):
             # Activate the Make spectra button in the main window if there is either a GBM or a LLE dataset
             if (len([x for x in self.datasets if x.detector != "LAT"]) > 0):
                 self.tasksmenu.entryconfig(4, state=NORMAL)
-
             # If there is a LAT dataset, activate also the likelihood and the simulations button
             if (len([x for x in self.datasets if x.detector == "LAT"]) > 0):
                 for i in range(4):
                     self.tasksmenu.entryconfig(i, state=NORMAL)
+            # If there is a LAT dataset (or LLE), activate also the the Navigation plot
+            if (len([x for x in self.datasets if "LAT" in x.detector]) > 0):
+                self.toolsmenu.entryconfig(0, state=NORMAL)
 
             # Sort the detectors by energy (NaIs, BGOs, LAT-LLE,LAT)
             def my_sorter(dataset):
@@ -2016,20 +2026,22 @@ class GUI(object, metaclass=MetaForExceptions):
             exposure = d.field('EXPOSURE')
             N = len(met)
             LC = N * [0]
-
+            
             for j in range(N):
                 if (exposure[j] > 0):
                     LC[j] = counts[j].sum() / exposure[j]
-            pass
-
+                pass
+            
             if (i == 0):
                 self.subfigures.append(self.figure.add_subplot(nDatasets, 1, i + 1))
             else:
                 self.subfigures.append(self.figure.add_subplot(nDatasets, 1, i + 1,
-                                                               sharex=self.subfigures[0],
-                                                               xlabel=xlabel))
+                                                                   sharex=self.subfigures[0],
+                                                                   xlabel=xlabel))
+                pass
             if (i != nDatasets - 1):
                 self.subfigures[-1].xaxis.set_visible(False)
+                pass
             self.subfigures[-1].step(met, LC, where='post')
             if (left):
                 self.subfigures[-1].yaxis.tick_left()
@@ -2037,23 +2049,28 @@ class GUI(object, metaclass=MetaForExceptions):
             else:
                 self.subfigures[-1].yaxis.tick_right()
                 left = True
+                pass
+                f.close()
             pass
-            self.subfigures[-1].locator_params(tight=True, axis='y')
-            self.subfigures[-1].text(0.05, 0.9, '%s' % (dataset.detector), horizontalalignment='left',
-                                     verticalalignment='top',
-                                     transform=self.subfigures[-1].transAxes)
-        pass
+        self.subfigures[-1].locator_params(tight=True, axis='y')
+        self.subfigures[-1].text(0.05, 0.9, '%s' % (dataset.detector), horizontalalignment='left',
+                                    verticalalignment='top',
+                                    transform=self.subfigures[-1].transAxes)
+
+
         self.figure.text(0.05, 0.5, ylabel, rotation='vertical', verticalalignment='center', horizontalalignment='left')
         self.figure.text(0.95, 0.5, ylabel, rotation='vertical', verticalalignment='center',
                          horizontalalignment='right')
         self.figure.axes[0].set_xlim([-1000, 1000])
         self.canvas.draw()
-        f.close()
         print("Done!")
+
+        #self.userInteractionFrame.focus()
         self.eventLock = False
+        figure = plt.figure()
+        plt.close(figure)
 
-
-pass
+        pass
 
 
 def reset():

@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import urllib.request, urllib.parse, urllib.error, os, subprocess
+import urllib, os, subprocess
 from GtBurst.GtBurstException import GtBurstException
 import GtBurst
 
@@ -40,7 +40,7 @@ else:
 
 def update(debug=False):
   
-  print(("Searching updates at %s..." %(remoteUrl)))
+  print("Searching updates at %s..." %(remoteUrl))
   
   #Download file_list file
   
@@ -67,11 +67,11 @@ def update(debug=False):
     
     os.remove("_write_test")
   
-  urllib.request.urlcleanup()
+  urllib.urlcleanup()
   
   try:
   
-    urllib.request.urlretrieve("%s/__file_list" % remoteUrl, "__file_list")
+    urllib.urlretrieve("%s/__file_list" % remoteUrl, "__file_list")
   
   except socket.timeout:
   
@@ -100,7 +100,7 @@ def update(debug=False):
   # First check if we need to update the updater script itself
   
   self_path = os.path.splitext(os.path.abspath(__file__))[0]+".py"
-  updater_line = [x for x in files if x.find("GtBurst/updater.py") >= 0][0]
+  updater_line = filter(lambda x:x.find("GtBurst/updater.py") >= 0, files)[0]
   
   remote_self_md5 = updater_line.split()[0]
   local_self_md5 = md5.md5(open(self_path, 'rb').read()).hexdigest()
@@ -136,11 +136,11 @@ def update(debug=False):
     pathname                  = atoms[-1].replace('*','')
     if(ff.find("__file_list")>=0):
       if(debug):
-        print(("Skipping %s..." %(ff)))
+        print("Skipping %s..." %(ff))
     else:
       remoteMD5                    = atoms[0]
       if(debug):
-        print(("File %s has remote MD5 checksum %s" %(pathname,remoteMD5)))
+        print("File %s has remote MD5 checksum %s" %(pathname,remoteMD5))
       
       #Check if the file exists in the local installation
       pathnameThisSys         = pathname.replace("/",os.path.sep)
@@ -158,7 +158,7 @@ def update(debug=False):
       pass
       
       if(not os.path.exists(localPath)):
-        print(("File %s does not exist in the current installation. Creating it..." %(localPath)))
+        print("File %s does not exist in the current installation. Creating it..." %(localPath))
         #If the new file is in a new directory, the directory needs to be created
         try:
           os.makedirs(os.path.dirname(localPath))
@@ -171,12 +171,12 @@ def update(debug=False):
         #File exists. Check the size
         localMD5             = md5.md5(open(localPath, 'rb').read()).hexdigest()
         if(localMD5!=remoteMD5):
-          print(("Updating %s..." %(localPath)))
+          print("Updating %s..." %(localPath))
           downloadFile(pathname,localPath)
           nUpdates              += 1
         else:
           if(debug):
-            print(("NOT updating %s (local MD5: %s, remote MD5: %s)..." %(localPath,localMD5,remoteMD5)))
+            print("NOT updating %s (local MD5: %s, remote MD5: %s)..." %(localPath,localMD5,remoteMD5))
           pass
         pass
         if(debug):
@@ -189,7 +189,7 @@ pass
 
 def downloadFile(remotepathname,localpathname):
   try:
-    urllib.request.urlretrieve("%s/%s" % (remoteUrl, remotepathname),localpathname)
+    urllib.urlretrieve("%s/%s" % (remoteUrl, remotepathname),localpathname)
   except socket.timeout:
     raise GtBurstException(11,"Time out. Check your internet connection, and that you can access %s, then retry" % (remoteUrl))
   except:

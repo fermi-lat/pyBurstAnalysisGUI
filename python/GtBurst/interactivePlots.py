@@ -453,7 +453,7 @@ def writeAsciiFile(bounds,outfile):
       j                 += 2
   pass
   
-  fout                   = file(outfile,'w+')
+  fout                   = open(outfile,'w+')
   fout.write(txt)
   fout.close()
 pass

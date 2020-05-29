@@ -124,7 +124,6 @@ class DownloadTransientData(dataCollector):
     #this function will wait for the files to be completed on the server,
     #then it will download them
     
-    url                         = "https://fermi.gsfc.nasa.gov/cgi-bin/ssc/LAT/LATDataQuery.cgi"
     #Save parameters for the query in a dictionary
     parameters                  = {}
     parameters['coordfield']    = "%s,%s" %(self.ra,self.dec)
@@ -143,35 +142,39 @@ class DownloadTransientData(dataCollector):
     
     #POST encoding    
     postData                    = urllib.parse.urlencode(parameters)
-    temporaryFileName           = "__temp_query_result.html"
-    try:
-      os.remove(temporaryFileName)
-    except:
-      pass
-    pass
+    url                         = "https://fermi.gsfc.nasa.gov/cgi-bin/ssc/LAT/LATDataQuery.cgi?%s" % postData
+
+    #temporaryFileName           = "__temp_query_result.html"
+    print ("url query: %s" %url)
+    #try:
+    #  os.remove(temporaryFileName)
+    #except:
+    #  pass
+    #pass
        
     urllib.request.urlcleanup()
-    try:
-      urllib.request.urlretrieve(url, 
-                       temporaryFileName, 
-                       lambda x,y,z:0, postData)
-    except socket.timeout:
-      raise GtBurstException(11,"Time out when connecting to the server. Check your internet connection, or that you can access https://fermi.gsfc.nasa.gov, then retry")
-    except:
-      raise GtBurstException(1,"Problems with the download. Check your connection or that you can access https://fermi.gsfc.nasa.gov, then retry.")
-    pass
+    #try:
+    with urllib.request.urlopen(url) as f:
+        html=f.read().decode('utf-8')
+        #urllib.request.urlretrieve(url, temporaryFileName)
+        pass
+    #except socket.timeout:
+    #  raise GtBurstException(11,"Time out when connecting to the server. Check your internet connection, or that you can access https://fermi.gsfc.nasa.gov, then retry")
+    #except:
+    #  raise GtBurstException(1,"Problems with the download. Check your connection or that you can access https://fermi.gsfc.nasa.gov, then retry.")
+
     
     #Now open the file, parse it and get the query ID
-    htmlFile                    = open(temporaryFileName)
-    lines                       = []
-    for line in htmlFile:
-      lines.append(line.encode('utf-8'))
-    pass
-    html                        = " ".join(lines).strip()
-    htmlFile.close()
+    #htmlFile                    = open(temporaryFileName)
+    #lines                       = []
+    #for line in htmlFile:
+    #  lines.append(line.encode('utf-8'))
+    #pass
+    #html                        = " ".join(lines).strip()
+    #htmlFile.close()
     print("\nAnswer from the LAT data server:\n")
     
-    text                        = html2text.html2text(html.encode('utf-8').strip()).split("\n")
+    text                        = html#html2text.html2text(html.encode('utf-8').strip()).split("\n")
     
     if("".join(text).replace(" ","")==""):
       raise GtBurstException(1,"Problems with the download. Empty answer from the LAT server. Normally this means that the server is ingesting new data, please retry in half an hour or so.")
@@ -184,7 +187,7 @@ class DownloadTransientData(dataCollector):
     text                        = [x for x in text if len(x.replace(" ",""))>1]
     print(("\n".join(text)))
     print("\n\n")
-    os.remove(temporaryFileName)
+    #os.remove(temporaryFileName)
     if(" ".join(text).find("down due to maintenance")>=0):
       raise GtBurstException(12,"LAT Data server looks down due to maintenance.")
     
@@ -198,11 +201,11 @@ class DownloadTransientData(dataCollector):
     
     try: 
       estimatedTimeLine           = [x for x in parser.data if x.find("The estimated time for your query to complete is")==0][0]
-      estimatedTimeForTheQuery    = re.findall("The estimated time for your query to complete is ([0-9]+) seconds",estimatedTimeLine)[0]
+      estimatedTimeForTheQuery    = float(re.findall("The estimated time for your query to complete is ([0-9]+) seconds",estimatedTimeLine)[0])
     except:
       raise GtBurstException(1,"Problems with the download. Empty or wrong answer from the LAT server (see console). Please retry later.")
     pass
-    
+    print("Estimated Time For The Query....:",estimatedTimeForTheQuery)
     try:
     
     	httpAddress                 = [x for x in parser.data if x.find("http://fermi.gsfc.nasa.gov") >=0][0]

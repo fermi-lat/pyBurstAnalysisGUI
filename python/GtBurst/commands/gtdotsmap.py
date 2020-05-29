@@ -146,7 +146,9 @@ def run(**kwargs):
     # Modify the tick labels for precision and format
     tsfig.tick_labels.set_xformat('ddd.dd')
     tsfig.tick_labels.set_yformat('ddd.dd')
-    
+    deltaTS=numpy.array([9.21, 4.61, 2.30]) # delta_TS values (sorted in increasing order)
+    tsfig.show_contour(tsmap, colors='white',levels=tsmax-deltaTS)
+
     # Display a grid and tweak the properties
     tsfig.show_grid()
     

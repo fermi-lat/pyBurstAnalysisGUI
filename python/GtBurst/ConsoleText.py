@@ -37,6 +37,7 @@ class ConsoleText(Text):
         '''See the __init__ for tkinter.Text for most of this stuff.'''
 
         Text.__init__(self, master, cnf, **kw)
+        self.bind('<Control-c>', self.copy)
         
         self.master = master
         self.started = False
@@ -49,9 +50,15 @@ class ConsoleText(Text):
         self.config(state=NORMAL)
         self.hyperlink = HyperlinkManager(self)
         self.urlpattern = re.compile("http\:[^\s^\)]+")
+
+    def copy(self, event=None):
+        self.clipboard_clear()
+        text = self.get("sel.first", "sel.last")
+        self.clipboard_append(text)
     
     def set_focus(self, event):
-        self.focus_set()
+        self.focus()
+        pass
     
     def start(self):
 
@@ -91,7 +98,7 @@ class ConsoleText(Text):
         #you can't write into them AT ALL (via the GUI or programatically).  Since we want them
         #disabled for the user, we have to set them to NORMAL (a.k.a. ENABLED), write to them,
         #then set their state back to DISABLED.
-#        val                   = str(val.encode('utf-8'))
+        # val                   = str(val.encode('utf-8'))
         
         #Remove some warnings from ROOT (damn ROOT!)
         if(val.find("Info in <Minuit2>")>=0 or 
@@ -118,7 +125,7 @@ class ConsoleText(Text):
         url                   = self.urlpattern.findall(val)
         nonurl                = self.urlpattern.split(val)
         
-        self.lift()
+        #self.lift()
         self.write_lock.acquire()
         self.logfile.write(val)
         self.logfile.flush()

@@ -1,7 +1,7 @@
 from tkinter import *
-import tkinter.font
-import tkinter.messagebox 
-import tkinter.ttk
+from tkinter import font
+from tkinter import messagebox 
+from tkinter import ttk
 from GtBurst.EntryPoint import EntryPoint
 from GtBurst.SubWindow import SubWindow
 from GtBurst.fontDefinitions import *
@@ -120,8 +120,11 @@ class xmlModelGUI(object):
         self.root.update_idletasks()
         xp = (self.root.winfo_screenwidth() / 2) - (self.root.winfo_width() / 2)
         yp = (self.root.winfo_screenheight() / 2) - (self.root.winfo_height() / 2)
-        self.root.geometry('{0}x{1}+{2}+{3}'.format(min(self.root.winfo_width(),800), self.root.winfo_height(),
-                                                                        xp, yp))
+        self.root.geometry('%dx%d+%d+%d' % (
+          min(self.root.winfo_width(),1000),
+          self.root.winfo_height(),
+          xp,
+          yp))
         self.root.protocol("WM_DELETE_WINDOW", self.done)
         self.root.mainloop()
 
@@ -147,7 +150,7 @@ class xmlModelGUI(object):
     
     def done(self):
       if(self.notSaved):
-        if tkMessageBox.askyesno("WARNING!", "You have modified the template but you did not save. Do you really want to exit loosing your changes?"):
+        if messagebox.askyesno("WARNING!", "You have modified the template but you did not save. Do you really want to exit loosing your changes?"):
           self.root.quit()
           self.root.destroy()
           try:
@@ -171,7 +174,7 @@ class xmlModelGUI(object):
       #Copy back the working copy on the input file
       shutil.copyfile(self.workingCopy,self.xmlModelFile)
       self.notSaved = False
-      tkMessageBox.showinfo("saved!","Likelihood model saved!")
+      messagebox.showinfo("saved!","Likelihood model saved!")
     pass
     
     def _setup_tree(self):
@@ -199,7 +202,7 @@ class xmlModelGUI(object):
                 command=lambda c=col: sortby(self.tree, c, 0))
             # XXX tkFont.Font().measure expected args are incorrect according
             #     to the Tk docs
-            self.tree.column(col, width=tkFont.Font().measure(col.title()),stretch=False,minwidth=10)
+            self.tree.column(col, width=font.Font().measure(col.title()),stretch=False,minwidth=10)
         
         self.items = []    
         
@@ -216,7 +219,7 @@ class xmlModelGUI(object):
                 colLongestEntry[indx] = val
         
         for indx, width in enumerate(colWidths):
-          ilen = tkFont.Font().measure(colLongestEntry[indx])
+          ilen = font.Font().measure(colLongestEntry[indx])
           self.tree.column(self.columns[indx], width=ilen)
           
         self.tree.bind("<Double-1>", self.OnDoubleClick)

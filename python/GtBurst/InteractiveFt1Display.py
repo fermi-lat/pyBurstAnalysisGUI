@@ -5,8 +5,12 @@ from GtBurst.my_fits_io import pyfits
 import time, numpy
 from GtBurst import dataHandling
 from GtBurst import IRFS
+
+#import matplotlib
+#matplotlib.use('TkAgg',force=True)
 import matplotlib.colors as col
 import matplotlib.cm as cm
+
 
 # define individual colors which will be used for classes
 cpool                         = [ '#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99','#b15928']
@@ -104,8 +108,7 @@ class InteractiveFt1Display(object):
     self.image               = aplpy.FITSFigure(self.skyimage,convention='calabretta',
                                                 figure=self.figure,
                                                 subplot=[0.1,0.10,0.40,0.7],
-                                                label='sky image')
-    
+                                                label='sky image',auto_refresh=False)
     imageFits                = pyfits.open(self.skyimage)
     img                      = imageFits[0].data
     

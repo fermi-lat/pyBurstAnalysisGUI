@@ -240,13 +240,17 @@ def myPtSrc(spectrumFunction):
     src = minidom.parseString(src).getElementsByTagName('source')[0]
     src = Source(src)
 
-    if (spectrumFunction not in list(availableSourceSpectra.keys())):
-        raise RuntimeError("Spectrum function %s is not available. Available functions are: %s" % (spectrumFunction,
-                                                                                                   ",".join(
-                                                                                                       list(availableSourceSpectra.keys()))
-                                                                                                   ))
-
-    src.spectrum = availableSourceSpectra[spectrumFunction]()
+    try:
+        src.spectrum = availableSourceSpectra[spectrumFunction]()
+    except:
+        raise RuntimeError(
+            "Spectrum function %s is not available. Available functions are: %s" % (
+                spectrumFunction,",".join(
+                    list(availableSourceSpectra.keys())
+                    )
+                )
+            )
+    
     src.deleteChildElements('spectrum')
     src.node.appendChild(src.spectrum.node)
 
@@ -426,9 +430,8 @@ pass
 class catalog_2FGL(object):
     def __init__(self, xmlfile):
         self.tree = ET.parse(xmlfile)
-
-    pass
-
+        pass
+    
     def getXmlForSourcesInTheROI(self, ra, dec, rad, output, exposure):
         # Loop the tree and remove all sources more than rad away from the center
         # of the ROI
@@ -566,8 +569,10 @@ class LikelihoodModel(object):
     pass
 
     def addFGLsources(self, ra, dec, radius, filename, exposure):
-        # Add all point sources in the 2FGL catalog with an angular distance less than 'radius'
-        # from the given Ra,DEC\
+        # Add all point sources in the 4FGL catalog with an angular distance less than 'radius'
+        # from the given Ra,DEC
+        print('addFGLsources(', ra, dec, radius, filename, exposure,')')
+        
         dataPath = getDataPath()
         fgl = catalog_2FGL(os.path.join(dataPath, 'gll_psc_v17.xml'))
         tmpname = '__fgl_sources.xml'
@@ -576,15 +581,12 @@ class LikelihoodModel(object):
         tree = ET.parse(filename)
         root = tree.getroot()
         root.extend(ET.parse(tmpname).getroot())
-        f = open(filename, 'w+')
-        tree.write(f)
-        f.close()
+        #f = open(filename, 'w+')
+        tree.write(filename)
+        #f.close()
         os.remove(tmpname)
-
+        pass
     pass
-
-
-pass
 
 
 class SourceStruct(object):

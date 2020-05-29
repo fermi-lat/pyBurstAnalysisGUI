@@ -37,7 +37,7 @@ from GtBurst.statMethods import *
 # from the GUI, since the GUI has its own .use() call)
 import matplotlib
 
-matplotlib.use('Agg',force=True)
+matplotlib.use('TkAgg',force=True)
 
 import matplotlib.pyplot as plt
 
@@ -264,7 +264,10 @@ def makeNavigationPlots(ft2file, ra_obj, dec_obj, triggerTime):
         zenith = numpy.insert(zenith, idx + 1, numpy.nan)
         theta = numpy.insert(theta, idx + 1, numpy.nan)
     pass
-
+    print('ft2         =',ft2file)
+    print('zenith @ T0 =',zenith[time>0][0])
+    print('theta  @ T0 =',theta[time>0][0])
+        
     figure = plt.figure(figsize=[4, 4], dpi=150)
     figure.set_facecolor("#FFFFFF")
     figure.suptitle("Navigation plots")
@@ -317,10 +320,6 @@ def makeNavigationPlots(ft2file, ra_obj, dec_obj, triggerTime):
     subpl2.plot(time, theta, '--')
     subpl2.axhline(65, color='r', linestyle='--')
     return figure
-
-
-pass
-
 
 def testIfExecutableExists(program):
     import os
@@ -534,9 +533,9 @@ def setIsotropicTemplateNormalization(xmlmodel, value):
             param.set('value', "%s" % value)
         pass
     pass
-    f = open(xmlmodel, 'w+')
-    tree.write(f)
-    f.close()
+    #f = open(xmlmodel, 'w+')
+    tree.write(xmlmodel)
+    #f.close()
 
 
 pass
@@ -557,9 +556,9 @@ def multiplyIsotropicTemplateFluxSim(xmlsimmodel, factor):
             spectrumClass.set('params', " ".join(newparams.split()))
         pass
     pass
-    f = open(xmlsimmodel, 'w+')
-    tree.write(f)
-    f.close()
+    #f = open(xmlsimmodel, 'w+')
+    tree.write(xmlsimmodel)
+    #f.close()
 
 
 pass
@@ -573,9 +572,9 @@ def removePointSource(xmlinput, xmloutput, sourceName):
             root.remove(source)
         pass
     pass
-    f = open(xmloutput, 'w+')
-    tree.write(f)
-    f.close()
+    #f = open(xmloutput, 'w+')
+    tree.write(xmloutput)
+    #f.close()
 
 
 pass
@@ -1171,7 +1170,7 @@ class my_gtltcube(multiprocessScienceTools):
                                    stderr=subprocess.STDOUT)
 
         while True:
-            out = process.stdout.readline()
+            out = process.stdout.readline().decode(encoding='UTF-8')
             if out == '' and process.poll() is not None:
                 break
             print (out)
@@ -1209,7 +1208,7 @@ class my_gtdiffrsp(multiprocessScienceTools):
                                    stderr=subprocess.STDOUT)
 
         while True:
-            out = process.stdout.readline()
+            out = process.stdout.readline().decode(encoding='UTF-8')
             if out == '' and process.poll() is not None:
                 break
             print (out)
@@ -1260,7 +1259,7 @@ class my_gttsmap(multiprocessScienceTools):
                                    stderr=subprocess.STDOUT)
 
         while True:
-            out = process.stdout.readline()
+            out = process.stdout.readline().decode(encoding='UTF-8')
             if out == '' and process.poll() is not None:
                 break
             print (out)
@@ -1325,7 +1324,7 @@ class my_gtexpmap(multiprocessScienceTools):
                                    stderr=subprocess.STDOUT)
 
         while True:
-            out = process.stdout.readline()
+            out = process.stdout.readline().decode(encoding='UTF-8')
             if out == '' and process.poll() is not None:
                 break
             print (out)
@@ -2102,7 +2101,8 @@ class LATData(LLEData):
                 emax = float(v)
             elif(k == 'clul' and v is not None):
                 clul = float(v)
-        pass
+                pass
+            pass
         self.getCuts()
         if (ltcube is None or ltcube == ''):
             self.makeLivetimeCube()
@@ -2140,9 +2140,7 @@ class LATData(LLEData):
             emax = self.emax
 
         return self._doLikelihood(xmlmodel, tsmin, emin, emax, clul)
-
-    pass
-
+    
     @staticmethod
     def setup_likelihood_object(like, xmlmodel):
 
@@ -2256,7 +2254,7 @@ class LATData(LLEData):
         except:
             raise RuntimeError(
                 "Likelihood fit did not converged. Probably your model is too complex for your selection.")
-
+        
         self.like1.writeXml(outfilelike)
 
         # Now add the errors for the isotropic template, which are removed by writeXml
@@ -2269,38 +2267,41 @@ class LATData(LLEData):
                     source.set('statErr', '%s' % (statErr))
                     break
                 pass
-            pass
             tree.write(outfilelike)
-        pass
-
-        try:
-            self.like1.plot()
-        except:
-            print("Could not produce likelihood plots")
-        pass
-
-        if (grb_name  is not None):
-            try:
-                self.like1.plotSource(grb_name, 'red')
-            except:
-                pass
+            pass
+        
+        #try:
+        self.like1.plot()
+        if (grb_name is not None):
+            print('plotting %s spectrum' % grb_name)
+            self.like1.plotSource(grb_name, 'red')
+            pass
         for s in self.like1.sourceNames():
             if (s.lower().find("earthlimb") >= 0):
-                try:
                     self.like1.plotSource(s, 'blue')
-                except:
                     pass
-                pass
             pass
-        pass
+        
+        #except:
+        #    print("Could not produce likelihood plots")
+        #    pass
+        #if (grb_name  is not None):
+        #    try:
+        #        self.like1.plotSource(grb_name, 'red')
+        #    except:
+        #        pass
+        #    pass
+        #try:
+        #self.like1.residualPlot.fig.canvas.draw()
+        #self.like1.residualPlot.fig.canvas.flush_events()
+        self.like1.residualPlot.fig.savefig('%s_residuals.png' % (self.rootName))
 
-        try:
-            self.like1.residualPlot.canvas.Print('%s_residuals.png' % (self.rootName))
-            self.like1.spectralPlot.canvas.Print('%s_spectral.png' % (self.rootName))
-        except:
-            pass
-        pass
-
+        #self.like1.spectralPlot.fig.canvas.draw()
+        #self.like1.spectralPlot.fig.canvas.flush_events()
+        self.like1.spectralPlot.fig.savefig('%s_spectral.png' % (self.rootName))
+        #except:
+        #    pass
+    
         printer = LikelihoodComponent.LikelihoodResultsPrinter(self.like1, emin, emax)
         detectedSources = printer.niceXMLprint(outfilelike, tsmin, phIndex_beforeFit, clul)
         print(("\nLog(likelihood) = %s" % (logL)))
@@ -2309,9 +2310,7 @@ class LATData(LLEData):
         self.resultsStrings = printer.resultsStrings
 
         return outfilelike, detectedSources
-
-    pass
-
+    
     def optimizeSourcePosition(self, xmlmodel, sourceName='GRB'):
         self.getCuts()
 
@@ -2385,8 +2384,6 @@ class LATData(LLEData):
             dec = 90 - (abs(dec) - 90)
 
         return ra, dec, err
-
-    pass
 
     def makeSimulation(self, gtlikexml, evroot='sim', seed=None, exclude=None):
 
@@ -2826,7 +2823,7 @@ class CspecBackground(object):
             if key.lower() == "figure":
                 lcFigure = kwargs[key]
         pass
-        from matplotlib import pyplot as plt
+        #from matplotlib import pyplot as plt
         # Create figure
         if (lcFigure is None):
             lcFigure = plt.figure()
@@ -2948,7 +2945,7 @@ class CspecBackground(object):
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             initialGuess = numpy.polyfit(x, y / exposure, polGrade)
-        pass
+            pass
         initialGuess = initialGuess[::-1]
         if (test):
             print(("  done -> %s" % (initialGuess)))
@@ -2958,13 +2955,18 @@ class CspecBackground(object):
         # Check that the solution found is meaningful (i.e., definite positive
         # in the interval of interest)
         M = polynomial(x)
+        if numpy.isnan(M).any():
+            raise RuntimeError("Fit failed! Try to reduce the lenght of the intervals.")
+
         negativeMask = (M < 0)
+
         if (len(negativeMask.nonzero()[0]) > 0):
             # Least square fit failed to converge to a meaningful solution
             # Reset the initialGuess to reasonable value
             initialGuess[0] = numpy.mean(y)
             meanx = numpy.mean(x)
             initialGuess = [abs(x[1]) / pow(meanx, x[0]) for x in enumerate(initialGuess)]
+            pass
 
         # Improve the solution using a logLikelihood statistic (Cash statistic)
         logLikelihood = LogLikelihood(x, y, polynomial, exposure=exposure)
@@ -3886,5 +3888,3 @@ def findMaximumTSmap(tsmap, tsexpomap):
     tsmax = image.max()
     return ra, dec, tsmax
 
-
-pass
