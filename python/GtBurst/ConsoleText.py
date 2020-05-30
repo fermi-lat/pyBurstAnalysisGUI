@@ -142,5 +142,4 @@ class ConsoleText(Text):
         self.update()
         self.config(state=DISABLED)
         self.write_lock.release()        
-    pass 
-pass
+    pass

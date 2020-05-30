@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import sys
 import urllib, os, subprocess
 from GtBurst.GtBurstException import GtBurstException
 import GtBurst
@@ -39,7 +39,11 @@ else:
 
 
 def update(debug=False):
-  
+  print ("PYTHON VERSION:%d" % sys.version_info[0])
+  if sys.version_info[0]==3:
+    print(" updater won't work for this version of python yet.")
+    return 0
+          
   print("Searching updates at %s..." %(remoteUrl))
   
   #Download file_list file
@@ -67,11 +71,11 @@ def update(debug=False):
     
     os.remove("_write_test")
   
-  urllib.urlcleanup()
+  urllib.request.urlcleanup()
   
   try:
   
-    urllib.urlretrieve("%s/__file_list" % remoteUrl, "__file_list")
+    urllib.request.urlretrieve("%s/__file_list" % remoteUrl, "__file_list")
   
   except socket.timeout:
   
@@ -189,7 +193,7 @@ pass
 
 def downloadFile(remotepathname,localpathname):
   try:
-    urllib.urlretrieve("%s/%s" % (remoteUrl, remotepathname),localpathname)
+    urllib.request.urlretrieve("%s/%s" % (remoteUrl, remotepathname),localpathname)
   except socket.timeout:
     raise GtBurstException(11,"Time out. Check your internet connection, and that you can access %s, then retry" % (remoteUrl))
   except:
@@ -197,5 +201,4 @@ def downloadFile(remotepathname,localpathname):
   pass
   
 if __name__ == "__main__":
-    
     update()

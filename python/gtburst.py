@@ -170,8 +170,7 @@ class GUI(object, metaclass=MetaForExceptions):
         self.eventLock = False
         self.addrmfWarning = True
         self.main()
-        
-    pass
+        pass
 
     def _findOtherFiles(self, cspecFile, parent):
         # Get the root (something like bn100724009_v03)

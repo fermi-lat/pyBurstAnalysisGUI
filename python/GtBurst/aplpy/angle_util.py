@@ -371,8 +371,7 @@ def _check_format_spacing_consistency(format, spacing):
     This function will raise a warning if the format and spacing are
     inconsistent.
     '''
-
     label_spacing = _get_label_precision(format)
 
-    if type(spacing / label_spacing) != int:
-        raise InconsistentSpacing('Label format and tick spacing are inconsistent. Make sure that the tick spacing is a multiple of the smallest angle that can be represented by the specified format (currently %s). For example, if the format is dd:mm:ss.s, then the tick spacing has to be a multiple of 0.1". Similarly, if the format is hh:mm:ss, then the tick spacing has to be a multiple of 15". If you got this error as a result of interactively zooming in to a small region, this means that the default display format for the labels is not accurate enough, so you will need to increase the format precision.' % format)
+    #if type(spacing // label_spacing) != int:
+    #    raise InconsistentSpacing('Label format and tick spacing are inconsistent. Make sure that the tick spacing is a multiple of the smallest angle that can be represented by the specified format (currently %s). For example, if the format is dd:mm:ss.s, then the tick spacing has to be a multiple of 0.1". Similarly, if the format is hh:mm:ss, then the tick spacing has to be a multiple of 15". If you got this error as a result of interactively zooming in to a small region, this means that the default display format for the labels is not accurate enough, so you will need to increase the format precision.' % format)

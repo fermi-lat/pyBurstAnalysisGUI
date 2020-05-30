@@ -3,7 +3,7 @@
 import numpy as np
 import numpy.ma as ma
 
-import matplotlib.cbook as cbook
+#import matplotlib.cbook as cbook
 from matplotlib.colors import Normalize
 
 
@@ -86,7 +86,7 @@ class APLpyNormalize(Normalize):
         if clip is None:
             clip = self.clip
 
-        if cbook.iterable(value):
+        if np.iterable(value):
             vtype = 'array'
             val = ma.asarray(value).astype(np.float)
         else:
@@ -158,7 +158,7 @@ class APLpyNormalize(Normalize):
 
         # CUSTOM APLPY CODE
 
-        if cbook.iterable(value):
+        if np.iterable(value):
             val = ma.asarray(value)
         else:
             val = value

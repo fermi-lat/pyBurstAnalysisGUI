@@ -28,7 +28,6 @@ def _auto_refresh(f, *args, **kwargs):
                 args[0]._figure.canvas.draw()
 
 
-import string
 
 doc = {}
 
@@ -85,9 +84,9 @@ def fixdocstring(func):
     for item in lines[i].split(':')[1].split(','):
         if item.strip() in doc:
             common.append(" " * indent + doc[item.strip()].replace('\n', '\n' + " " * indent))
-
-    docstring = string.join(header + common + footer, "\n")
-
+    #docstring = string.join(header + common + footer, "\n")
+    docstring = "\n".join(header + common + footer)
+    #print ('docstring=',docstring)
     func.__doc__ = docstring
 
     return func
