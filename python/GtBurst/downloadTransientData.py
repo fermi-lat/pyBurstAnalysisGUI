@@ -322,8 +322,10 @@ class DownloadTransientData(dataCollector):
     for f in filenames:
       #EV or SC?
       suffix                  = f.split("_")[1]
-      if(suffix.find("EV")>=0):
-        suffix                = 'ft1'
+      if (suffix.find("EV00") >= 0):
+        suffix = 'ft1'
+      elif (suffix.find("EV") >= 0):
+        pass
       elif(suffix.find("SC")>=0):
         suffix                = 'ft2'
       else:
