@@ -37,7 +37,9 @@ from GtBurst.statMethods import *
 # from the GUI, since the GUI has its own .use() call)
 import matplotlib
 
-matplotlib.use('TkAgg',force=True)
+if os.environ.get("DISPLAY") is not None:
+    matplotlib.use('TkAgg',force=True)
+
 
 import matplotlib.pyplot as plt
 
