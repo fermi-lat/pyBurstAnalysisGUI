@@ -40,8 +40,8 @@ else:
 
 def update(debug=False):
   print ("PYTHON VERSION:%d" % sys.version_info[0])
-  if sys.version_info[0]==3:
-    print(" updater won't work for this version of python yet.")
+  if sys.version_info[0]==2:
+    print(" updater won't work for this version of python anymore. Install a newer version of fermitools")
     return 0
           
   print("Searching updates at %s..." %(remoteUrl))
