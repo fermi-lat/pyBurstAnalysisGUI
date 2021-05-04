@@ -37,7 +37,9 @@ from GtBurst.statMethods import *
 # from the GUI, since the GUI has its own .use() call)
 import matplotlib
 
-matplotlib.use('TkAgg',force=True)
+if os.environ.get("DISPLAY") is not None:
+    matplotlib.use('TkAgg',force=True)
+
 
 import matplotlib.pyplot as plt
 
@@ -200,7 +202,7 @@ def getLATdataFromDirectory(directory):
     dataset['rspfile'] = os.path.join(directory, "gll_cspec_%s.rsp" % (rootName))
     dataset['cspecfile'] = cspecFile
     # Check that they actually exists
-    for k, v in iter(datasetitems()):
+    for k, v in iter(dataset.items()):
         if (not os.path.exists(v)):
             raise RuntimeError("Datafile %s (%s) does not exists! Corrupted dataset..." % (v, k))
         pass
@@ -2948,7 +2950,7 @@ class CspecBackground(object):
             pass
         initialGuess = initialGuess[::-1]
         if (test):
-            print(("  done -> %s" % (initialGuess)))
+            print("  done -> %s" % (initialGuess))
 
         polynomial = Polynomial(initialGuess)
 
