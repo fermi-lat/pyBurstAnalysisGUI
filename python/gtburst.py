@@ -1,6 +1,13 @@
 #!/usr/bin/env python
 # Author: Giacomo Vianello (giacomov@slac.stanford.edu)
 from GtBurst import version
+import argparse
+
+parser=argparse.ArgumentParser('gtburst')
+parser.add_argument('-fast', action='store_true')
+args=parser.parse_args()
+
+
 
 packageName = version.getPackageName()
 packageVersion = version.getVersion()
@@ -656,20 +663,42 @@ class GUI(object, metaclass=MetaForExceptions):
         self.consoleFrame.grid(row=2, column=1, sticky=W + E + N + S)
         consoleScrollbar = Scrollbar(self.consoleFrame, orient="vertical")
         
-        self.console = ConsoleText.ConsoleText(self.consoleFrame,
-                                               yscrollcommand=consoleScrollbar.set,
-                                               width=100, height=20, bg='white')
+        if args.fast:
+            self.console = ConsoleText.ConsoleTextFast(self.consoleFrame,
+                                                           yscrollcommand=consoleScrollbar.set,
+                                                           width=100, height=20, bg='white')
+        else:
+            self.console = ConsoleText.ConsoleText(self.consoleFrame,
+                                                       yscrollcommand=consoleScrollbar.set,
+                                                       width=100, height=20, bg='white')
+            pass
+        
         consoleScrollbar.config(command=self.console.yview)
         self.console.grid(row=0, column=0, sticky=W + E + N + S)
         consoleScrollbar.grid(row=0, column=1, sticky=W + E + N + S)
         self.console.start()
-        print((
-        "Welcome to the %s v. %s!\n\nCredits: G.Vianello (giacomov@slac.stanford.edu), N.Omodei (nicola.omodei@gmail.com)\n" % (
-        GUIname, packageVersion)))
+        self.console.write("--------------------------------------------------\n")
+        print("Welcome to the %s v. %s!" % (GUIname, packageVersion))
+        print("Credits: G.Vianello (giacomov@slac.stanford.edu), N.Omodei (nicola.omodei@gmail.com)")
         print("This software embeds:")
-        print("-gtapps_mp by J. Perkins (http://fermi.gsfc.nasa.gov/ssc/data/analysis/user/)")
-        print("-APlpy (http://aplpy.github.io/)")
-        print("\nThese packages are property of the respective authors.")
+        print(" -gtapps_mp by J. Perkins (http://fermi.gsfc.nasa.gov/ssc/data/analysis/user/)")
+        print(" -APlpy                   (http://aplpy.github.io/)")
+        print("These packages are property of the respective authors.")
+        
+        if not args.fast:
+            print("-------------------------------------------------")
+            print("Use the -fast flag when running gtburst to speed up the code")
+            print(" (the coinsole will not be captured in the GUI) ")
+            print("-------------------------------------------------")
+        else:
+            self.console.write("You select the -fast flag!\n")
+            self.console.write("Check your terminal to see the outout!\n")
+            self.console.write("(it is not redirected here!)\n")
+            self.console.write("--------------------------------------------------\n")
+            pass
+        
+        
+        #self.console.write(welcome)
         ##################################################
         # Fill the mainFrame
         bigFrame = Frame(self.root)

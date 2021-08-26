@@ -1351,8 +1351,8 @@ class LATData(LLEData):
         self.gttsmap = my_gttsmap()
         self.gtrspgen = GtApp('gtrspgen')
         self.gtbkg = GtApp('gtbkg')
-
-    pass
+        self.gtsrcprob = GtApp('gtsrcprob')
+        pass
 
     def performStandardCut(self, ra, dec, rad, irf, tstart, tstop,
                            emin, emax, zenithCut,
@@ -2142,6 +2142,20 @@ class LATData(LLEData):
             emax = self.emax
 
         return self._doLikelihood(xmlmodel, tsmin, emin, emax, clul)
+
+    def computeProbability(self):
+        outfilelike = "%s_likeRes.xml" % (self.rootName)
+        outfile = self.eventFile.replace('.fit', '_prob.fit')
+
+        self.gtsrcprob['evfile']  = self.eventFile
+        self.gtsrcprob['scfile']  = self.ft2File
+        self.gtsrcprob['outfile'] = outfile
+        self.gtsrcprob['srcmdl']  = outfilelike
+        try:
+            self.gtsrcprob.run()
+        except:
+            raise GtBurstException(205, "gtsrcprob failed in an unexpected way")
+        return outfile
     
     @staticmethod
     def setup_likelihood_object(like, xmlmodel):
