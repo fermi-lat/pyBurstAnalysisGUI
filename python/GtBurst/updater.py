@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import sys
-import urllib, os, subprocess
+import os, subprocess
+import urllib.request
 from GtBurst.GtBurstException import GtBurstException
 import GtBurst
 
@@ -102,9 +103,10 @@ def update(debug=False):
                              "that executables from the command line can reach the internet directly.")
   
   # First check if we need to update the updater script itself
-  
+
   self_path = os.path.splitext(os.path.abspath(__file__))[0]+".py"
-  updater_line = filter(lambda x:x.find("GtBurst/updater.py") >= 0, files)[0]
+
+  updater_line = list(filter(lambda x:x.find("GtBurst/updater.py") >= 0, files))[0]
   
   remote_self_md5 = updater_line.split()[0]
   local_self_md5 = md5.md5(open(self_path, 'rb').read()).hexdigest()
