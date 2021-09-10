@@ -160,7 +160,9 @@ def run(**kwargs):
   
   if(spectralfiles=='yes'):
     phafile,rspfile,bakfile   = LATdata.doSpectralFiles(outfilelike)
-  pass
+    pass
+  LATdata.computeProbability()
+
   
   localizationMessage         = ''
   bestra                      = ''

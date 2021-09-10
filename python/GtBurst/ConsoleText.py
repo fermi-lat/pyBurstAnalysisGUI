@@ -29,6 +29,67 @@ class StderrRedirector(IORedirector):
     def write(self,str):
         self.text_area.write(str,True)
             
+
+
+class ConsoleTextFast(Text):
+    '''A tkinter Text widget that provides a scrolling display of console
+    stderr and stdout.'''
+
+    def __init__(self, master=None, cnf={}, **kw):
+        '''See the __init__ for tkinter.Text for most of this stuff.'''
+
+        Text.__init__(self, master, cnf, **kw)
+        self.started = False
+        self.master = master
+        self.config(state=NORMAL)
+
+
+    def set_focus(self, event):
+        self.focus()
+        pass
+
+    def start(self):
+
+        if self.started:
+            return
+
+        self.started = True
+        self.logfile = open("gtburst.log", 'w+')
+        ltime = strftime("%Y-%m-%d %H:%M:%S", localtime())
+        username = getpass.getuser()
+        self.logfile.write("Analysis started at %s by user %s\n\n" % (ltime, username))
+
+    def stop(self):
+
+        if not self.started:
+            return
+
+        self.started = False
+        ltime = strftime("%Y-%m-%d %H:%M:%S", localtime())
+        self.logfile.write("\n\nAnalysis ended at %s\n" % (ltime))
+        self.logfile.close()
+
+    def write(self, val, is_stderr=False):
+        # Fun Fact:  The way tkinter Text objects work is that if they're disabled,
+        # you can't write into them AT ALL (via the GUI or programatically).  Since we want them
+        # disabled for the user, we have to set them to NORMAL (a.k.a. ENABLED), write to them,
+        # then set their state back to DISABLED.
+        # val                   = str(val.encode('utf-8'))
+
+        # Remove some warnings from ROOT (damn ROOT!)
+        self.insert('end', val)
+
+        self.logfile.write(val)
+        self.logfile.flush()
+        self.update()
+
+
+    pass
+
+
+
+
+
 class ConsoleText(Text):
     '''A tkinter Text widget that provides a scrolling display of console
     stderr and stdout.'''
