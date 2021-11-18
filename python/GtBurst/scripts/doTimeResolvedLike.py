@@ -12,7 +12,7 @@ from GtBurst import dataHandling
 from GtBurst.fast_ts_map import FastTSMap
 from GtBurst.my_fits_io import pyfits
 from GtBurst.likelihood_profile_writer import LikelihoodProfiler
-
+from GtBurst.FuncFactory import Spectra
 import os
 import subprocess
 import glob
@@ -26,6 +26,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+spectra=Spectra()
 
 def clean_intervals(tstarts, tstops, gti_starts, gti_stops):
     gtis = []
@@ -392,6 +393,7 @@ if __name__ == "__main__":
     parser.add_argument("--emin", help="Minimum energy for the analysis", type=float, default=100.0)
     parser.add_argument("--emax", help="Maximum energy for the analysis", type=float, default=100000.0)
     parser.add_argument("--irf", help="Instrument Function to be used (IRF)", type=str, choices=irfs, required=True)
+    parser.add_argument("--source_model", help="Spectral model for the source", type=str, choices=spectra.keys(), default='PowerLaw2', required=False)
     parser.add_argument("--galactic_model", help="Galactic model for the likelihood", type=str, required=True,
                         choices=['template (fixed norm.)', 'template', 'none'])
     parser.add_argument("--particle_model", help="Particle model", type=str, required=True,
@@ -673,7 +675,7 @@ if __name__ == "__main__":
         targs['dec'] = args.dec
         targs['fgl_mode'] = args.fgl_mode
         targs['ft2file'] = dataset['ft2file']
-        targs['source_model'] = 'powerlaw2'
+        targs['source_model'] = args.source_model
         printCommand("gtbuildxmlmodel", targs)
         _, xmlmodel = gtbuildxmlmodel.run(**targs)
 

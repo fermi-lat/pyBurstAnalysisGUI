@@ -39,10 +39,10 @@ def PowerLaw2():
 def ExpCutoff():
     func = """<spectrum type="ExpCutoff">
       <parameter free="1" max="100000.0" min="0.01" name="Prefactor" scale="1e-09" value="50"/>
-      <parameter free="1" max="-1.0" min="-5." name="Index" scale="1.0" value="-2.1"/>
+      <parameter free="1" max="1.0" min="-5." name="Index" scale="1.0" value="-1.0"/>
       <parameter free="0" max="2000.0" min="30.0" name="Scale" scale="1.0" value="100.0"/>
-      <parameter free="1" max="300.0" min="1.0" name="Ebreak" scale="1.0" value="10.0"/>
-      <parameter free="1" max="300.0" min="0.1" name="P1" scale="1000.0" value="100."/>
+      <parameter free="0" max="300.0" min="0.0" name="Ebreak" scale="1.0" value="0.1"/>
+      <parameter free="1" max="10000.0" min="30.0" name="P1" scale="1.0" value="100."/>
       <parameter free="0" max="1.0" min="-1.0" name="P2" scale="1.0" value="0"/>
       <parameter free="0" max="1.0" min="-1.0" name="P3" scale="1.0" value="0"/>
     </spectrum>
