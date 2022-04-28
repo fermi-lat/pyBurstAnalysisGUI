@@ -1,3 +1,3 @@
 #### gtburst ####
-install(DIRECTORY data/ DESTINATION ${FERMI_INSTALL_REFDATADIR}/pyBurstAnalysisGUI)
+install(DIRECTORY data/ DESTINATION ${FERMI_INSTALL_DATADIR}/pyBurstAnalysisGUI)
 install(DIRECTORY python/ DESTINATION ${FERMI_INSTALL_PYTHON})
