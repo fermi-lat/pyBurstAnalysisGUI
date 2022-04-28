@@ -2114,8 +2114,9 @@ def reset():
         print("\nReset canceled.\n")
 
 
-pass
-
-if __name__ == '__main__':
+def main():
     g = GUI()
     g.run()
+
+if __name__ == '__main__':
+    main()
