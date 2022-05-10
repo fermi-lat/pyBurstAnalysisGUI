@@ -28,7 +28,7 @@ class Configuration(object):
       
       else:
           
-          self.configuration['ftpWebsite']    = "https://heasarc.gsfc.nasa.gov/fermi/data"
+          self.configuration['ftpWebsite']    = "ftps://heasarc.gsfc.nasa.gov/fermi/data"
       
       # Number of CPUs to use
       
