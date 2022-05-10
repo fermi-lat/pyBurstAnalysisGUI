@@ -28,7 +28,7 @@ class get_size(object):
     self.size                 = float(listing.split()[4])
 
 if __name__ == '__main__':
-  host                        = 'legacy.gsfc.nasa.gov'
+  host                        = 'heasarc.gsfc.nasa.gov'
   src                         = '/fermi/data/gbm/daily/2008/12/01/current/glg_ctime_b0_081201_v00.pha'
   c                           = ftplib.FTP(host)
   c.set_debuglevel(0)
