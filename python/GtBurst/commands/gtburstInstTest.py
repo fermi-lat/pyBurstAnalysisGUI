@@ -11,6 +11,12 @@ try:
         'gtltcube','gtbkg','gtdiffrsp']
   
   for s in st:
+    if s == "gtobssim":
+        try:
+            fake = GtApp(s)
+        except:
+            print ("gtobssim is not available. Simulations will not work.")
+        continue
     fake                      = GtApp(s)
 except:
   print("Error!")
