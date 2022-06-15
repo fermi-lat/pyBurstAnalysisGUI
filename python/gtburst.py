@@ -692,7 +692,7 @@ class GUI(object, metaclass=MetaForExceptions):
             print("-------------------------------------------------")
         else:
             self.console.write("You select the -fast flag!\n")
-            self.console.write("Check your terminal to see the outout!\n")
+            self.console.write("Check your terminal to see the output!\n")
             self.console.write("(it is not redirected here!)\n")
             self.console.write("--------------------------------------------------\n")
             pass

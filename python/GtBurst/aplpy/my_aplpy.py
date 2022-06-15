@@ -885,7 +885,6 @@ class FITSFigure(Layers, Regions, Deprecated):
             vmin = auto_levels(0.25)
             vmax = auto_levels(99.75)
             levels = np.linspace(vmin, vmax, levels)
-
         if filled:
             c = self._ax1.contourf(image_contour, levels, extent=extent_contour, cmap=cmap, colors=colors, **kwargs)
         else:

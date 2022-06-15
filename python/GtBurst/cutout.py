@@ -277,7 +277,7 @@ else:
           
           newfile = pyfits.PrimaryHDU(data=img,header=head)
           
-          newfile.writeto(outfile,clobber=clobber)
+          newfile.writeto(outfile,overwrite=clobber)
           #Append the other extension, if present
           for i in range(1,len(f)):
             pyfits.append(outfile,f[i].data,header=f[i].header)

@@ -62,7 +62,7 @@ def expsum(filenames, Outfile, SaveTemp):
         summed_expmap_hdu = (np.array([expmap_file[0].data for expmap_file in expmap_files])).sum(axis=0)
         expmap_files[0][0].data = summed_expmap_hdu
         expmap_files[0][0].update_header()
-        expmap_files[0].writeto(Outfile, clobber='True')
+        expmap_files[0].writeto(Outfile, overwrite='True')
         for expmap_file in expmap_files: expmap_file.close()
         
     if SaveTemp:

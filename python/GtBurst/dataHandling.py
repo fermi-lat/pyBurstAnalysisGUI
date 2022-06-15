@@ -1162,7 +1162,7 @@ class my_gtltcube(multiprocessScienceTools):
             pass
 
         exepath = os.path.join(os.path.dirname(__file__), 'gtapps_mp', 'gtltcube_mp.py')
-        cmdline = "%s %s %s %s %s" % (exepath, self.ncpus,
+        cmdline = "python %s %s %s %s %s" % (exepath, self.ncpus,
                                       self['scfile'],
                                       self['evfile'],
                                       self['outfile'])
