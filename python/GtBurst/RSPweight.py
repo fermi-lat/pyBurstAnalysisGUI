@@ -370,7 +370,7 @@ def RSPweight(**kwargs):
         eboundsHDU                            = rsp2File['EBOUNDS'].copy()
         responseHDU                           = rspList[rsp_i].copy()
         HDUlist                               = pyfits.HDUList([primaryHDU,eboundsHDU,responseHDU])
-        HDUlist.writeto(name,output_verify='fix',clobber=True)
+        HDUlist.writeto(name,output_verify='fix',overwrite=True)
                         
         if(instrument.find("GBM")>=0):
           # FIX the wrong GBM matrices
@@ -446,7 +446,7 @@ def RSPweight(**kwargs):
     primary.header.set("DRM_NUM",nIntervals)
     primary.header.set("TSTART",timeIntervals.tstarts[0])
     primary.header.set("TSTOP",timeIntervals.tstops[-1])
-    primary.writeto(outrsp,clobber='True')
+    primary.writeto(outrsp,overwrite='True')
     
     #Get the EBOUNDS extension from the first matrix
     firstRsp                    = pyfits.open(createdRspNames[0])

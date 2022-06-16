@@ -348,11 +348,11 @@ def make_rgb_cube(files, output, north=False, system=None, equinox=None):
         image_cube[i, :, :] = pyfits.getdata('%s/image_%i.fits' % (final_dir, i))
 
     # Write out final cube
-    pyfits.writeto(output, image_cube, header, clobber=True)
+    pyfits.writeto(output, image_cube, header, overwrite=True)
 
     # Write out collapsed version of cube
     pyfits.writeto(output.replace('.fits', '_2d.fits'), \
-                   np.mean(image_cube, axis=0), header, clobber=True)
+                   np.mean(image_cube, axis=0), header, overwrite=True)
 
     # Remove work directory
     shutil.rmtree(work_dir)

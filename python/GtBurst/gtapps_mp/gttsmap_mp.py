@@ -235,12 +235,7 @@ class BatchTsMap(object):
         gtbin['chatter']=0
         gtbin['clobber']='yes'        
         gtbin.run()
-        #gtbin.run(algorithm='CMAP', evfile=pars['evfile'],
-        #            scfile=pars['scfile'], outfile=self.tpl_file,
-        #            nxpix=pars['nxpix'], nypix=pars['nypix'],
-        #            binsz=pars['binsz'], coordsys=pars['coordsys'],
-        #            xref=pars['xref'], yref=pars['yref'], axisrot=0,
-        #            proj=pars['proj'], chatter=0, clobber='yes')
+
 
     def getPixels(self, partition):
         nx, ny = self.pixel_coords.nx, self.pixel_coords.ny
