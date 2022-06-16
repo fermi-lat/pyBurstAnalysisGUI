@@ -6,7 +6,7 @@ a0335d221bf42368d1477531492f7fe3 python/GtBurst/dataHandling.py
 7851801cda4300e2dd9c9ea004c92b98 python/GtBurst/commandDefiner.py
 aa0b472f87836e81f88e0c9d6bc44644 python/GtBurst/tasks/__init__.py
 ae467d271b295f59e99b7ee3e4c79eec python/GtBurst/InteractiveFt1Display.py
-43366d1f56c6e4b1dcb57bdaaabe3f83 python/GtBurst/version.py
+48a3d1e3ee0cccb8aeca8053e86c1302 python/GtBurst/version.py
 1c36a41cd5d1b57eea2cbe115d74289b python/GtBurst/lleProgressBar.py
 4099b59c6668fb2083770c7613d09045 python/GtBurst/Treeview.py
 105337eb6c1b0e9fb735f13f66572cc1 python/GtBurst/AutoHideScrollbar.py
@@ -27,7 +27,7 @@ aa0b472f87836e81f88e0c9d6bc44644 python/GtBurst/__init__.py
 aa0b472f87836e81f88e0c9d6bc44644 python/GtBurst/gtapps_mp/__init__.py
 59cba6eca8cf27543a3b6ec5822743f9 python/GtBurst/gtapps_mp/gtexpmap_mp.py
 6d7d8d990b76188b23737251b6a61c5a python/GtBurst/gtapps_mp/gtltcube_mp.py
-207a37709e1d1c3990f6dc445aea10ac python/GtBurst/gtapps_mp/gttsmap_mp.py
+670b4b38485076a2053f452933880b1d python/GtBurst/gtapps_mp/gttsmap_mp.py
 bc22a3bacaba89d3773d47771cef72ae python/GtBurst/SubWindow.py
 a602b2f4d9fc2e31771c992b1fd0deb9 python/GtBurst/EntryPoint.py
 a273dba5fb6b0570cea2d4d78b9c069d python/GtBurst/HyperlinkManager.py
@@ -46,7 +46,7 @@ c65c05e3091e04ba00a40828891b5b9a python/GtBurst/aplpy/__init__.py
 151ce63a7ceb1f6ce4b8ced75c83d221 python/GtBurst/aplpy/logger.py
 44a72d56f8a02f79f645408f76108f5c python/GtBurst/aplpy/my_aplpy.py
 a66bc255e3f46552bb779e3a4f933ccf python/GtBurst/aplpy/overlays.py
-c5802ac3fb7ae5ff50a444c01d0bc8a6 python/GtBurst/aplpy/rgb.py
+df56730a3bf9cd5a914e7742efc47be6 python/GtBurst/aplpy/rgb.py
 ccac331984f81a837bb2c3dff410766a python/GtBurst/aplpy/frame.py
 e9725a3f195545639ba3691c9d1c69c3 python/GtBurst/aplpy/image_util.py
 60bd9d6be02bd188d126957d18584ca0 python/GtBurst/aplpy/axis_labels.py
@@ -104,7 +104,7 @@ d9022a481bb0e9e5d071305f9ea82c56 python/GtBurst/commands/gtdownloadGBMdata.py
 fe3c4ad3c311bd1eb720b63d28eedf5b python/GtBurst/dataCollector.py
 251003a553e70c8922ac3fa47c37bb84 python/GtBurst/downloadTransientData.py
 9b4d05cc9175a11b2702dc97f6a28301 python/GtBurst/FGLSelector.py
-a69a88c8cd5f4bba09a57366809e4aff python/GtBurst/RSPweight.py
+744f6c2f01abf1f9f1b26564dacd2414 python/GtBurst/RSPweight.py
 58cd5035c25723eb04adc7f702ae96e4 python/GtBurst/getDataPath.py
 54e937b1ed37f5b4abe6ea12d4c23453 python/gtburst.py
 1aa43d155bcd9ee224da9aa902cf5871 data/gll_psc_v07.xml
