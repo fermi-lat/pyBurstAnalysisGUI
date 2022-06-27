@@ -1346,7 +1346,12 @@ class LATData(LLEData):
         self.gtexpcube2 = GtApp('gtexpcube2')
         self.gtsrcmaps = GtApp('gtsrcmaps')
         self.gtmodel = GtApp('gtmodel')
-        self.gtobssim = GtApp('gtobssim')
+        try:
+            self.gtobssim = GtApp('gtobssim')
+        except:
+            sys.stderr.write(
+                "\n\nWARNING: gtobssim and LATData.makeSimulation are currently unavailable." )
+            self.gtobssim = None
         self.gtfindsrc = GtApp('gtfindsrc')
         self.gttsmap = my_gttsmap()
         self.gtrspgen = GtApp('gtrspgen')
@@ -2403,6 +2408,9 @@ class LATData(LLEData):
 
     def makeSimulation(self, gtlikexml, evroot='sim', seed=None, exclude=None):
 
+        if not self.gtobssim:
+            raise NotImplementedError("gtobssim and LATData.makeSimulation are currently unavailable.")
+
         self.getCuts()
 
         # First transform the xmlfile from the gtlike to the
@@ -2502,15 +2510,26 @@ pass
 
 class Simulation(object):
     def __init__(self, ft2File, irf, trigTime):
+    
         self.ft2File = ft2File
         self.irf = irfs[irf]
         self.trigTime = float(trigTime)
-        self.gtobssim = GtApp('gtobssim')
+        try:
+            self.gtobssim = GtApp('gtobssim')
+        except:
+            sys.stderr.write(
+                "\n\nWARNING: gtobssim and doSimulation are currently unavailable." )
+            self.gtobssim = None
+        self.gtobssim = None
         pass
 
     # -------------------------------------------------- #
 
     def doSimulation(self, infile, srclist, evroot, simtime, tstart, seed):
+    
+        if not self.gtobssim:
+            raise NotImplementedError("gtobssim and doSimulation are currently unavailable.")
+
         print ('I am now ready to simulate a GRB!')
         os.environ['SIMDIR'] = '$PWD'
         self.gtobssim['infile'] = infile
