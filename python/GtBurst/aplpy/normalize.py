@@ -88,10 +88,10 @@ class APLpyNormalize(Normalize):
 
         if np.iterable(value):
             vtype = 'array'
-            val = ma.asarray(value).astype(np.float)
+            val = ma.asarray(value).astype(float)
         else:
             vtype = 'scalar'
-            val = ma.array([value]).astype(np.float)
+            val = ma.array([value]).astype(float)
 
         self.autoscale_None(val)
         vmin, vmax = self.vmin, self.vmax
