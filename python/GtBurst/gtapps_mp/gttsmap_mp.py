@@ -265,7 +265,7 @@ class BatchTsMap(object):
 
     def merge_results(self):
         tsmap = pyfits.open(self.tpl_file)
-        tsmap[0].data = num.zeros(tsmap[0].data.shape, dtype=num.float)
+        tsmap[0].data = num.zeros(tsmap[0].data.shape, dtype=float)
         for subdir in self.subdirs:
             result_file = os.path.join(subdir, 'ts_results.dat')
             try:
