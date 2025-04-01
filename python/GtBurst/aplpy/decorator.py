@@ -1,4 +1,4 @@
-##########################     LICENCE     ###############################
+#########################     LICENCE     ###############################
 ##
 ##   Copyright (c) 2005, Michele Simionato
 ##   All rights reserved.
@@ -67,12 +67,13 @@ class FunctionMaker(object):
             self.doc = func.__doc__
             self.module = func.__module__
             if inspect.isfunction(func):
-                argspec = inspect.getargspec(func)
+                argspec = inspect.getfullargspec(func)[0:4]
                 self.args, self.varargs, self.keywords, self.defaults = argspec
                 for i, arg in enumerate(self.args):
                     setattr(self, 'arg%d' % i, arg)
-                self.signature = inspect.formatargspec(
-                    formatvalue=lambda val: "", *argspec)[1:-1]
+                #self.signature = inspect.formatargspec(
+                #    formatvalue=lambda val: "", *argspec)[1:-1]
+                self.signature = str(inspect.signature(func))[1:-1]
                 self.dict = func.__dict__.copy()
         if name:
             self.name = name
@@ -109,8 +110,7 @@ class FunctionMaker(object):
         if mo is None:
             raise SyntaxError('not a valid function template\n%s' % src)
         name = mo.group(1) # extract the function name
-        reserved_names = set([name] + [
-            arg.strip(' *') for arg in self.signature.split(',')])
+        reserved_names = set([name] + [arg.strip(' *') for arg in self.signature.split(',')])
         for n, v in evaldict.items():
             if n in reserved_names:
                 raise NameError('%s is overridden in\n%s' % (n, src))
