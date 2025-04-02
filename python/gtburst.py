@@ -1443,19 +1443,19 @@ class GUI(object, metaclass=MetaForExceptions):
         checkButtonsFrame = Frame(thisWindow.frame)
         checkButtonsFrame.grid(row=2, column=0)
 
-        downloadGBM = IntVar(0)
+        downloadGBM = IntVar(value=0)
         GBMcheckbutton = Checkbutton(checkButtonsFrame,
                                      text="Download GBM data",
                                      variable=downloadGBM)
         GBMcheckbutton.grid(row=0, column=0, sticky=W)
 
-        downloadLLE = IntVar(0)
+        downloadLLE = IntVar(value=0)
         LLEcheckbutton = Checkbutton(checkButtonsFrame,
                                      text="Download LLE data",
                                      variable=downloadLLE)
         LLEcheckbutton.grid(row=1, column=0, sticky=W)
 
-        downloadLAT = IntVar(0)
+        downloadLAT = IntVar(value=0)
         LATcheckbutton = Checkbutton(checkButtonsFrame,
                                      text="Download LAT standard data (Transient and cleaner classes)",
                                      variable=downloadLAT)
