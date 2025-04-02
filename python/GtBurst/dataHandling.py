@@ -633,7 +633,7 @@ def _makeDatasetsOutOfLATdata(ft1, ft2, grbName, tstart, tstop,
     gtselect['tmin'] = cspecstart - 1.0
     gtselect['tmax'] = cspecstop + 1.0
     gtselect['emin'] = 10.0
-    gtselect['emax'] = 300000.0
+    gtselect['emax'] = 1000000.0
     gtselect['zmax'] = 110.0
     gtselect['clobber'] = 'yes'
     gtselect.run()
@@ -644,6 +644,10 @@ def _makeDatasetsOutOfLATdata(ft1, ft2, grbName, tstart, tstop,
     parameters['rspfile'] = eboundsFilename
     parameters['ft2file'] = ft2
     parameters['dt'] = 1.024 * 4
+    if (cspecstop-cspecstart)>10000:
+        print("reducing time binning...")
+        parameters['dt'] = 1024 * 4
+
     parameters['tstart'] = cspecstart
     parameters['tstop'] = cspecstop
     parameters['cspecfile'] = cspecfile
@@ -1360,7 +1364,7 @@ class LATData(LLEData):
                            roicut=True, **kwargs):
 
         self.strategy = 'time'
-
+        self.data_quality=True
         # Use the evtype
         if (irf.lower().find("p8") >= 0):
 
@@ -1375,6 +1379,9 @@ class LATData(LLEData):
                 self.strategy = kwargs[key]
             elif (key == "evtype"):
                 self.evtype = int(kwargs[key])
+            elif (key == "data_quality"):
+                self.data_quality = bool(kwargs[key])
+
         pass
 
         # Get tstart and tstop always in MET
@@ -1417,8 +1424,11 @@ class LATData(LLEData):
 
         if (gtmktime):
             self.gtmktime['scfile'] = self.ft2File
+            filt=""
+            if (self.data_quality):
+                filt="(DATA_QUAL>0 || DATA_QUAL==-1) && "
             if (self.strategy == "time"):
-                filt = "(DATA_QUAL>0 || DATA_QUAL==-1) && LAT_CONFIG==1 && IN_SAA!=T && LIVETIME>0"
+                filt += "LAT_CONFIG==1 && IN_SAA!=T && LIVETIME>0"
 
                 if (zenithCut < 180):
 
@@ -1430,7 +1440,7 @@ class LATData(LLEData):
 
                 self.gtmktime['roicut'] = "no"
             elif (self.strategy == "events"):
-                filt = "(DATA_QUAL>0 || DATA_QUAL==-1) && LAT_CONFIG==1 && IN_SAA!=T && LIVETIME>0"
+                filt += "LAT_CONFIG==1 && IN_SAA!=T && LIVETIME>0"
                 self.gtmktime['roicut'] = "no"
             else:
                 raise RuntimeError("Strategy must be either 'time' or 'events'")

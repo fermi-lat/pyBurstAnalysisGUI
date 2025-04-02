@@ -642,7 +642,7 @@ class LikelihoodResultsPrinter(object):
             sourceName = source.get('name')
             thisSrcNfree = self.likelihoodObj.model[sourceName].src.getSrcFuncs()['Spectrum'].getNumFreeParams()
             nFreeParameters += thisSrcNfree
-
+        f = open('source_TS.txt', 'w')
         for source in allSources:
             sourceName = source.get('name')
             sourceType = source.get('type')
@@ -663,6 +663,7 @@ class LikelihoodResultsPrinter(object):
             pass
 
             TS = max(0, self.likelihoodObj.Ts(sourceName, reoptimize=reoptimize, MaxIterations=10000))
+            f.write('%s,%s\n' %(sourceName,math.ceil(TS)))
 
             # energy flux
             MeVtoErg = 1.60217646E-6
@@ -788,6 +789,7 @@ class LikelihoodResultsPrinter(object):
             listOfSources.append(
                 SourceStruct(sourceName, sourceType, thisRa, thisDec, flux, fluxError, phflux, phfluxError, photonIndex,
                              photonIndexError, TS))
+        f.close()
         pass
         append("-%20s-%15s-%10s-%12s-%10s-%6s-\n" % (20 * '-', 15 * '-', 10 * '-', 12 * '-', 10 * '-', 6 * '-'))
         if (nNonPrinted != 0):

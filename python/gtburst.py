@@ -1072,8 +1072,7 @@ class GUI(object, metaclass=MetaForExceptions):
         self.fillUserInteractionFrame()
         self.writeDefaultHelpMessage()
         self.makeLightCurves()
-
-    pass
+        pass
 
     def run(self):
         # self.root.resizable(0,0)
