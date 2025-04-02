@@ -618,7 +618,7 @@ def _makeDatasetsOutOfLATdata(ft1, ft2, grbName, tstart, tstop,
     eboundsFilename = os.path.join(localRepository, "gll_cspec_tr_bn%s_v00.rsp" % (grbName))
     thdulist = pyfits.HDUList([hdu, tbhdu, fakematrixhdu])
     print(("Writing %s..." % (eboundsFilename)))
-    thdulist.writeto(eboundsFilename, overwrite='yes')``
+    thdulist.writeto(eboundsFilename, overwrite='yes')
 
     # Produce a CSPEC file with LAT Transient data
     parameters = {}
