@@ -113,7 +113,7 @@ class DownloadTransientData(dataCollector):
     pass
   pass
   
-  def getFTP(self,what='Extended'):
+  def getFTP(self,what='Extended',energyfield='30,1000000',makecspec=True):
     #Re-implementing this
     
     #This will complete automatically the form available at
@@ -131,7 +131,7 @@ class DownloadTransientData(dataCollector):
     parameters['shapefield']    = "%s" %(self.roi)
     parameters['timefield']     = "%s,%s" %(self.tstart,self.tstop)
     parameters['timetype']      = "%s" %(self.timetype)
-    parameters['energyfield']   = "30,1000000"
+    parameters['energyfield']   = energyfield
     parameters['photonOrExtendedOrNone'] = what
     parameters['destination']   = 'query'
     parameters['spacecraft']    = 'checked'
@@ -335,16 +335,16 @@ class DownloadTransientData(dataCollector):
       
       os.rename(localPath,newfilename)
       newFilenames[suffix]    = newfilename
-    pass
-    
+      pass
     ###########################
-    if('ft1' in list(newFilenames.keys()) and 'ft2' in list(newFilenames.keys())):
+    if(makecspec and 'ft1' in list(newFilenames.keys()) and 'ft2' in list(newFilenames.keys())):
       dataHandling._makeDatasetsOutOfLATdata(newFilenames['ft1'],newFilenames['ft2'],
                                              self.grbName,self.tstart,self.tstop,
                                              self.ra,self.dec,self.triggerTime,
                                              self.localRepository,
                                              cspecstart=-1000,
-                                             cspecstop=1000)
+                                             cspecstop=1000,
+                                             makecspec=True)
     
   pass
   

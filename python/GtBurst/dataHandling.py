@@ -584,7 +584,7 @@ pass
 
 def _makeDatasetsOutOfLATdata(ft1, ft2, grbName, tstart, tstop,
                               ra, dec, triggerTime, localRepository='.',
-                              cspecstart=None, cspecstop=None):
+                              cspecstart=None, cspecstop=None, makecspec=True):
     # FIX tstart and tstop
     ra = float(ra)
     dec = float(dec)
@@ -618,11 +618,14 @@ def _makeDatasetsOutOfLATdata(ft1, ft2, grbName, tstart, tstop,
     eboundsFilename = os.path.join(localRepository, "gll_cspec_tr_bn%s_v00.rsp" % (grbName))
     thdulist = pyfits.HDUList([hdu, tbhdu, fakematrixhdu])
     print(("Writing %s..." % (eboundsFilename)))
-    thdulist.writeto(eboundsFilename, overwrite='yes')
+    thdulist.writeto(eboundsFilename, overwrite='yes')``
 
     # Produce a CSPEC file with LAT Transient data
-
+    parameters = {}
     # Select a 15 deg ROI around the ra,dec
+    if not makecspec:         
+        return ft1, eboundsFilename, ft2
+
     gtselect = GtApp('gtselect')
     gtselect['infile'] = ft1
     tempName = '__temp_ft1.fits'
@@ -638,8 +641,7 @@ def _makeDatasetsOutOfLATdata(ft1, ft2, grbName, tstart, tstop,
     gtselect['clobber'] = 'yes'
     gtselect.run()
 
-    cspecfile = os.path.join(localRepository, "gll_cspec_tr_bn%s_v00.pha" % (grbName))
-    parameters = {}
+    cspecfile = os.path.join(localRepository, "gll_cspec_tr_bn%s_v00.pha" % (grbName))    
     parameters['eventfile'] = tempName
     parameters['rspfile'] = eboundsFilename
     parameters['ft2file'] = ft2
