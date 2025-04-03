@@ -83,7 +83,6 @@ def run(**kwargs):
     #Nothing specified, the user needs just help!
     thisCommand.getHelp()
     return
-  pass
   
   #Get parameters values
   thisCommand.setParValuesFromDictionary(kwargs)
@@ -108,13 +107,14 @@ def run(**kwargs):
     clobber                     = _yesOrNoToBool(thisCommand.getParValue('clobber'))
     verbose                     = _yesOrNoToBool(thisCommand.getParValue('verbose'))
     figure                      = thisCommand.getParValue('figure')
+
   except KeyError as err:
     print(("\n\nERROR: Parameter %s not found or incorrect! \n\n" %(err.args[0])))
     
     #Print help
     print((thisCommand.getHelp()))
     return
-  pass
+  
   
   from GtBurst import dataHandling
   global lastDisplay
@@ -127,9 +127,10 @@ def run(**kwargs):
   elif(strategy.lower()=="events"):
     #no gtmktime cut, Zenith cut applied directly to the events
     filteredFile,nEvents      = LATdata.performStandardCut(ra,dec,rad,irf,tstart,tstop,emin,emax,zmax,thetamax,True,strategy='events')
-  pass
+    pass
   
   LATdata.doSkyMap(outfile,skybinsize)
+  print(("Counts map saved in %s" %(outfile)))
     
   #Now open the output file and get exposure and total number of events
   skymap                      = pyfits.open(outfile)
@@ -149,13 +150,13 @@ def run(**kwargs):
   if(figure is not None):     
     if(lastDisplay is not None):
       lastDisplay.unbind()
-    pass
+      pass
     from GtBurst.InteractiveFt1Display import InteractiveFt1Display
     lastDisplay               = InteractiveFt1Display(filteredFile,outfile,figure,ra,dec)
-  pass  
+    pass  
   
   return 'skymap', outfile, 'filteredeventfile', filteredFile, 'irf', irf, 'eventDisplay', lastDisplay
-pass
+
 
 thisCommand.run = run
 

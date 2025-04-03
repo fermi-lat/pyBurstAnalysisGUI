@@ -201,7 +201,7 @@ class GUI(object, metaclass=MetaForExceptions):
                 rootName = ".".join(rootName)
                 detector = "LAT-LLE"
                 trigger = rootName.split("_")[0]
-            pass
+                pass
 
             triggered = True
             triggerTime = dataHandling.getTriggerTime(filename)
@@ -234,7 +234,7 @@ class GUI(object, metaclass=MetaForExceptions):
                       "The file %s is neither a LLE file nor a GBM file. You have to manually select other data." % lleFile,
                       parent=parent)
             raise ValueError("Unknown file")
-        pass
+            pass
 
         dataset = Dataset(detector, trigger, triggerTime, triggered)
 
@@ -248,7 +248,7 @@ class GUI(object, metaclass=MetaForExceptions):
         trigTime = dataHandling.getTriggerTime(dataset['cspecfile'])
         if (trigTime != -1):
             dataset.triggerTime = trigTime
-        pass
+            pass
 
         if (prefix == "gll"):
             if (detector == "LAT"):
@@ -265,7 +265,7 @@ class GUI(object, metaclass=MetaForExceptions):
             except:
                 dataset.status = "noTTE"
                 dataset['eventfile'] = dataset['cspecfile']
-            pass
+                pass
             dataset['ft2file'] = 'None'
             try:
                 dataset['trigdat'] = _getLatestVersion(
@@ -289,7 +289,7 @@ class GUI(object, metaclass=MetaForExceptions):
                                   "http://heasarc.nasa.gov/lheasoft/\n\nThis message will be displayed once per session."),
                                  parent=parent)
                         self.addrmfWarning = False
-                    pass
+                        pass
                     # Raise an exception so the following except will run
                     raise
                 else:
@@ -305,9 +305,9 @@ class GUI(object, metaclass=MetaForExceptions):
                         del dataset['rspfile']
                     # I did not find any .rsp file nor any .rsp2 file
                     dataset.status = "noRESP"
+                    pass
                 pass
             pass
-        pass
 
         # Check that the file exists
         for key, f in dataset.items():
@@ -317,17 +317,14 @@ class GUI(object, metaclass=MetaForExceptions):
             if (os.path.exists(f) == False):
                 showerror("I/O error", "Cannot open this file\n %s \nFile does not exist or it is not readable." % f,
                           parent=parent)
+                pass
             pass
-        pass
 
         return dataset, trigger, triggered
 
-    pass
-
     def openWebLink(self, url):
         webbrowser.open(url, 2)
-
-    pass
+        pass
 
     def updateRootStatusbar(self, message, hint=None):
         if (message.find("TIP") >= 0):
@@ -339,10 +336,9 @@ class GUI(object, metaclass=MetaForExceptions):
             self.bottomtext.insert(END, "\n\n")
             self.bottomtext.image_create(END, image=self.lightbulb)
             self.bottomtext.insert(END, hint)
-        pass
+            pass
         self.bottomtext.config(state=DISABLED)
-
-    pass
+        pass
 
     def fillObjectInfo(self):
         # Read info of the objects from datafiles
@@ -362,10 +358,10 @@ class GUI(object, metaclass=MetaForExceptions):
                 except:
                     self.objectInfoEntries[key].variable.set('not available')
                     # self.objectInfoEntries[key].entry.config(state='readonly')
-        pass
+            pass
         f.close()
 
-    pass
+        pass
 
     def loadCustomDataset(self):
         customWindow = SubWindow(self.root, transient=True, title="Custom dataset",
@@ -416,7 +412,7 @@ class GUI(object, metaclass=MetaForExceptions):
                               command=customWindow.window.destroy)
         cancelButton.grid(row=0, column=1, sticky="NSWE")
 
-    pass
+        pass
 
     def _registerCustomDataset(self, entries, parent):
         detector = entries['detname'].get()
@@ -453,7 +449,7 @@ class GUI(object, metaclass=MetaForExceptions):
                 return
             pass
             f.close()
-        pass
+            pass
 
         if (trigger == ''):
             try:
@@ -479,7 +475,7 @@ class GUI(object, metaclass=MetaForExceptions):
             parValues[-1].set(int(1))
         self.registerDatasets(datasets, parValues, parent, False)
 
-    pass
+        pass
 
     def changeTriggerTime(self):
         # No trigger time information at all!
@@ -491,7 +487,7 @@ class GUI(object, metaclass=MetaForExceptions):
             print(("Using %s as trigger time for detector %s and object %s" % (triggerTime, dataset.detector,
                                                                               dataset.triggerName)))
             dataset.triggerTime = triggerTime
-        pass
+            pass
 
         # Write the keyword UREFTIME in all the input data files, which I will use as
         # reference time, to avoid overwriting the TRIGTIME keyword
@@ -500,15 +496,15 @@ class GUI(object, metaclass=MetaForExceptions):
                 f = pyfits.open(dataset[key], "update")
                 f[0].header.set("UREFTIME", triggerTime)
                 f.close()
+                pass
             pass
-        pass
 
         # Update the status bar in the main window
         if (len(self.datasets) > 0):
             # Update the information on the object
             self.fillObjectInfo()
 
-    pass
+        pass
 
     def quit(self):
         try:
@@ -517,7 +513,7 @@ class GUI(object, metaclass=MetaForExceptions):
             pass
         self.root.quit()
 
-    pass
+        pass
 
     def makeNavigationPlots(self):
         # Find if there is any available ft2 file
@@ -902,7 +898,7 @@ class GUI(object, metaclass=MetaForExceptions):
                                           self.canvas,
                                           datasetsfilter=datasetsFilter)
 
-    pass
+        pass
 
     def recenterROIafterSkymap(self, datasetsFilter=lambda x: True):
         # Update RA and DEC
@@ -989,8 +985,7 @@ class GUI(object, metaclass=MetaForExceptions):
         self.fillUserInteractionFrame()
         self.writeDefaultHelpMessage()
         self.makeLightCurves()
-
-    pass
+        pass
 
     def likelihoodAnalysis(self):
         datasetsFilter = lambda x: x.detector == "LAT"
@@ -1065,8 +1060,7 @@ class GUI(object, metaclass=MetaForExceptions):
                                           self.figureFrame,
                                           self.canvas,
                                           datasetsfilter=datasetsFilter)
-
-    pass
+        pass
 
     def afterLikelihood(self, datasetsFilter=lambda x: True):
         self.fillUserInteractionFrame()
@@ -1160,7 +1154,7 @@ class GUI(object, metaclass=MetaForExceptions):
                                           self.canvas,
                                           datasetsfilter=datasetsFilter)
 
-    pass
+        pass
 
     def writeXspecScript(self, datasetsFilter=lambda x: True):
         self.fillUserInteractionFrame()
@@ -1257,7 +1251,7 @@ class GUI(object, metaclass=MetaForExceptions):
             "You can use them in Xspec to load data, entering for example:\n\n XSPEC>@loadData_%s_int01.xcm\n\n at the XSPEC prompt." % (
             self.datasets[0].triggerName))
 
-    pass
+        pass
 
     def browseTriggers(self, window, triggerNameVar, triggerTimeVar, raVar, decVar):
         browser = TriggerSelector(window)
@@ -1271,7 +1265,7 @@ class GUI(object, metaclass=MetaForExceptions):
             # Problem with the download (most probably)
             return
 
-    pass
+        pass
 
     def browseFGL(self, window, triggerNameVar, triggerTimeVar, raVar, decVar):
         browser = FGLSelector(window)
@@ -1285,7 +1279,7 @@ class GUI(object, metaclass=MetaForExceptions):
             # Problem with the download (most probably)
             return
 
-    pass
+        pass
 
     def downloadDataFGLsource(self):
         # self.cleanUserInteractionFrame()
@@ -1362,7 +1356,7 @@ class GUI(object, metaclass=MetaForExceptions):
         # Now launch the browser
         # self.browseTriggers(thisWindow.window,triggerForm.variable,triggerTimeForm.variable,raForm.variable,decForm.variable)
 
-    pass
+        pass
 
     def _sanitizeFGLdownload(self, name, date, ra, dec, window):
 
@@ -1485,7 +1479,7 @@ class GUI(object, metaclass=MetaForExceptions):
         # Now launch the browser
         # self.browseTriggers(thisWindow.window,triggerForm.variable,triggerTimeForm.variable,raForm.variable,decForm.variable)
 
-    pass
+        pass
 
     def downloadDataSetFromFTP(self, triggerName, triggerTime, ra, dec, thisWindow, downloadLLE, downloadGBM,
                                downloadTransient):
@@ -1577,7 +1571,7 @@ class GUI(object, metaclass=MetaForExceptions):
                                   command=lambda: gbmDataSelWindow.window.destroy)
             cancelButton.grid(row=1, column=1)
             thisWindow.wait_window(gbmDataSelWindow.window)
-        pass
+            pass
 
         thisWindow.destroy()
 
@@ -1645,7 +1639,7 @@ class GUI(object, metaclass=MetaForExceptions):
         cancelButton = Button(buttonFrame, text="Cancel", font=NORMALFONT, command=configureWindow.window.destroy)
         cancelButton.grid(row=0, column=1)
 
-    pass
+        pass
 
     def saveConfiguration(self, entries, window):
         
@@ -1753,7 +1747,7 @@ class GUI(object, metaclass=MetaForExceptions):
                     # showinfo("No RA,DEC","No RA_OBJ,DEC_OBJ keywords in response file %s" %(dataset['rspfile']))
                     RA_OBJ = 'not available'
                     DEC_OBJ = 'not available'
-                pass
+                    pass
             
             angle = 99999
             angleString = 'n.a.'
@@ -1806,7 +1800,7 @@ class GUI(object, metaclass=MetaForExceptions):
                         parValues[-1].set(int(0))
             else:
                 parValues[-1].set(int(0))
-            pass
+                pass
             checkButtons.append(Checkbutton(detFrame, text="%-5s (%s deg)  " % (dataset.detector, angleString),
                                             variable=parValues[-1]))
             checkButtons[-1].grid(row=row, column=col, sticky='W')
@@ -1815,7 +1809,7 @@ class GUI(object, metaclass=MetaForExceptions):
                 row += 1
             else:
                 col = 1
-            pass
+                pass
         
         datasetsWindow.frame.columnconfigure(0, weight=1, minsize=200)
         detFrame.columnconfigure(0, weight=1, minsize=50)
@@ -1867,12 +1861,12 @@ class GUI(object, metaclass=MetaForExceptions):
                              "No TTE file found for detector %s, using CSPEC file (you loose time resolution)." % (
                              dataset.detector), parent=parent)
                     dataset['eventfile'] = dataset['cspecfile']
-                pass
+                    pass
 
                 self.datasets.append(dataset)
                 names.append(dataset.detector)
+                pass
             pass
-        pass
         parent.destroy()
 
         # Safety checks on the loaded datasets

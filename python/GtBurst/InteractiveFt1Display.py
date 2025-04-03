@@ -25,7 +25,7 @@ class InteractiveFt1Display(object):
       print(("No events in FT1 file %s" %(ft1file)))
       self.empty              = True
       #raise RuntimeError("No events in FT1 file %s" %(ft1file))
-    pass
+      pass
     
     self.obj_ra               = obj_ra
     self.obj_dec              = obj_dec
@@ -44,7 +44,7 @@ class InteractiveFt1Display(object):
       self.tmax               = float(ft1['EVENTS'].header['TSTOP'])
       self.energyMin          = 100
       self.energyMax          = 1e7
-    pass
+      pass
     
     #Get the reprocessing
     self.reprocVer            = str(ft1[0].header['PROC_VER'])
@@ -70,7 +70,6 @@ class InteractiveFt1Display(object):
     self.user_ra              = None
     self.user_dec             = None
     self.evtext               = None
-    
     self.figure               = figure
     self.figure.clear()
     self.displayImage()
@@ -79,7 +78,7 @@ class InteractiveFt1Display(object):
     self.figure.canvas.draw()
     self.connectEvents()
     ft1.close()
-  pass
+    pass
   
   def generateColorMap(self):    
     #Translate from bitmask to color
@@ -92,8 +91,8 @@ class InteractiveFt1Display(object):
     for i,ir in enumerate(irfs):
       #print("%s (%s) -> %s" %(ir.name,ir.evclass,cpool[i]))
       self.IRFToColor[ir.shortname] = cpool[i]
+      pass
     pass
-  pass
     
   def unbind(self):
     #Clear all bindings in figures
@@ -102,13 +101,16 @@ class InteractiveFt1Display(object):
     self.timer.stop()
     self.figure.canvas.mpl_disconnect(self.pickerID)
     self.figure.canvas.mpl_disconnect(self.clickerID)
-  pass
-  
+    pass
+
   def displayImage(self):
-    self.image               = aplpy.FITSFigure(self.skyimage,convention='calabretta',
+    self.image               = aplpy.FITSFigure(self.skyimage, 
+                                                convention='calabretta',
                                                 figure=self.figure,
                                                 subplot=[0.1,0.10,0.40,0.7],
-                                                label='sky image',auto_refresh=False)
+                                                label='sky image',
+                                                auto_refresh=False)
+    
     imageFits                = pyfits.open(self.skyimage)
     img                      = imageFits[0].data
     
@@ -127,43 +129,40 @@ class InteractiveFt1Display(object):
     self.image.tick_labels.set_yformat('ddd.dd')
     
     # Display a grid and tweak the properties
-    try:
-      self.image.show_grid()
-    except:
-      #show_grid throw an exception if the grid was already there
-      pass
-    pass
+    #try:
+    self.image.add_grid()
+    self.image.grid.set_color('black')
+    #except:
+    #show_grid throw an exception if the grid was already there
+    #  pass
+    
     
     #Try to plot a cross at the source position
     
     if(self.obj_ra is not None):
-      self.image.show_markers([float(self.obj_ra)], [float(self.obj_dec)], edgecolor='cyan', facecolor='cyan',marker='x', s=120, alpha=0.5,linewidth=2)
+      self.image.show_markers([float(self.obj_ra)], [float(self.obj_dec)], facecolor='cyan', marker='x', s=120, alpha=0.5,linewidth=2)
     
     self.figure.canvas.draw()
-  pass
+    pass
   
   def initEventDisplay(self):
     #This must be called just once!
     self.eventDisplay         = self.figure.add_axes([0.60,0.10,0.35,0.7],label='event display')
-  pass
+    pass
   
   def inRegion(self,ra,dec,xmin,xmax,ymin,ymax):
     #Transform in pixel coordinates then check if ra,dec is contained
     #in the provided rectangular region
     tr                        = self.image._ax1._wcs.wcs_sky2pix
     x,y                       = tr(ra,dec,1)
-    if((x>=xmin and x<=xmax) and
-       (y>=ymin and y<=ymax)):
-       #Contained
-       return True
-    else:
-       return False
-    pass
-  pass
+    Contained = False
+    if((x>=xmin and x<=xmax) and (y>=ymin and y<=ymax)): 
+      Contained = True
+    return Contained
   
+    
   def mapEventClassesColors(self,classes):
     return [self.IRFToColor[IRFS.fromEvclassToIRF(self.reprocVer,x)] for x in classes]
-  pass
   
   def displayEvents(self,xmin=-1,xmax=1e9,ymin=-1,ymax=1e9):
     #Filter data
@@ -192,7 +191,7 @@ class InteractiveFt1Display(object):
     #Put the legend on top of the figure
     for k,v in iter(list(self.IRFToColor.items())):
       self.eventDisplay.scatter([],[],s=20,lw=0,label=k,c=v)
-    pass
+      pass
         
     legend                    = self.eventDisplay.legend(scatterpoints=1,
                                             ncol=3,labelspacing=0.01,
@@ -209,10 +208,10 @@ class InteractiveFt1Display(object):
     #Destroy the callback with previous data, and create a new one with the new data
     if(self.pickerID is not None):
       self.figure.canvas.mpl_disconnect(self.pickerID)
-    pass
+      pass
     self.pickerID             = self.figure.canvas.mpl_connect('pick_event',
                                                                 lambda x:self.on_events_plot_click(x,events))
-  pass
+    pass
   
   def connectEvents(self):
     self.clickerID            = self.figure.canvas.mpl_connect('button_press_event',self.on_click)
@@ -222,19 +221,18 @@ class InteractiveFt1Display(object):
     self.rangerTimer.add_callback(lambda x:self.clearRanger(x,self.rangerTimer),self.figure)
     self.timer.start()
     self.rangerTimer.start()
-  pass
+    pass
   
   def waitClick(self):
     #Put the window in waiting mode, waiting for a click on the sky image
     self.locking              = True
     self.figure.canvas.start_event_loop(0)
-  pass
+    pass
   
   def on_click(self,event):
     if(event.inaxes is None):
       #Click outside any plot, do nothing
       return
-    pass
     
     if(event.inaxes.get_label()!='event display'):
       #This is a click on the sky image, get the corresponding ra,dec
@@ -243,7 +241,8 @@ class InteractiveFt1Display(object):
         ra,dec                = ax._wcs.wcs_pix2sky(event.xdata,event.ydata,1)
         self.user_ra          = numpy.array(ra, ndmin=1)[0]
         self.user_dec         = numpy.array(dec, ndmin=1)[0]
-        self.figure.canvas.stop_event_loop()
+        print("Click on RA,Dec: %s,%s" %(self.user_ra,self.user_dec))
+        #self.figure.canvas.stop_event_loop()
       else:
         #We are in zoom mode, do nothing
         return
@@ -251,15 +250,14 @@ class InteractiveFt1Display(object):
       #the click was not on the sky image. Do nothing
       return
     pass
-  pass
   
   def clearRanger(self,event,rangerTimer):
     #Verify if the figure has been cleared. If so, remove all bindings
     if(len(self.figure.get_axes())==0):
       rangerTimer.stop()
       self.unbind()
+      pass
     pass
-  pass
   
   def keep_synch(self,event=None):
     ax                     = self.image._ax1
@@ -283,7 +281,7 @@ class InteractiveFt1Display(object):
     else:
       #Not changed
       return
-  pass
+    pass
   
   def on_events_plot_click(self,event,events):
     ind                 = event.ind[0]
@@ -322,5 +320,5 @@ class InteractiveFt1Display(object):
                                                     color='green',verticalalignment='top',size='small',fontweight='bold')
 
     self.figure.canvas.draw()
+    pass
   pass
-pass

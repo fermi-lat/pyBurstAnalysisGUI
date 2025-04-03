@@ -104,7 +104,7 @@ class FITSFigure(Layers, Regions, Deprecated):
 
     _parameters = Parameters()
 
-    @auto_refresh
+    #@auto_refresh
     def __init__(self, data, hdu=0, figure=None, subplot=None,
                  downsample=False, north=False, convention=None,
                  dimensions=[0, 1], slices=[], auto_refresh=True,
@@ -177,7 +177,7 @@ class FITSFigure(Layers, Regions, Deprecated):
         <http://matplotlib.sourceforge.net/api/figure_api.html?
         #matplotlib.figure.Figure>`_
         '''
-
+        print ("FITSFigure figure1=",figure)
         # Set whether to automatically refresh the display
         self.set_auto_refresh(auto_refresh)
 
@@ -248,6 +248,7 @@ class FITSFigure(Layers, Regions, Deprecated):
             self._figure = figure
         else:
             self._figure = mpl.figure(**kwargs)
+
 
         # Create first axis instance
         if subplot:
@@ -508,7 +509,7 @@ class FITSFigure(Layers, Regions, Deprecated):
         self._ax1.set_xlim(xpix - dx_pix, xpix + dx_pix)
         self._ax1.set_ylim(ypix - dy_pix, ypix + dy_pix)
 
-    @auto_refresh
+    #@auto_refresh
     def show_grayscale(self, vmin=None, vmid=None, vmax=None,
                             pmin=0.25, pmax=99.75,
                             stretch='linear', exponent=2, invert='default',
@@ -592,11 +593,11 @@ class FITSFigure(Layers, Regions, Deprecated):
                              smooth=smooth, kernel=kernel, aspect=aspect,
                              interpolation=interpolation)
 
-    @auto_refresh
+    #@auto_refresh
     def hide_grayscale(self, *args, **kwargs):
         self.hide_colorscale(*args, **kwargs)
 
-    @auto_refresh
+    #@auto_refresh
     def show_colorscale(self, vmin=None, vmid=None, vmax=None, \
                              pmin=0.25, pmax=99.75,
                              stretch='linear', exponent=2, cmap='default',
@@ -721,7 +722,7 @@ class FITSFigure(Layers, Regions, Deprecated):
         if hasattr(self, 'colorbar'):
             self.colorbar.update()
 
-    @auto_refresh
+    #@auto_refresh
     def hide_colorscale(self):
         self.image.set_visible(False)
 
@@ -936,8 +937,8 @@ class FITSFigure(Layers, Regions, Deprecated):
         '''
 
         if not 'c' in kwargs:
-            kwargs.setdefault('edgecolor', 'red')
-            kwargs.setdefault('facecolor', 'none')
+            kwargs.setdefault('facecolor', 'red')
+            #kwargs.setdefault('facecolor', 'none')
 
         kwargs.setdefault('s', 30)
 
@@ -1640,7 +1641,7 @@ class FITSFigure(Layers, Regions, Deprecated):
 
         return wcs_util.pix2world(self._wcs, xp, yp)
 
-    @auto_refresh
+    #@auto_refresh
     def add_grid(self, *args, **kwargs):
         '''
         Add a coordinate to the current figure

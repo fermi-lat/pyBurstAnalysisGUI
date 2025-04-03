@@ -207,11 +207,8 @@ class DownloadTransientData(dataCollector):
     pass
     print("Estimated Time For The Query....:",estimatedTimeForTheQuery)
     try:
-    
-    	httpAddress                 = [x for x in parser.data if x.find("http://fermi.gsfc.nasa.gov") >=0][0]
-    
-    except IndexError:
-        
+      httpAddress                 = [x for x in parser.data if x.find("http://fermi.gsfc.nasa.gov") >=0][0]
+    except IndexError:    
         # Try https
         httpAddress                 = [x for x in parser.data if x.find("https://fermi.gsfc.nasa.gov") >=0][0]
     
