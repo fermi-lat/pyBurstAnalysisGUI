@@ -163,7 +163,6 @@ class InteractiveFigure(object):
     pass
     if(event.artist==self.clearButton):
       #clear
-      #print 'RESET SELECTION'
       NB                    = len(self.backgroundBounds)
       
       for x in range(NB): 
@@ -199,8 +198,10 @@ class InteractiveFigure(object):
   pass
   
   def delLines(self,lines):
-    for ll in lines:
-          self.subfigure.lines.remove(ll)
+    for ll in lines: ll.remove()
+        #self.subfigure.lines.remove(ll)
+        #This can happen if the line was already removed
+        #pass
     for i in range(len(lines)):
           lines.pop()
     self.figure.canvas.draw()           
@@ -225,7 +226,6 @@ class InteractiveFigure(object):
       #Mouse outside figure or mode not normal
       self.delLines(self.transitoryLines)
       return
-    pass
     self.delLines(self.transitoryLines)
     self.transitoryLines.append(self.drawVerticalLine(event.xdata))
   pass
