@@ -135,7 +135,7 @@ def run(**kwargs):
   print(("Distance from ROI center  = %6.3f\n\n" %(getAngularDistance(origra,origdec,ra,dec))))
 
   if(figure is not None):
-    from GtBurst import aplpy   
+    import aplpy   
     #Display the TS map    
     figure.clear()
     tsfig                       = aplpy.FITSFigure(tsmap,convention='calabretta',figure=figure)

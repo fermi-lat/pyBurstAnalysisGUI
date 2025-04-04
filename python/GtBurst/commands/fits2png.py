@@ -2,7 +2,7 @@
 
 import matplotlib as mpl
 mpl.use('Agg')
-from GtBurst import aplpy
+import aplpy
 import matplotlib.pyplot as plt
 import sys
 from GtBurst.my_fits_io import pyfits
@@ -12,8 +12,8 @@ def fitsToPNG(fitsfile,pngfile,vmin=None,vmax=None,**kwargs):
     #Display the TS map    
     #figure                      = plt.figure()
     tsfig                       = aplpy.FITSFigure(fitsfile,convention='calabretta')
-    tsfig.set_tick_labels_font(size='small')
-    tsfig.set_axis_labels_font(size='small')
+    tsfig.tick_labels.set_font(size='small')
+    tsfig.axis_labels.set_font(size='small')
     if(vmin is not None and vmax is not None):
       tsfig.show_colorscale(cmap='gist_heat',aspect='auto',vmin=float(vmin),vmax=float(vmax))
     else:
@@ -27,7 +27,7 @@ def fitsToPNG(fitsfile,pngfile,vmin=None,vmax=None,**kwargs):
     tsfig.tick_labels.set_yformat('ddd.dd')
     
     # Display a grid and tweak the properties
-    tsfig.show_grid()
+    tsfig.add_grid()
     tsfig.add_colorbar()
     
     if('sources' in list(kwargs.keys())):

@@ -215,7 +215,7 @@ def run(**kwargs):
     pass
     
     #Display the counts map
-    from GtBurst import aplpy
+    import aplpy
     import matplotlib.pyplot as plt
     
     figure.clear()

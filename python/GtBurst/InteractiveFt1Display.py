@@ -1,4 +1,4 @@
-from GtBurst import aplpy
+import aplpy
 import matplotlib.pyplot as plt
 from GtBurst.my_fits_io import pyfits
 
