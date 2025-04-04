@@ -1,10 +1,10 @@
-try:
+# try:
     
-    # Use internal aplpy
+#     # Use internal aplpy
     
-    from .my_aplpy import *
+#     from .my_aplpy import *
     
-except ImportError:
+# except ImportError:
     
     # Try and load the aplpy from the environment
-    from aplpy import *
+from aplpy import *

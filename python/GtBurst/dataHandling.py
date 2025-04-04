@@ -2796,8 +2796,6 @@ class CspecBackground(object):
 
         return spectraContainer
 
-    pass
-
     def polynomialFit(self, timeIntervals):
         # Transform timeIntervals in a list,
         # if it is not already (this allow the user to specify both a single
@@ -2818,7 +2816,7 @@ class CspecBackground(object):
                 mask = thisMask
             else:
                 mask = (mask | thisMask)
-        pass
+            pass
         filteredData = data[mask]
 
         if (len(filteredData) == 0):
@@ -2838,11 +2836,10 @@ class CspecBackground(object):
             print(('{0:>20} {1:>6.2f} for {2:<5} d.o.f.'.format("logLikelihood = ", cstat,
                                                                len(filteredData) - optimalPolGrade)))
             polynomials.append(thisPolynomial)
-        pass
+            pass
         self.polynomials = polynomials
         return polynomials
 
-    pass
 
     def makeLightCurveWithResiduals(self, **kwargs):
         print("\nComputing residuals...\n")
@@ -2850,7 +2847,7 @@ class CspecBackground(object):
         for key in list(kwargs.keys()):
             if key.lower() == "figure":
                 lcFigure = kwargs[key]
-        pass
+            pass
         #from matplotlib import pyplot as plt
         # Create figure
         if (lcFigure is None):
@@ -2921,8 +2918,6 @@ class CspecBackground(object):
         self.lcFigure = lcFigure
         self.lcFigure.canvas.start_event_loop(0)
 
-    pass
-
     def onPick(self, event):
         # If the user clicked on one of the texts, do the corresponding
         # action
@@ -2939,7 +2934,7 @@ class CspecBackground(object):
         self.lcFigure.clear()
         self.lcFigure.canvas.draw()
 
-    pass
+        pass
 
     def getTotalBackgroundCounts(self, t1, t2):
         totalCounts = 0.0
@@ -2947,11 +2942,10 @@ class CspecBackground(object):
         for channel, polynomial in zip(self.channels, self.polynomials):
             totalCounts += polynomial.integral(t1, t2)
             statError += pow(polynomial.integralError(t1, t2), 2.0)
-        pass
+            pass
         statError = math.sqrt(statError)
         return totalCounts, statError
 
-    pass
 
     def _polyfit(self, x, y, exposure, polGrade):
 
@@ -2962,8 +2956,10 @@ class CspecBackground(object):
         if (Nnonzero == 0):
             # No data, nothing to do!
             return Polynomial([0.0]), 0.0
-        pass
-
+        
+        #select only channel with exposure:
+        nonzeroMask = (exposure > 0)
+        print("Channel with 0 exposure....: %d" % (len(exposure[~nonzeroMask])))
         # Compute an initial guess for the polynomial parameters,
         # with a least-square fit (with weight=1) using SVD (extremely robust):
         # (note that polyfit returns the coefficient starting from the maximum grade,
@@ -2972,7 +2968,7 @@ class CspecBackground(object):
             print(("  Initial estimate with SVD..."), end=' ')
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
-            initialGuess = numpy.polyfit(x, y / exposure, polGrade)
+            initialGuess = numpy.polyfit(x[nonzeroMask], y[nonzeroMask] / exposure[nonzeroMask], polGrade)
             pass
         initialGuess = initialGuess[::-1]
         if (test):
@@ -2984,7 +2980,7 @@ class CspecBackground(object):
         # in the interval of interest)
         M = polynomial(x)
         if numpy.isnan(M).any():
-            raise RuntimeError("Fit failed! Try to reduce the lenght of the intervals.")
+            raise GtBurstException(205,"Fit failed! Try to reduce the lenght of the intervals.")
 
         negativeMask = (M < 0)
 
@@ -2997,7 +2993,7 @@ class CspecBackground(object):
             pass
 
         # Improve the solution using a logLikelihood statistic (Cash statistic)
-        logLikelihood = LogLikelihood(x, y, polynomial, exposure=exposure)
+        logLikelihood = LogLikelihood(x[nonzeroMask], y[nonzeroMask], polynomial, exposure=exposure[nonzeroMask])
 
         # Check that we have enough non-empty bins to fit this grade of polynomial,
         # otherwise lower the grade
@@ -3009,7 +3005,7 @@ class CspecBackground(object):
             while (dof < 2 and len(initialGuess) > 1):
                 initialGuess = initialGuess[:-1]
                 polynomial = Polynomial(initialGuess)
-                logLikelihood = LogLikelihood(x, y, polynomial, exposure=exposure)
+                logLikelihood = LogLikelihood(x[nonzeroMask], y[nonzeroMask], polynomial, exposure=exposure[nonzeroMask])
             pass
         pass
 
@@ -3023,7 +3019,7 @@ class CspecBackground(object):
         # except:
         else:
             # We shouldn't get here!
-            raise RuntimeError("Fit failed! Try to reduce the degree of the polynomial.")
+            raise GtBurstException(205,"Fit failed! Try to reduce the degree of the polynomial.")
         pass
 
         # Get the value for cstat at the minimum
@@ -3035,15 +3031,13 @@ class CspecBackground(object):
         try:
             finalPolynomial.computeCovarianceMatrix(logLikelihood.getFreeDerivs)
         except Exception:
-            raise
+            raise GtBurstException(205,"Error in covariance matrix computation!")
         # if test is defined, compare the results with those obtained with ROOT
         if (test):
-            fitWithROOT(x, y, exposure, finalPolynomial)
-        pass
+            fitWithROOT(x[nonzeroMask], y[nonzeroMask], exposure[nonzeroMask], finalPolynomial)
+            pass
 
         return finalPolynomial, minlogLikelihood
-
-    pass
 
     def _fitGlobalAndDetermineOptimumGrade(self, data):
         # Fit the sum of all the channels to determine the optimal polynomial
@@ -3067,34 +3061,42 @@ class CspecBackground(object):
         # Fit all the polynomials
         minGrade = 0
         maxGrade = 4
+        grades         = []
         logLikelihoods = []
         for grade in range(minGrade, maxGrade + 1):
             polynomial, logLike = self._polyfit(x, y, exposure, grade)
+            print("  Log Likelihood=%s for polynomial grade %s" % (logLike,grade))
             logLikelihoods.append(logLike)
-        pass
+            grades.append(grade)
+
+        bestGrade      = 0
+        
+        if len(logLikelihoods)==0:
+            raise GtBurstException(205,"  No polynomial fit was possible")
+        
+        if len(logLikelihoods)==1:
+            bestGrade = grades[0]
+            print("  Best polynomial grade: %s" % (bestGrade))
+            return bestGrade
+        
         # Found the best one
         deltaLoglike = numpy.array([2 * (x[0] - x[1]) for x in zip(logLikelihoods[:-1], logLikelihoods[1:])])
         print("\ndelta log-likelihoods:")
-        for i in range(maxGrade):
-            print(("%s -> %s: delta Log-likelihood = %s" % (i, i + 1, deltaLoglike[i])))
-        pass
-        print("")
+        for grade, delta_likelihood_value in enumerate(deltaLoglike):
+            print(("%s -> %s: delta log-likelihood = %s" % (grades[grade], grades[grade + 1], delta_likelihood_value)))
+        
         deltaThreshold = 9.0
         mask = (deltaLoglike >= deltaThreshold)
-        if (len(mask.nonzero()[0]) == 0):
-            # best grade is zero!
-            bestGrade = 0
-        else:
+        if (len(mask.nonzero()[0]) > 0):
             bestGrade = mask.nonzero()[0][-1] + 1
-        pass
+            pass
 
         if (test):
-            fitWithROOT(x, y, exposure, prevPolynomial, True)
-        pass
+            fitWithROOT(x, y, exposure, polynomial, True)
+            pass
 
         return bestGrade
 
-    pass
 
     def _fitChannel(self, chanNumber, data, polGrade):
 
@@ -3113,14 +3115,11 @@ class CspecBackground(object):
 
         exposure = numpy.array(data.field("EXPOSURE"))
 
+        #try:
         polynomial, minLogLike = self._polyfit(x, y, exposure, polGrade)
-
+        #except:
+        #polynomial, minLogLike = Polynomial([0.0]), 0.0
         return polynomial, minLogLike
-
-    pass
-
-
-pass
 
 
 class Channel(object):
@@ -3128,11 +3127,8 @@ class Channel(object):
         self.chanNumber = chanNumber
         self.emin = emin
         self.emax = emax
-
-    pass
-
-
-pass
+        pass
+    pass    
 
 
 class Spectrum(object):

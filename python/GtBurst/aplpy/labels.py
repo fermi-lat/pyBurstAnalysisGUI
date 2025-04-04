@@ -102,6 +102,7 @@ class TickLabels(object):
 
         self._ax1.xaxis.apl_label_form = format
         self._ax2.xaxis.apl_label_form = format
+        
 
     @auto_refresh
     def set_yformat(self, format):

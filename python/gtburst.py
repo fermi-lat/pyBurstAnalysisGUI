@@ -2,6 +2,8 @@
 # Author: Giacomo Vianello (giacomov@slac.stanford.edu)
 from GtBurst import version
 import argparse
+import warnings
+warnings.filterwarnings("ignore", category=RuntimeWarning, append=True)
 
 parser=argparse.ArgumentParser('gtburst')
 parser.add_argument('-fast', action='store_true')

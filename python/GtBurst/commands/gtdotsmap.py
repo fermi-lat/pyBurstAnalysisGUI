@@ -139,8 +139,8 @@ def run(**kwargs):
     #Display the TS map    
     figure.clear()
     tsfig                       = aplpy.FITSFigure(tsmap,convention='calabretta',figure=figure)
-    tsfig.set_tick_labels_font(size='small')
-    tsfig.set_axis_labels_font(size='small')
+    tsfig.tick_labels.set_font(size='small')
+    tsfig.axis_labels.set_font(size='small')
     tsfig.show_colorscale(cmap='gist_heat',aspect='auto')
     tsfig.show_markers([ra], [dec], edgecolor='green', facecolor='none', marker='o', s=10, alpha=0.5)
     # Modify the tick labels for precision and format
@@ -150,7 +150,7 @@ def run(**kwargs):
     tsfig.show_contour(tsmap, colors='white',levels=tsmax-deltaTS)
 
     # Display a grid and tweak the properties
-    tsfig.show_grid()
+    tsfig.add_grid()
     
     figure.canvas.draw()
   pass

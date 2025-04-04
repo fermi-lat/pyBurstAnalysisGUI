@@ -11,7 +11,6 @@ from GtBurst import IRFS
 import matplotlib.colors as col
 import matplotlib.cm as cm
 
-
 # define individual colors which will be used for classes
 cpool                         = [ '#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99','#b15928']
 
@@ -153,8 +152,9 @@ class InteractiveFt1Display(object):
   def inRegion(self,ra,dec,xmin,xmax,ymin,ymax):
     #Transform in pixel coordinates then check if ra,dec is contained
     #in the provided rectangular region
-    tr                        = self.image._ax1._wcs.wcs_sky2pix
-    x,y                       = tr(ra,dec,1)
+    #tr                        = self.image._ax1._wcs.wcs_sky2pix
+    #tr                        = self.image.world2pixel
+    x,y                       = self.image.world2pixel(ra,dec)#,1)
     Contained = False
     if((x>=xmin and x<=xmax) and (y>=ymin and y<=ymax)): 
       Contained = True
@@ -216,7 +216,7 @@ class InteractiveFt1Display(object):
   def connectEvents(self):
     self.clickerID            = self.figure.canvas.mpl_connect('button_press_event',self.on_click)
     self.timer                = self.figure.canvas.new_timer(interval=200)
-    self.timer.add_callback(self.keep_synch, self.image._ax1)
+    self.timer.add_callback(self.keep_synch, self.image.ax)#_ax1)
     self.rangerTimer          = self.figure.canvas.new_timer(interval=100)
     self.rangerTimer.add_callback(lambda x:self.clearRanger(x,self.rangerTimer),self.figure)
     self.timer.start()
@@ -236,9 +236,10 @@ class InteractiveFt1Display(object):
     
     if(event.inaxes.get_label()!='event display'):
       #This is a click on the sky image, get the corresponding ra,dec
-      ax                      = self.image._ax1
+      ax                      = self.image.ax#_ax1
       if(ax.get_navigate_mode() is None):
-        ra,dec                = ax._wcs.wcs_pix2sky(event.xdata,event.ydata,1)
+        #ra,dec                = ax._wcs.wcs_pix2sky(event.xdata,event.ydata,1)
+        ra,dec                = self.image.pixel2world(event.xdata,event.ydata)
         self.user_ra          = numpy.array(ra, ndmin=1)[0]
         self.user_dec         = numpy.array(dec, ndmin=1)[0]
         print("Click on RA,Dec: %s,%s" %(self.user_ra,self.user_dec))
@@ -260,11 +261,12 @@ class InteractiveFt1Display(object):
     pass
   
   def keep_synch(self,event=None):
-    ax                     = self.image._ax1
+    ax                     = self.image.ax#_ax1
     
     nx                     = ax.get_xlim()
     ny                     = ax.get_ylim()
-    ras, decs              = ax._wcs.wcs_pix2sky(nx,ny,1)
+    #ras, decs              = ax._wcs.wcs_pix2sky(nx,ny,1)
+    ras, decs              = self.image.pixel2world(nx,ny)
     xmin                   = nx[0]
     xmax                   = nx[1]
     ymin                   = ny[0]
@@ -300,10 +302,12 @@ class InteractiveFt1Display(object):
       pass
     
     #Get the width and height (in deg) of the image display
-    ax                     = self.image._ax1
+    ax                     = self.image.ax#_ax1
     nx                     = ax.get_xlim()
     ny                     = ax.get_ylim()
-    rass, decss            = ax._wcs.wcs_pix2sky(nx,ny,1)
+    #rass, decss            = ax._wcs.wcs_pix2sky(nx,ny,1)
+    rass, decss             = self.image.pixel2world(nx,ny)
+
     img_width              = min(abs(rass[0]-rass[1]),abs(decss[0]-decss[1]))
     radius_length          = 0.3
     
@@ -316,7 +320,7 @@ class InteractiveFt1Display(object):
         #if the user zoom between one and another, this will be emptied already
         pass
     self.evtext            = self.eventDisplay.text(time-self.trigtime,energy,
-                                                    'run = %s\nid = %s\ntheta = %3.1f\nzenith = %3.1f' % (run_id,event_id,theta,zenith),
+                                                    'energy=%.1f MeV\nrun = %s\nid = %s\ntheta = %3.1f\nzenith = %3.1f' % (energy,run_id,event_id,theta,zenith),
                                                     color='green',verticalalignment='top',size='small',fontweight='bold')
 
     self.figure.canvas.draw()
