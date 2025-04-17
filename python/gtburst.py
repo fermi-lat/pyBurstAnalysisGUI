@@ -6,10 +6,10 @@ import warnings
 warnings.filterwarnings("ignore", category=RuntimeWarning, append=True)
 
 parser=argparse.ArgumentParser('gtburst')
-parser.add_argument('-fast', action='store_true')
+#parser.add_argument('-fast', action='store_true')
+parser.add_argument('-gui', action='store_true')
 args=parser.parse_args()
-
-
+# This is the main GUI for the Fermi Burst Analysis
 
 packageName = version.getPackageName()
 packageVersion = version.getVersion()
@@ -661,7 +661,7 @@ class GUI(object, metaclass=MetaForExceptions):
         self.consoleFrame.grid(row=2, column=1, sticky=W + E + N + S)
         consoleScrollbar = Scrollbar(self.consoleFrame, orient="vertical")
         
-        if args.fast:
+        if not args.gui:
             self.console = ConsoleText.ConsoleTextFast(self.consoleFrame,
                                                            yscrollcommand=consoleScrollbar.set,
                                                            width=100, height=20, bg='white')
@@ -683,13 +683,16 @@ class GUI(object, metaclass=MetaForExceptions):
         print(" -APlpy                   (http://aplpy.github.io/)")
         print("These packages are property of the respective authors.")
         
-        if not args.fast:
+        if args.gui:
             print("-------------------------------------------------")
-            print("Use the -fast flag when running gtburst to speed up the code")
-            print(" (the coinsole will not be captured in the GUI) ")
+            print(" ===> Note to Linux users: if the application hangs during likelihood analysis,")
+            print(" it is probably because you are using the -gui flag.")
+            print(" (the app try to capture the console in the GUI,")
+            print(" This is not currently working on Linux!! ")
+            print(" In this case, please don't use the -gui flag!")
             print("-------------------------------------------------")
         else:
-            self.console.write("You select the -fast flag!\n")
+            #self.console.write("You select the -fast flag!\n")
             self.console.write("Check your terminal to see the output!\n")
             self.console.write("(it is not redirected here!)\n")
             self.console.write("--------------------------------------------------\n")
