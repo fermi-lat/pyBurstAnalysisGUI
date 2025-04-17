@@ -184,13 +184,12 @@ class CommandPipeline(object):
             message          += "\n\n-Dataset %s:" %(dataset.detector)
             for descr,product in iter(list(self.finalProducts.items())):
               message        += "\n  %-20s : %s" %(descr,os.path.basename(dataset[product]))
+              pass
             pass
-          pass
           print(message)
-        pass
+          pass
         
         return
-      pass
       
       #If we are in the first step, disable the "previous" button
       if(self.currentStep==0):

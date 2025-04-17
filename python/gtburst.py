@@ -619,9 +619,11 @@ class GUI(object, metaclass=MetaForExceptions):
         self.tasksmenu.add_command(label="Find source with TS map",
                                    command=self.tsmap,
                                    state=DISABLED)
-        self.tasksmenu.add_command(label="Interactively recenter ROI",
-                                   command=self.recenterROI,
-                                   state=DISABLED)
+        
+        #self.tasksmenu.add_command(label="Interactively recenter ROI",
+        #                           command=self.recenterROI,
+        #                           state=DISABLED)
+
         # self.tasksmenu.add_command(label="Simulate GRB observation",
         #                      command=self.simulateObservation,
         #                      state=DISABLED)
@@ -875,7 +877,35 @@ class GUI(object, metaclass=MetaForExceptions):
     pass
 
     def recenterROI(self):
+        
         datasetsFilter = lambda x: x.detector == "LAT"
+
+        # Get the processing version for this LAT data
+        reproc = pyfits.getval(list(filter(datasetsFilter, self.datasets))[0]['eventfile'], 'PROC_VER', ext=0)
+
+        # Select the appropriate irfs
+        irfs = IRFS.PROCS[str(reproc)]
+
+        # If the ORIGIN keyword is 'FSSC' then remove P8TRANSIENT_R100E and P8TRANSIENT_R100
+        # because the FSSC release of P8 does not contain them
+
+        origin = pyfits.getval(list(filter(datasetsFilter, self.datasets))[0]['eventfile'],
+                               'ORIGIN',
+                               ext=('EVENTS', 1))
+
+        if (origin.find('FSSC') >= 0):
+
+            for r in ['P8_TRANSIENT100E', 'P8_TRANSIENT100', 'P8_TRANSIENT100S']:
+
+                try:
+
+                    irfs.remove(r.lower())
+
+                except:
+                    # This could happen with p7 data. In any case we don't want to fail for
+                    # something this unimportant
+                    pass
+        gtdocountsmap.definedParameters['irf'].possibleValues = irfs
 
         gtdocountsmap.definedParameters['ra'].type = commandDefiner.HIDDEN
         gtdocountsmap.definedParameters['ra'].value = self.objectInfoEntries['ra'].variable.get()
@@ -886,7 +916,7 @@ class GUI(object, metaclass=MetaForExceptions):
         # Define commands and help string
         commands = []
         commands.append(gtdocountsmap)
-        commands.append(gtinteractiveRaDec)
+        #commands.append(gtinteractiveRaDec)
 
         finalProducts = {}
         self.cleanUserInteractionFrame()
@@ -908,7 +938,12 @@ class GUI(object, metaclass=MetaForExceptions):
     def recenterROIafterSkymap(self, datasetsFilter=lambda x: True):
         # Update RA and DEC
         dataset = list(filter(datasetsFilter, self.datasets))[0]
+        # Update the RA and DEC in the GUI
+        # and in the datasets
+        #print ("dataset = ", self.datasets)
         if ('user_ra' in list(dataset.keys())):
+            print("Recentered ROI to RA %s and DEC %s" % (dataset['user_ra'], dataset['user_dec']))
+
             user_ra = dataset['user_ra']
             user_dec = dataset['user_dec']
 
@@ -916,12 +951,11 @@ class GUI(object, metaclass=MetaForExceptions):
             self.objectInfoEntries['dec'].variable.set(str(user_dec))
         else:
             showerror("Error", "Something went wrong when recentering ROI...", parent=self.root)
-        pass
+            pass
         self.fillUserInteractionFrame()
         self.writeDefaultHelpMessage()
         self.makeLightCurves()
-
-    pass
+        pass
 
     def saveUserInteractionFrame(self):
         # Save all the fields in the userInteraction frame

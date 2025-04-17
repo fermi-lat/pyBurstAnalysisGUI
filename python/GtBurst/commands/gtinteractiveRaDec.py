@@ -59,7 +59,6 @@ def run(**kwargs):
     #Nothing specified, the user needs just help!
     thisCommand.getHelp()
     return
-  pass
   
   #Get parameters values
   thisCommand.setParValuesFromDictionary(kwargs)
@@ -73,18 +72,17 @@ def run(**kwargs):
     #Print help
     print((thisCommand.getHelp()))
     return
-  pass
+  
   from GtBurst.InteractiveFt1Display import InteractiveFt1Display
   
   displ                     = InteractiveFt1Display(filteredeventfile,skymap,figure)
   displ.waitClick()
-  print(("\nSelected (R.A., Dec): (%s,%s)" %(displ.user_ra,displ.user_dec)))
+  print(("\nSelected (R.A., Dec): (%s,%s) !" %(displ.user_ra,displ.user_dec)))
   user_ra                   = float(displ.user_ra)
   user_dec                  = float(displ.user_dec)
   displ.unbind()
   
   return 'user_ra', user_ra, 'user_dec', user_dec
-pass
 
 thisCommand.run = run
 

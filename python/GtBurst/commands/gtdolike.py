@@ -75,7 +75,6 @@ def run(**kwargs):
     #Nothing specified, the user needs just help!
     thisCommand.getHelp()
     return
-  pass
   
   #Get parameters values
   thisCommand.setParValuesFromDictionary(kwargs)

@@ -2282,7 +2282,10 @@ class LATData(LLEData):
         except:
             raise RuntimeError(
                 "Likelihood fit did not converged. Probably your model is too complex for your selection.")
-        
+
+        # Write the XML file
+        # This will remove the errors for the isotropic template
+
         self.like1.writeXml(outfilelike)
 
         # Now add the errors for the isotropic template, which are removed by writeXml
