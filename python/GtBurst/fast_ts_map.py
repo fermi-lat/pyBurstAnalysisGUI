@@ -2,7 +2,7 @@ from UnbinnedAnalysis import *
 import astropy.wcs as pywcs
 import pyLikelihood
 
-from astropy.coordinates.angle_utilities import angular_separation
+from astropy.coordinates import angular_separation
 import numpy as np
 
 
