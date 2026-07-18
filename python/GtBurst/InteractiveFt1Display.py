@@ -320,7 +320,7 @@ class InteractiveFt1Display(object):
         #if the user zoom between one and another, this will be emptied already
         pass
     self.evtext            = self.eventDisplay.text(time-self.trigtime,energy,
-                                                    'energy=%.1f MeV\nrun = %s\nid = %s\ntheta = %3.1f\nzenith = %3.1f' % (energy,run_id,event_id,theta,zenith),
+                                                    'energy=%.1f MeV\nt-t0 = %.3f s\nrun = %s\nid = %s\ntheta = %3.1f\nzenith = %3.1f' % (energy,time-self.trigtime,run_id,event_id,theta,zenith),
                                                     color='green',verticalalignment='top',size='small',fontweight='bold')
 
     self.figure.canvas.draw()
