@@ -84,7 +84,7 @@ class DownloadTransientData(dataCollector):
     htmlFile                    = open(temporaryFileName)
     maxTimeLimit                = ''
     for line in htmlFile.readlines():
-      res                       = re.findall('(.+)The event database currently holds [0-9]+ events, collected between (.+) UTC and (.+) UTC \(Mission Elapsed Time \(MET\) ([0-9]+) to ([0-9]+) seconds\)',
+      res                       = re.findall(r'(.+)The event database currently holds [0-9]+ events, collected between (.+) UTC and (.+) UTC \(Mission Elapsed Time \(MET\) ([0-9]+) to ([0-9]+) seconds\)',
                                              line)
       if(len(res)!=0):
         #Found

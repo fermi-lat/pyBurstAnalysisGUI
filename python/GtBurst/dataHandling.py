@@ -455,7 +455,7 @@ def _getLatestVersion(filename):
     directory = os.path.dirname(filename)
     filename = os.path.basename(filename)
 
-    regExp = "(.+)(_v[0-9]{2})\.(.+)"
+    regExp = r"(.+)(_v[0-9]{2})\.(.+)"
     m = re.search(regExp, filename)
 
     # This is something like "glg_tte_bn100724029" or "glg_tte_n0_bn100724029"

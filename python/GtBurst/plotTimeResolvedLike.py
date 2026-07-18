@@ -40,7 +40,7 @@ def plot_time_resolved_like(time_resolved_results_files, trigger_names, redshift
         
         color = colors[i]
         
-        time_resolved_results = np.recfromtxt(time_resolved_results_file, names=True, delimiter=" ")
+        time_resolved_results = np.genfromtxt(time_resolved_results_file, names=True, delimiter=" ", dtype=None, encoding=None)
         
         tstarts = time_resolved_results["tstart"]
         tstops = time_resolved_results["tstop"]
@@ -56,7 +56,7 @@ def plot_time_resolved_like(time_resolved_results_files, trigger_names, redshift
     
         try:
     
-            y = np.core.defchararray.replace(y, "<", "", count=None)
+            y = np.char.replace(y, "<", "")
     
         except:
     
@@ -67,8 +67,7 @@ def plot_time_resolved_like(time_resolved_results_files, trigger_names, redshift
     
         try:
     
-            Dy = np.core.defchararray.replace(Dy, "n.a.", "0",
-                                              count=None)
+            Dy = np.char.replace(Dy, "n.a.", "0")
             
         except:
     
@@ -123,7 +122,7 @@ def plot_time_resolved_like(time_resolved_results_files, trigger_names, redshift
             
             ph_err = time_resolved_results['photonIndexError']
             
-            ph_err = np.core.defchararray.replace(ph_err, "n.a.(fixed)", "0", count=None)
+            ph_err = np.char.replace(ph_err, "n.a.(fixed)", "0")
             
             ax2.errorbar(median[DY > 0], time_resolved_results['photonIndex'][DY>0], 
                          xerr=[median[DY > 0] - start[DY > 0], stop[DY > 0] - median[DY > 0]],

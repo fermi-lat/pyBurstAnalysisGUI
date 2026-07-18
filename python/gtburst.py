@@ -589,7 +589,7 @@ class GUI(object, metaclass=MetaForExceptions):
         path = os.path.join(tclPath, 'fsdialog')
         self.root.tk.eval("set auto_path [linsert $auto_path 0 %s]" % (path))
 
-        self.root.iconify()
+        self.root.withdraw()
         #self.root.geometry("1024x768+0+0")
         self.root.title("Fermi bursts analysis GUI")
 
@@ -1134,6 +1134,8 @@ class GUI(object, metaclass=MetaForExceptions):
         # self.figureFrame.grid_rowconfigure(self.figureFrame,row=0,weight=1)
         
         self.root.deiconify()
+        self.root.lift()
+        self.root.focus_force()
         self.root.mainloop()
         pass
 

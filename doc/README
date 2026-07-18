@@ -11,10 +11,10 @@ Fermi satellite (formerly known as GLAST).
 
 * Requirements:
   - Fermi Science Tools: http://fermi.gsfc.nasa.gov/ssc/data/analysis/software/
-  - Python > 2.7 (but not the 3.0 branch)
+  - Python 3.11 or 3.12
 - tkInter and Tk (>= 8.5)
 - scipy (http://www.scipy.org/)
-- numpy (it is part of scipy)
+- numpy (>= 1.26, including 2.x)
 - pywcs (https://pypi.python.org/pypi/pywcs)
 
 * Installing:

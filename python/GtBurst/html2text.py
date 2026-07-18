@@ -587,7 +587,7 @@ class HTML2Text(html.parser.HTMLParser):
                     self.drop_white_space = 0
 
             if puredata and not self.pre:
-                data = re.sub('\s+', ' ', data)
+                data = re.sub(r'\s+', ' ', data)
                 if data and data[0] == ' ':
                     self.space = 1
                     data = data[1:]
