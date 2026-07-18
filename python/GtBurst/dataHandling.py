@@ -681,8 +681,14 @@ def rebinLATLightCurve(ft1, ft2, ra, dec, triggerTime, grbName, cspecfile, relSt
     # must not be affected by the light-curve view's binning choice.
     # relStart/relStop are seconds since trigger; clipped to whatever ft1
     # actually covers.
-    root, ext = os.path.splitext(cspecfile)
-    lcviewfile = "%s_lcview%s" % (root, ext)
+    # Note: the output name must NOT contain "cspec", since directory-loading
+    # code elsewhere globs for "*cspec*.pha" (and one spot even raises if it
+    # finds more than one match) to discover the real analysis CSPEC file.
+    if "_cspec_" in cspecfile:
+        lcviewfile = cspecfile.replace("_cspec_", "_lcview_")
+    else:
+        root, ext = os.path.splitext(cspecfile)
+        lcviewfile = "%s_lcview%s" % (root, ext)
 
     ra = float(ra)
     dec = float(dec)
