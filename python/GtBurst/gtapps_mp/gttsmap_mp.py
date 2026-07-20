@@ -38,7 +38,7 @@ def getPointSource(like):
     analysis at a specific pixel.'''
 
     test_src = pyLike.PointSource(0, 0, like.observation.observation)
-    pl = pyLike.SourceFactory_funcFactory().create('PowerLaw')
+    pl = pyLike.SourceFactory.funcFactory().create('PowerLaw')
     pl.setParamValues((1, -2, 100))
     indexPar = pl.getParam('Index')
     indexPar.setBounds(-3.5, -1)
