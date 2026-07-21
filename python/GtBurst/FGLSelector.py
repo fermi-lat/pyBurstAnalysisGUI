@@ -17,12 +17,12 @@ if(not os.path.exists(txtfile)):
 
 try:
 
-    data = numpy.recfromtxt(txtfile,delimiter=',',names=True, encoding=None)
+    data = numpy.genfromtxt(txtfile,delimiter=',',names=True, encoding=None)
 
 except TypeError:
     
     # Old numpy
-    data = numpy.recfromtxt(txtfile,delimiter=',',names=True)
+    data = numpy.genfromtxt(txtfile,delimiter=',',names=True)
 
 #Keys in the 3fgl_extendedData are: 'Source_name', 'Variability_index',
 #                                   'ASSOC1','ASSOC2','ASSOC_TEV','CLASS1','Flags'
