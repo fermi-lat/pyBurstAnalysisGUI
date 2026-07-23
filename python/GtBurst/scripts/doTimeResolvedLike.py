@@ -476,7 +476,7 @@ if __name__ == "__main__":
 
             file_name, col1, col2 = args.bin_file
 
-            d = np.recfromtxt(os.path.expandvars(os.path.expanduser(file_name)), names=True)
+            d = np.genfromtxt(os.path.expandvars(os.path.expanduser(file_name)), names=True, dtype=None, encoding=None)
 
             args.tstarts = ",".join(map(str, d[col1]))
             args.tstops = ",".join(map(str, d[col2]))

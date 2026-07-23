@@ -302,7 +302,7 @@ class Polynomial(object):
   def computeCovarianceMatrix(self,statisticGradient):
     self.covMatrix            = computeCovarianceMatrix(statisticGradient,self.params)
     #Check that the covariance matrix is positive-defined
-    negativeElements          = (numpy.matrix.diagonal(self.covMatrix) < 0)
+    negativeElements          = (numpy.diagonal(self.covMatrix) < 0)
     if(len(negativeElements.nonzero()[0]) > 0):
       raise GtBurstException(8, "The background fit has failed. Select one interval before the transient and one after, as close as possible "+
                                 "to respectively the beginning and the end of the transient, and few hundreds seconds in duration.")

@@ -141,6 +141,7 @@ def run(**kwargs):
   dec                         = dataHandling._getParamFromXML(xmlmodel,'DEC')
   name                        = dataHandling._getParamFromXML(xmlmodel,'OBJECT')
   
+  grb                           = None
   try:
     grb                         = [x for x in sources if x.name.lower().find(name.lower())>=0][0]
     grb_TS                      = grb.TS
@@ -149,18 +150,18 @@ def run(**kwargs):
     print("\nWarning: no GRB in the model!")
     grb_TS                      = -1
   pass
-  
+
   if(irf is None):
     print("\n\nWARNING: could not read IRF from XML file. Be sure you know what you are doing...")
   else:
     dataHandling._writeParamIntoXML(outfilelike,IRF=irf,OBJECT=name,RA=ra,DEC=dec)
   pass
 
-  
+
   if(spectralfiles=='yes'):
     phafile,rspfile,bakfile   = LATdata.doSpectralFiles(outfilelike)
     pass
-  LATdata.computeProbability()
+  probfile                     = LATdata.computeProbability()
 
   
   localizationMessage         = ''
@@ -278,12 +279,15 @@ def run(**kwargs):
   pass
   
   if(figure is not None):
-        
+
     #Assume we have an X server running
     #Now display the results
     likemsg = "Log(likelihood) = %s" %(LATdata.logL)
     displayResults(figure.canvas._tkcanvas, LATdata.resultsStrings + "\n" + likemsg + "\n" + localizationMessage)
-  
+
+    if(grb is not None):
+      displayTopProbabilityEvents(figure.canvas._tkcanvas, probfile, grb.name, LATdata.trigTime)
+
   print(localizationMessage)
   
   return 'likexmlresults', outfilelike, 'TS', grb_TS, 'bestra', bestra, 'bestdec', bestdec, 'poserr', poserr, 'distance', distance,'sources', sources
@@ -327,9 +331,76 @@ def displayResults(master, text):
       helptextCanvas.grid(row=0,column=0)
       helpscrollbar.grid(row=0,column=1,sticky=W+E+N+S)    
     pass
-  
-  
-  
+
+
+def displayTopProbabilityEvents(master, probfile, colname, trigtime, minprob=0.90):
+
+    #Show a table with all photons with probability > minprob of being associated with the GRB
+    from GtBurst import SubWindow
+    from GtBurst.Treeview import Treeview
+    from tkinter import Frame, Scrollbar
+
+    try:
+      f                       = pyfits.open(probfile)
+      events                  = f['EVENTS'].data
+      energy                  = events.field('ENERGY')
+      time                    = events.field('TIME')
+      ra                      = events.field('RA')
+      dec                     = events.field('DEC')
+      prob                    = events.field(colname)
+      f.close()
+    except:
+      print("\nWarning: could not read probability column '%s' from %s. Skipping the photon table." % (colname, probfile))
+      return
+
+    selected                  = numpy.where(prob > minprob)[0]
+    order                     = selected[numpy.argsort(prob[selected])[::-1]]
+
+    columns                   = ['Energy (MeV)', 'Time - t0 (s)', 'RA (deg)', 'Dec (deg)', 'Probability']
+    columnsWidths             = [110, 130, 100, 100, 110]
+
+    sub                       = SubWindow.SubWindow(master,
+                      initialhint="%d photons with probability > %.0f%s of being associated with the GRB (source '%s')." % (len(order), minprob*100, '%', colname),
+                      title="Photon probabilities")
+
+    # The default SubWindow layout leaves a tall, non-expanding hint text area;
+    # shrink it and let the table take up (and grow into) the rest of the window.
+    sub.bottomtext.config(height=3)
+    sub.window.rowconfigure(0, weight=1)
+    sub.window.rowconfigure(1, weight=0)
+    sub.window.columnconfigure(0, weight=1)
+    sub.frame.grid_configure(sticky='nsew')
+    sub.frame.rowconfigure(0, weight=1)
+    sub.frame.columnconfigure(0, weight=1)
+
+    container                 = Frame(sub.frame)
+    container.grid(row=0, column=0, sticky='nsew')
+    container.rowconfigure(0, weight=1)
+    container.columnconfigure(0, weight=1)
+
+    # Show all rows without scrolling up to a reasonable cap, since the
+    # number of photons above threshold can range from a handful to dozens.
+    treeHeight                = max(1, min(len(order), 25))
+    tree                      = Treeview(container, columns=columns, show="headings", height=treeHeight)
+    vsb                       = Scrollbar(container, orient="vertical", command=tree.yview)
+    tree.configure(yscrollcommand=vsb.set)
+    tree.grid(column=0, row=0, sticky='nsew')
+    vsb.grid(column=1, row=0, sticky='ns')
+
+    for col, width in zip(columns, columnsWidths):
+      tree.heading(col, text=col)
+      tree.column(col, width=width, anchor='center')
+
+    for idx in order:
+      tree.insert('', 'end', values=(
+          "%.1f" % energy[idx],
+          "%.3f" % (time[idx] - trigtime),
+          "%.4f" % ra[idx],
+          "%.4f" % dec[idx],
+          "%.4f" % prob[idx],
+      ))
+    pass
+
 
 thisCommand.run = run
 

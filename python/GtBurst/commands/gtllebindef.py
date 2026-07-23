@@ -125,7 +125,7 @@ def run(**kwargs):
     userBounds                    = intervals.split(",") 
     timeBounds                    = []
     for i,tt in enumerate(userBounds):
-      m                           = re.search('([-,+]?[0-9]+(\.[0-9]+)?)-([-,+]?[0-9]+(\.[0-9]+)?)', tt)
+      m                           = re.search(r'([-,+]?[0-9]+(\.[0-9]+)?)-([-,+]?[0-9]+(\.[0-9]+)?)', tt)
       if(m is not None):
         if(m.group(1) is not None and m.group(3) is not None):
           timeBounds.append(m.group(1))

@@ -110,7 +110,7 @@ class ConsoleText(Text):
 
         self.config(state=NORMAL)
         self.hyperlink = HyperlinkManager(self)
-        self.urlpattern = re.compile("http\:[^\s^\)]+")
+        self.urlpattern = re.compile(r"http\:[^\s^\)]+")
 
     def copy(self, event=None):
         self.clipboard_clear()

@@ -178,6 +178,8 @@ class GUI(object, metaclass=MetaForExceptions):
         self.console = None
         self.eventLock = False
         self.addrmfWarning = True
+        self.lcXmin = -1000.0
+        self.lcXmax = 1000.0
         self.main()
         pass
 
@@ -589,7 +591,7 @@ class GUI(object, metaclass=MetaForExceptions):
         path = os.path.join(tclPath, 'fsdialog')
         self.root.tk.eval("set auto_path [linsert $auto_path 0 %s]" % (path))
 
-        self.root.iconify()
+        self.root.withdraw()
         #self.root.geometry("1024x768+0+0")
         self.root.title("Fermi bursts analysis GUI")
 
@@ -1134,6 +1136,8 @@ class GUI(object, metaclass=MetaForExceptions):
         # self.figureFrame.grid_rowconfigure(self.figureFrame,row=0,weight=1)
         
         self.root.deiconify()
+        self.root.lift()
+        self.root.focus_force()
         self.root.mainloop()
         pass
 
@@ -2023,6 +2027,31 @@ class GUI(object, metaclass=MetaForExceptions):
 
                 self.displayCheckButtons[-1].grid(column=col, row=row, sticky=SW)
             pass
+
+            lastCheckRow = int((len(self.datasets) - 1) / 3 + 1)
+            self.lcRangeFrame = Frame(self.displayDetFrame)
+            self.lcRangeFrame.grid(column=0, row=lastCheckRow + 1, columnspan=3, sticky=SW, pady=(10, 0))
+
+            Label(self.lcRangeFrame, text="Light curve range (s since trigger):").grid(column=0, row=0,
+                                                                                        columnspan=4, sticky=W)
+
+            self.lcXminVar = StringVar(value=str(self.lcXmin))
+            self.lcXmaxVar = StringVar(value=str(self.lcXmax))
+
+            Label(self.lcRangeFrame, text="Start:").grid(column=0, row=1, sticky=E)
+            startEntry = Entry(self.lcRangeFrame, textvariable=self.lcXminVar, width=8)
+            startEntry.grid(column=1, row=1, sticky=W)
+
+            Label(self.lcRangeFrame, text="Stop:").grid(column=2, row=1, sticky=E)
+            stopEntry = Entry(self.lcRangeFrame, textvariable=self.lcXmaxVar, width=8)
+            stopEntry.grid(column=3, row=1, sticky=W)
+
+            updateButton = Button(self.lcRangeFrame, text="Update", command=self.updateLightCurveRange)
+            updateButton.grid(column=4, row=1, sticky=W, padx=(5, 0))
+
+            startEntry.bind('<Return>', self.updateLightCurveRange)
+            stopEntry.bind('<Return>', self.updateLightCurveRange)
+
             self.saveUserInteractionFrame()
             self.writeDefaultHelpMessage()
             self.makeLightCurves()
@@ -2047,6 +2076,49 @@ class GUI(object, metaclass=MetaForExceptions):
         self.bottomtext.insert(END, "http://matplotlib.org/users/navigation_toolbar.html", self.hyperlink.add(
             lambda: self.openWebLink("http://matplotlib.org/users/navigation_toolbar.html")))
         self.bottomtext.config(state=DISABLED)
+
+    def updateLightCurveRange(self, event=None):
+        try:
+            xmin = float(self.lcXminVar.get())
+            xmax = float(self.lcXmaxVar.get())
+        except ValueError:
+            showerror("Invalid time range", "Start and stop must be numbers.", parent=self.root)
+            return
+        if xmin >= xmax:
+            showerror("Invalid time range", "Start must be less than stop.", parent=self.root)
+            return
+
+        latDatasets = [d for d in self.datasets if d.detector == "LAT"]
+        if len(latDatasets) > 0:
+            self.updateRootStatusbar("Re-binning LAT light curve over the new time range, please wait...")
+            self.root.update_idletasks()
+            actualStart, actualStop = xmin, xmax
+            try:
+                for dataset in latDatasets:
+                    s, e, lcviewfile = dataHandling.rebinLATLightCurve(dataset['eventfile'], dataset['ft2file'],
+                                                           self.objectInfoEntries['ra'].variable.get(),
+                                                           self.objectInfoEntries['dec'].variable.get(),
+                                                           dataset.triggerTime, dataset.triggerName,
+                                                           dataset['cspecfile'], xmin, xmax)
+                    dataset['lcviewfile'] = lcviewfile
+                    actualStart = max(actualStart, s)
+                    actualStop = min(actualStop, e)
+            except GtBurstException as gte:
+                showerror("Error", "%s" % (gte.longMessage), parent=self.root)
+                self.writeDefaultHelpMessage()
+                return
+
+            if (actualStart, actualStop) != (xmin, xmax):
+                print("NOTE: requested range clipped to (%s, %s) s since trigger, the interval actually "
+                     "covered by the downloaded LAT data." % (actualStart, actualStop))
+                xmin, xmax = actualStart, actualStop
+                self.lcXminVar.set(str(xmin))
+                self.lcXmaxVar.set(str(xmax))
+
+        self.lcXmin = xmin
+        self.lcXmax = xmax
+        self.writeDefaultHelpMessage()
+        self.makeLightCurves()
 
     def makeLightCurves(self):
         self.root.update_idletasks()
@@ -2077,7 +2149,7 @@ class GUI(object, metaclass=MetaForExceptions):
         self.subfigures = []
         left = True
         for i, dataset in enumerate(detToDisplay):
-            f = pyfits.open(dataset['cspecfile'])
+            f = pyfits.open(dataset.get('lcviewfile') or dataset['cspecfile'])
             s = f['SPECTRUM']
             d = s.data[(s.data.field('QUALITY') == 0)]
             trigTime = dataset.triggerTime
@@ -2121,7 +2193,7 @@ class GUI(object, metaclass=MetaForExceptions):
         self.figure.text(0.05, 0.5, ylabel, rotation='vertical', verticalalignment='center', horizontalalignment='left')
         self.figure.text(0.95, 0.5, ylabel, rotation='vertical', verticalalignment='center',
                          horizontalalignment='right')
-        self.figure.axes[0].set_xlim([-1000, 1000])
+        self.figure.axes[0].set_xlim([self.lcXmin, self.lcXmax])
         self.canvas.draw()
         print("Done!")
 

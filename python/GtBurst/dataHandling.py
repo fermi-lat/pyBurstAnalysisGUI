@@ -455,7 +455,7 @@ def _getLatestVersion(filename):
     directory = os.path.dirname(filename)
     filename = os.path.basename(filename)
 
-    regExp = "(.+)(_v[0-9]{2})\.(.+)"
+    regExp = r"(.+)(_v[0-9]{2})\.(.+)"
     m = re.search(regExp, filename)
 
     # This is something like "glg_tte_bn100724029" or "glg_tte_n0_bn100724029"
@@ -668,6 +668,110 @@ def _makeDatasetsOutOfLATdata(ft1, ft2, grbName, tstart, tstop,
     updateKeywords(eboundsFilename, triggerTime, ra, dec, grbName)
 
     return ft1, eboundsFilename, ft2, cspecfile
+
+
+pass
+
+
+def rebinLATLightCurve(ft1, ft2, ra, dec, triggerTime, grbName, cspecfile, relStart, relStop):
+    # Regenerate the LAT light curve over a new time range, reusing the
+    # already-downloaded raw FT1 event file. Writes to a SEPARATE file
+    # (never overwrites cspecfile), since cspecfile also feeds real
+    # downstream analysis (time-bin selection, background estimation) that
+    # must not be affected by the light-curve view's binning choice.
+    # relStart/relStop are seconds since trigger; clipped to whatever ft1
+    # actually covers.
+    # Note: the output name must NOT contain "cspec", since directory-loading
+    # code elsewhere globs for "*cspec*.pha" (and one spot even raises if it
+    # finds more than one match) to discover the real analysis CSPEC file.
+    if "_cspec_" in cspecfile:
+        lcviewfile = cspecfile.replace("_cspec_", "_lcview_")
+    else:
+        root, ext = os.path.splitext(cspecfile)
+        lcviewfile = "%s_lcview%s" % (root, ext)
+
+    ra = float(ra)
+    dec = float(dec)
+    triggerTime = float(triggerTime)
+
+    if (grbName.find('bn') == 0):
+        grbName = grbName[2:]
+
+    f = pyfits.open(ft1)
+    ft1tstart = f[eventsExtName].header['TSTART']
+    ft1tstop = f[eventsExtName].header['TSTOP']
+    f.close()
+
+    absStart = max(triggerTime + relStart, ft1tstart)
+    absStop = min(triggerTime + relStop, ft1tstop)
+
+    if absStart >= absStop:
+        raise GtBurstException(14,
+                               "The requested time range (%s, %s) s since trigger is outside the data "
+                               "downloaded for this trigger (available: %s to %s s since trigger). "
+                               "Download a wider time interval to see a wider light curve." %
+                               (relStart, relStop, ft1tstart - triggerTime, ft1tstop - triggerTime))
+
+    # Generate a fake response file to define the energy binning for the CSPEC file
+    ebounds = numpy.logspace(numpy.log10(100), numpy.log10(300000), 3)
+    emins = numpy.array(ebounds[:-1])
+    emaxs = numpy.array(ebounds[1:])
+    emins_column = pyfits.Column(name='E_MIN', format='E', array=emins)
+    emaxs_column = pyfits.Column(name='E_MAX', format='E', array=emaxs)
+    cols = pyfits.ColDefs([emins_column, emaxs_column])
+    tbhdu = create_from_columns(cols)
+    tbhdu.header.set('EXTNAME', 'EBOUNDS')
+    hdu = pyfits.PrimaryHDU(None)
+    fakematrixhdu = create_from_columns(pyfits.ColDefs([pyfits.Column(name="FAKE", format='E')]))
+    fakematrixhdu.header.set('EXTNAME', "SPECRESP MATRIX")
+    eboundsFilename = os.path.join(os.path.dirname(lcviewfile) or '.', "__temp_lc_rebin_ebounds.rsp")
+    thdulist = pyfits.HDUList([hdu, tbhdu, fakematrixhdu])
+    thdulist.writeto(eboundsFilename, overwrite=True)
+
+    gtselect = GtApp('gtselect')
+    gtselect['infile'] = ft1
+    tempName = os.path.join(os.path.dirname(lcviewfile) or '.', "__temp_lc_rebin_ft1.fits")
+    gtselect['outfile'] = tempName
+    gtselect['ra'] = ra
+    gtselect['dec'] = dec
+    gtselect['rad'] = 15.0
+    gtselect['tmin'] = absStart - 1.0
+    gtselect['tmax'] = absStop + 1.0
+    gtselect['emin'] = 10.0
+    gtselect['emax'] = 1000000.0
+    gtselect['zmax'] = 110.0
+    gtselect['clobber'] = 'yes'
+    gtselect.run()
+
+    # Scale the bin size linearly with the requested range, anchored at the
+    # original default (dt ~ 4s for a ~2000s range), instead of jumping
+    # between a couple of fixed tiers. Purely a display choice: this file is
+    # never read by the actual spectral/likelihood analysis.
+    dt = max((absStop - absStart) / 500.0, 1.024)
+
+    parameters = {}
+    parameters['eventfile'] = tempName
+    parameters['rspfile'] = eboundsFilename
+    parameters['ft2file'] = ft2
+    parameters['dt'] = dt
+
+    parameters['tstart'] = absStart
+    parameters['tstop'] = absStop
+    parameters['cspecfile'] = lcviewfile
+    parameters['clobber'] = 'yes'
+    print(("Writing %s..." % (lcviewfile)))
+    gtllebin(**parameters)
+
+    try:
+        os.remove(tempName)
+        os.remove(eboundsFilename)
+    except:
+        pass
+    pass
+
+    updateKeywords(lcviewfile, triggerTime, ra, dec, grbName)
+
+    return absStart - triggerTime, absStop - triggerTime, lcviewfile
 
 
 pass
